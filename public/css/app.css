@@ -1,0 +1,109 @@
+/* Dodatni stilovi za kartice */
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive slike */
+.card-img-top {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+/* Stil za zvezdice */
+.text-warning {
+    color: #ffc107; /* Žuta boja za zvezdice */
+}
+
+/* Stil za cenu */
+.card-text strong {
+    font-weight: bold;
+    color: #28a745; /* Zelena boja za cenu */
+}
+
+/* Stil za username */
+.card-text.text-muted {
+    font-size: 0.9rem;
+}
+
+/* Footer styles */
+footer {
+    background-color: #9c1c2c !important;
+}
+
+footer h5 {
+    color: #ecf0f1;
+    margin-bottom: 1rem;
+}
+
+footer a {
+    color: #bdc3c7 !important;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: #3498db !important;
+}
+
+.text-muted{
+    color: #ecf0f1 !important;
+}
+
+.social-links i {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.social-links i:hover {
+    transform: translateY(-3px);
+}
+
+/* Stil za prilagođeno toggler dugme */
+/* Stil za mobilni prikaz kategorija */
+@media (max-width: 992px) {
+    /* Centriraj tekst i dugme */
+    .navbar .d-flex.d-lg-none {
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    /* Sakrij desktop kategorije */
+    .navbar-collapse {
+        display: none !important;
+    }
+
+    /* Prikaži kategorije kada je meni otvoren */
+    .navbar-collapse.show {
+        display: block !important;
+    }
+
+    .mobile-category-header{
+       margin-left: 29% !important;
+    }
+
+    .dropdown-toggle{
+        text-align: center;
+    }
+
+    .dropdown-item{
+        text-align: center;
+    }
+
+    #navbarOptions{
+        margin-left: 29% !important;
+    }
+}
+
+/* Desktop prikaz */
+@media (min-width: 992px) {
+    /* Sakrij mobilni tekst i dugme */
+    .d-flex.d-lg-none {
+        display: none !important;
+    }
+}

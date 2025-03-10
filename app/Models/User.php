@@ -42,4 +42,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isSeller()
+    {
+        return $this->role === 'seller';
+    }
+
+    public function isBuyer()
+    {
+        return $this->role === 'buyer';
+    }
 }

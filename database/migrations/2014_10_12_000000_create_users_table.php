@@ -15,6 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('phone')->nullable(); // Omogućite NULL vrednosti
+            $table->string('payment_method'); // PayPal, bankovni račun...
+            $table->enum('role', ['buyer', 'seller', 'both', 'admin'])->default('buyer');
+            $table->string('avatar')->nullable();
+            $table->integer('stars')->default(0); // 0 = Novi, 1 = Level 1...
+            $table->boolean('is_verified')->default(false);
+            $table->integer('seller_level')->default(0); // 0 = Novi, 1 = Level 1...
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
