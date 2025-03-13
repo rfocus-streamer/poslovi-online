@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Service;
 use App\Models\Category;
+use App\Models\Favorite;
+use App\Models\CartItem;
+use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
 {
@@ -13,7 +16,28 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        //
+        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
+        $services = Service::with([
+            'user',
+            'category',
+            'subcategory',
+            'serviceImages',
+            'cartItems'])->take(3)->get(); // Dohvati 4 usluga
+
+        $favoriteCount = 0;
+        $cartCount = 0;
+
+        if (Auth::check()) { // Proverite da li je korisnik ulogovan
+            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
+            $cartCount = CartItem::where('user_id', Auth::id())->count();
+        }
+
+        return view('index', compact(
+                    'services',
+                    'categories',
+                    'favoriteCount',
+                    'cartCount'
+                ));
     }
 
     /**
@@ -47,7 +71,8 @@ class ServiceController extends Controller
             'user',
             'category',
             'subcategory',
-            'serviceImages'
+            'serviceImages',
+            'cartItems'
         ])->findOrFail($id);
 
         $reviews = $service->reviews()
@@ -60,7 +85,25 @@ class ServiceController extends Controller
         // Izračunaj broj servisa za tog korisnika
         $userServiceCount = Service::where('user_id', $userId)->count();
 
-        return view('services.show', compact('service', 'categories', 'reviews', 'userServiceCount'));
+        $favoriteCount = 0;
+        $cartCount = 0;
+
+        if (Auth::check()) { // Proverite da li je korisnik ulogovan
+            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
+            $cartCount = CartItem::where('user_id', Auth::id())->count();
+        }
+
+        $title = $service->title;
+
+        return view('services.show', compact(
+                    'title',
+                    'service',
+                    'categories',
+                    'reviews',
+                    'userServiceCount',
+                    'favoriteCount',
+                    'cartCount'
+                ));
     }
 
     /**

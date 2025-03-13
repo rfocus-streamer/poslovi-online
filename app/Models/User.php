@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'deposits'
     ];
 
     /**
@@ -51,5 +52,15 @@ class User extends Authenticatable
     public function isBuyer()
     {
         return $this->role === 'buyer';
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
     }
 }

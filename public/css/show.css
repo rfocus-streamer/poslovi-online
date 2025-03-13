@@ -124,7 +124,7 @@
         align-items: center;
         background-color: #9c1c2c !important;
         color: white;
-        font-weight: bold;
+        /*font-weight: bold;*/
     }
 
     .pagination-buttons .relative span{
@@ -137,6 +137,10 @@
 
     .pagination-buttons .relative a[rel="next"] {
         background-color: #198754 !important;;
+    }
+
+    span[aria-disabled="true"] {
+        display: none;
     }
 
     a[rel="next"]::after {
@@ -153,6 +157,14 @@
         font-weight: 900; /* Podebljana verzija */
         margin-right: 15px; /* Razmak između ikonice i teksta */
         padding-left: 20px;
+    }
+
+    .fade-out {
+        opacity: 1;
+        transition: opacity 1s ease-in-out;
+    }
+    .fade-out.hide {
+        opacity: 0;
     }
 
  /* Responzivni stilovi */

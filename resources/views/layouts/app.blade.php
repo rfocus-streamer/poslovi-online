@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poslovi Online</title>
+    <title>Poslovi Online | Platforma za freelance usluge | Pronađite vrhunske talente</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
@@ -25,9 +25,14 @@
             <!-- Opcije (Omiljeno, Poruke, Korpa, Profile) -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarOptions">
                 <ul class="navbar-nav">
+                    @auth
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-heart"></i> Omiljeno
+                        <a class="nav-link" href="{{ route('favorites.index') }}">
+                            @if(isset($favoriteCount) && $favoriteCount > 0)
+                                <i class="fas fa-heart text-danger"></i> Omiljeno <span class="badge bg-danger">{{ $favoriteCount }}</span>
+                            @else
+                                <i class="fas fa-heart"></i> Omiljeno
+                            @endif
                         </a>
                     </li>
                     <li class="nav-item">
@@ -36,10 +41,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-shopping-cart"></i> Korpa
+                        <a class="nav-link" href="{{ route('cart.index') }}">
+                            @if(isset($cartCount) && $cartCount > 0)
+                                <i class="fas fa-shopping-cart text-danger"></i> Korpa <span class="badge bg-danger">{{ $cartCount }}</span>
+                            @else
+                                <i class="fas fa-shopping-cart"></i> Korpa
+                            @endif
                         </a>
                     </li>
+                    @endauth
+
                     @auth
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -159,5 +170,9 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

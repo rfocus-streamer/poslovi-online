@@ -12,10 +12,12 @@ class UserSeeder extends Seeder
     {
         // Admin
         User::create([
-            'name' => 'Admin',
+            'firstname' => 'Admin',
+            'lastname' => 'Admin',
             'email' => 'admin@poslovionline.com',
             'phone' => '123456789',
             'payment_method' => 'PayPal',
+            'deposits' => 10000,
             'password' => Hash::make('admin123'),
             'role' => 'admin',
             'is_verified' => true,
@@ -26,10 +28,12 @@ class UserSeeder extends Seeder
         // Prodavci
         $sellers = [
             [
-                'name' => 'Prodavac 1',
+                'firstname' => 'Prodavac',
+                'lastname' => '1',
                 'email' => 'prodavac1@poslovionline.com',
                 'phone' => '987654321',
                 'payment_method' => 'Bank Transfer',
+                'deposits' => 10000,
                 'password' => Hash::make('prodavac123'),
                 'role' => 'seller',
                 'is_verified' => true,
@@ -38,10 +42,12 @@ class UserSeeder extends Seeder
                 'stars' => 5
             ],
             [
-                'name' => 'Prodavac 2',
+                'firstname' => 'Prodavac',
+                'lastname' => '2',
                 'email' => 'prodavac2@poslovionline.com',
                 'phone' => '111222333',
                 'payment_method' => 'Payoneer',
+                'deposits' => 10000,
                 'password' => Hash::make('prodavac123'),
                 'role' => 'seller',
                 'is_verified' => true,
@@ -50,10 +56,12 @@ class UserSeeder extends Seeder
                 'stars' => 4
             ],
             [
-                'name' => 'Prodavac 3',
+                'firstname' => 'Prodavac 3',
+                'lastname' => '3',
                 'email' => 'prodavac3@poslovionline.com',
                 'phone' => '444555666',
                 'payment_method' => 'Wise',
+                'deposits' => 10000,
                 'password' => Hash::make('prodavac123'),
                 'role' => 'seller',
                 'is_verified' => true,
@@ -69,10 +77,12 @@ class UserSeeder extends Seeder
 
         // Kupac
         User::create([
-            'name' => 'Kupac 1',
+            'firstname' => 'Kupac',
+            'lastname' => '1',
             'email' => 'kupac1@poslovionline.com',
             'phone' => '555555555',
             'payment_method' => 'Credit Card',
+            'deposits' => 10000,
             'password' => Hash::make('kupac123'),
             'role' => 'buyer',
             'is_verified' => true,

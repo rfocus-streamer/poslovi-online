@@ -48,7 +48,7 @@
 
                     <!-- Ocena (zvezdice i broj) -->
                     <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-user"></i> &nbsp; {{ $service->user->name }} &nbsp;
+                        <i class="fas fa-user"></i> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
                         <div class="text-warning ms-auto"> <!-- Dodali smo ms-auto za desno poravnavanje -->
                             @for ($j = 1; $j <= 5; $j++)
                                 @if ($j <= rand(3, 5)) <!-- Nasumična ocena između 3 i 5 -->

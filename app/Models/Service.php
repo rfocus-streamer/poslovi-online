@@ -34,4 +34,14 @@ class Service extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
 }

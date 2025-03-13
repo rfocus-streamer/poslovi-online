@@ -1,0 +1,51 @@
+    nav .flex.justify-between.flex-1.sm\:hidden {
+        display: none;
+    }
+
+    .pagination-buttons .relative {
+        display: inline-flex;
+        align-items: center;
+        background-color: #9c1c2c !important;
+        color: white;
+        /*font-weight: bold;*/
+    }
+
+    .pagination-buttons .relative span{
+        background-color: silver !important;
+    }
+
+    .pagination-buttons .relative a[rel="prev"] {
+        background-color: #198754 !important;
+    }
+
+    .pagination-buttons .relative a[rel="next"] {
+        background-color: #198754 !important;;
+    }
+
+    span[aria-disabled="true"] {
+        display: none;
+    }
+
+    a[rel="next"]::after {
+        font-family: "Font Awesome 5 Free";
+        content: "\f105"; /* Unicode za fa-chevron-right */
+        font-weight: 1000; /* Podebljana verzija */
+        margin-left: 15px; /* Razmak između teksta i ikonice */
+        padding-right: 20px;
+    }
+
+    a[rel="prev"]::before {
+        font-family: "Font Awesome 5 Free";
+        content: "\f104"; /* Unicode za fa-chevron-left */
+        font-weight: 900; /* Podebljana verzija */
+        margin-right: 15px; /* Razmak između ikonice i teksta */
+        padding-left: 20px;
+    }
+
+    .fade-out {
+        opacity: 1;
+        transition: opacity 1s ease-in-out;
+    }
+    .fade-out.hide {
+        opacity: 0;
+    }

@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('firstname');
+            $table->string('lastname');
             $table->string('email')->unique();
             $table->string('phone')->nullable(); // Omogućite NULL vrednosti
             $table->string('payment_method'); // PayPal, bankovni račun...
+            $table->decimal('deposits', 10, 2)->default(0.00); // Maksimalno 10 cifara, 2 decimalna mesta
             $table->enum('role', ['buyer', 'seller', 'both', 'admin'])->default('buyer');
             $table->string('avatar')->nullable();
             $table->integer('stars')->default(0); // 0 = Novi, 1 = Level 1...
