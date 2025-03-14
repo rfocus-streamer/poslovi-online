@@ -27,7 +27,7 @@
                 <ul class="navbar-nav">
                     @auth
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('favorites.index') }}">
+                        <a class="nav-link {{ request()->routeIs('favorites.index') ? 'active' : '' }}" href="{{ route('favorites.index') }}">
                             @if(isset($favoriteCount) && $favoriteCount > 0)
                                 <i class="fas fa-heart text-danger"></i> Omiljeno <span class="badge bg-danger">{{ $favoriteCount }}</span>
                             @else
@@ -41,7 +41,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('cart.index') }}">
+                        <a class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}"" href="{{ route('cart.index') }}">
                             @if(isset($cartCount) && $cartCount > 0)
                                 <i class="fas fa-shopping-cart text-danger"></i> Korpa <span class="badge bg-danger">{{ $cartCount }}</span>
                             @else
@@ -70,7 +70,7 @@
                         </li>
                     @else
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">
+                            <a class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}"" href="{{ route('login') }}">
                                 <i class="fas fa-sign-in-alt"></i> Prijava
                             </a>
                         </li>

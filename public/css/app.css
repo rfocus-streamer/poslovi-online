@@ -63,6 +63,24 @@ footer a:hover {
     transform: translateY(-3px);
 }
 
+
+.nav-link {
+    position: relative;
+    padding-bottom: 5px; /* Razmak između teksta i underline */
+    transition: color 0.3s ease-in-out;
+}
+
+.nav-link.active::after {
+    content: "";
+    position: absolute;
+    bottom: -3px; /* Podešava udaljenost underline-a */
+    right: 8; /* Poravnanje s desne strane */
+    width: 65%; /* Dužina underline-a (80% teksta) */
+    height: 3px; /* Debljina underline-a */
+    background-color: green;
+    margin-bottom: 8px;
+}
+
 /* Stil za prilagođeno toggler dugme */
 /* Stil za mobilni prikaz kategorija */
 @media (max-width: 992px) {
