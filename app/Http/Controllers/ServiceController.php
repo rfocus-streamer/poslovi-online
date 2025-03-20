@@ -7,6 +7,7 @@ use App\Models\Service;
 use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\CartItem;
+use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
@@ -26,17 +27,22 @@ class ServiceController extends Controller
 
         $favoriteCount = 0;
         $cartCount = 0;
+        $seller = [];
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
+            $seller['countProjects'] = Project::where('seller_id', Auth::id())
+                ->whereNotIn('status', ['completed', 'uncompleted'])
+                ->count();
         }
 
         return view('index', compact(
                     'services',
                     'categories',
                     'favoriteCount',
-                    'cartCount'
+                    'cartCount',
+                    'seller'
                 ));
     }
 

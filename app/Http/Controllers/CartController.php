@@ -45,6 +45,7 @@ class CartController extends Controller
             // Ako servis ne postoji u korpi, dodaj ga
             CartItem::create([
                 'user_id' => Auth::id(),
+                'seller_id' => $service->user_id,
                 'service_id' => $service->id,
                 'package' => $package, // Dodaj paket
                 'quantity' => 1,

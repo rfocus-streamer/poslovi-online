@@ -103,7 +103,7 @@
                         <td>
                             <div class="d-flex gap-2">
                                 @if($userBalance >= $totalPrice)
-                                    <form action="{{ route('cart.destroy', $cartItem) }}" method="POST">
+                                    <form action="{{ route('projects.store', $cartItem) }}" method="POST">
                                         @csrf
                                         @method('POST')
                                         <button class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Pokreni projekat"><i class="fas fa-rocket"></i></button>

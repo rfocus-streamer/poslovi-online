@@ -23,32 +23,56 @@
             </button>
 
             <!-- Opcije (Omiljeno, Poruke, Korpa, Profile) -->
+            <!--  <i class="fas fa-comment-dots text-info"></i> chat -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarOptions">
                 <ul class="navbar-nav">
                     @auth
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('favorites.index') ? 'active' : '' }}" href="{{ route('favorites.index') }}">
-                            @if(isset($favoriteCount) && $favoriteCount > 0)
-                                <i class="fas fa-heart text-danger"></i> Omiljeno <span class="badge bg-danger">{{ $favoriteCount }}</span>
-                            @else
-                                <i class="fas fa-heart"></i> Omiljeno
-                            @endif
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-envelope"></i> Poruke
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}"" href="{{ route('cart.index') }}">
-                            @if(isset($cartCount) && $cartCount > 0)
-                                <i class="fas fa-shopping-cart text-danger"></i> Korpa <span class="badge bg-danger">{{ $cartCount }}</span>
-                            @else
-                                <i class="fas fa-shopping-cart"></i> Korpa
-                            @endif
-                        </a>
-                    </li>
+                        @if(Auth::user()->role == 'buyer' || Auth::user()->role == 'both')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('favorites.index') ? 'active' : '' }}" href="{{ route('favorites.index') }}">
+                                    @if(isset($favoriteCount) && $favoriteCount > 0)
+                                        <i class="fas fa-heart {{ request()->routeIs('favorites.index') ? 'text-danger' : '' }}"></i> Omiljeno <span class="badge bg-danger">{{ $favoriteCount }}</span>
+                                    @else
+                                        <i class="fas fa-heart {{ request()->routeIs('favorites.index') ? 'text-danger' : '' }}"></i> Omiljeno
+                                    @endif
+                                </a>
+                            </li>
+                        @endif
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-envelope"></i> Poruke
+                            </a>
+                        </li>
+                        @if(Auth::user()->role == 'buyer' || Auth::user()->role == 'both')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}"" href="{{ route('cart.index') }}">
+                                    @if(isset($cartCount) && $cartCount > 0)
+                                        <i class="fas fa-shopping-cart {{ request()->routeIs('cart.index') ? 'text-danger' : '' }}"></i> Korpa <span class="badge bg-danger">{{ $cartCount }}</span>
+                                    @else
+                                        <i class="fas fa-shopping-cart {{ request()->routeIs('cart.index') ? 'text-danger' : '' }}"></i> Korpa
+                                    @endif
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-project-diagram {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Projekti</a>
+                            </li>
+                        @endif
+                        @if(Auth::user()->role == 'seller' || Auth::user()->role == 'both')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-file-signature {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Ponude</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('projects.jobs') ? 'active' : '' }}" href="{{ route('projects.jobs') }}">
+                                    <i class="fas fa-handshake {{ request()->routeIs('projects.jobs') ? 'text-danger' : '' }}"></i> Poslovi
+                                    @if(isset($seller['countProjects']))
+                                        <span class="badge bg-danger">{{ $seller['countProjects'] }}</span>
+                                    @endif
+                                </a>
+                            </li>
+
+                        @endif
                     @endauth
 
                     @auth

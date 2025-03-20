@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Korisnik koji dodaje u korpu
             $table->foreignId('service_id')->constrained()->onDelete('cascade'); // Servis koji se dodaje u korpu
+            $table->integer('seller_id');
             $table->integer('quantity')->default(1); // Količina (podrazumevano 1)
             $table->string('package'); // odabrani paket
             $table->timestamps(); // Datum i vreme (created_at i updated_at)
