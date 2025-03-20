@@ -24,7 +24,7 @@
 
 <!-- Top usluge -->
 <div class="container mt-5">
-    <p class="xxs mt-5">Ne propustite!</p>
+    <p class="xxs mt-5">Ne propustite najbolje!</p>
     <h2 class="mb-4 top-usluge">Top ponude</h2>
     <div class="row" id="servicesContainer">
         @foreach($services as $service)
