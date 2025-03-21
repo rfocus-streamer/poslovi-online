@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h4><i class="fas fa-handshake"></i> Vaši poslovi</h4>
         <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($reserved_amount, 2) }} RSD</strong>
+            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} RSD</strong>
         </h6>
     </div>
 
@@ -69,39 +69,42 @@
                         <td>{{ $project->end_date ? $project->end_date : 'N/A' }}</td>
                         <td>{{ number_format($project->reserved_funds, 2) }}</td>
                         <td>
-                            @if(Auth::user()->role == 'seller' && $project->status == 'inactive')
-                                <div class="d-flex gap-2 text-center">
-                                    <form action="{{ route('projects.acceptoffer', $project) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Prihvati <i class="fas fa-handshake"></i></button>
-                                    </form>
+                            @if(Auth::user()->role == 'seller')
+                                <div class="d-flex gap-2 justify-content-center">
+                                    @switch($project->status)
+                                        @case('inactive')
+                                            <i class="fas fa-hourglass-start text-secondary mt-2" title="Čeka se odobrenje izvršioca" style="font-size: 1.1em;"></i>
+                                        @break
 
+                                        @case('in_progress')
+                                            <i class="fas fa-tasks text-primary mt-2" title="Radovi su u toku" style="font-size: 1.1em;"></i>
+                                        @break
 
-                                    <form action="{{ route('projects.acceptoffer', $project) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-danger">Odbij <i class="fas fa-times-circle"></i></button>
-                                    </form>
-                                </div>
-                            @elseif(Auth::user()->role == 'seller' && $project->status == 'in_progress')
-                                <div class="d-flex gap-2 text-center">
-                                    <i class="fas fa-tasks text-primary mt-1" style="font-size: 1.5em;"></i>
+                                        @case('waiting_confirmation')
+                                            <i class="fas fa-user-check text-primary mt-2" title="Čeka se vaše odobrenje" style="font-size: 1.1em;"></i>
+                                        @break
 
-                                    <form action="{{ route('projects.waitingconfirmation', $project) }}" method="POST">
+                                        @case('rejected')
+                                            <i class="fas fa-times-circle text-danger mt-2" title="Izvršilac je odbio projekat" style="font-size: 1.1em;"></i>
+                                        @break
+
+                                        @case('completed')
+                                            <i class="fas fa-check-circle text-success mt-2" title="Projekat je kompletiran" style="font-size: 1.1em;"></i>
+                                        @break
+
+                                        @case('uncompleted')
+                                            @if($project->seller_uncomplete_decision === 'accepted')
+                                                <i class="fas fa-reply text-danger mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                            @else
+                                                <i class="fas fa-exclamation-triangle text-warning mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                            @endif
+                                        @break
+                                    @endswitch
+
+                                    <form action="{{ route('projects.view', $project) }}" method="GET">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Zahtevaj <i class="fas fa-user-check"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-warning">Pogledaj <i class="fas fas fa-eye"></i></button>
                                     </form>
-                                </div>
-                            @elseif(Auth::user()->role == 'seller' && $project->status == 'waiting_confirmation')
-                                <div class="d-flex gap-2 text-center justify-content-center align-items-center" style="font-size: 1.5em;">
-                                    <i class="fas fa-user-check text-primary mt-2"></i>
-                                </div>
-                            @elseif(Auth::user()->role == 'seller' && $project->status == 'completed')
-                                <div class="d-flex gap-2 text-center justify-content-center align-items-center" style="font-size: 1.5em;">
-                                    <i class="fas fa-check-circle text-success"></i>
-                                </div>
-                            @elseif(Auth::user()->role == 'seller' && $project->status == 'uncompleted')
-                                <div class="d-flex gap-2 text-center justify-content-center align-items-center">
-                                    <i class="fas fa-exclamation-triangle text-warning" style="font-size: 1.5em;"></i>
                                 </div>
                             @endif
                         </td>
@@ -114,18 +117,16 @@
             <h5><i class="fas fa-info-circle"></i> Status projekta</h5>
             <ul class="list-unstyled">
                 <li class="mb-2">
-                    <i class="fas fa-handshake text-success"></i>
+                    <i class="fas fa-hourglass-start text-secondary"></i>
                     <strong>Čeka se prihvat:</strong> Kupac je poslao zahtev za prihvat projekta.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-times-circle text-danger"></i>
-                    <strong>Odbijeno:</strong> Možete odbiti projekat, rezervisana sredstva se refundiranju kupcu.
+                    <strong>Odbijeno:</strong> Odbili ste projekat, rezervisana sredstva se refundiranju kupcu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-tasks text-primary"></i>
-                    <strong>U toku:</strong> Prihvatili ste projekat i radite na njemu. <br>
-                    <span style="margin-left: 3%;">Nakon što uradite posao možete poslati zahtev za odobrenje završetka posla od strane kupca <button type="submit" class="btn btn-sm btn-success" disabled="">Zahtevaj <i class="fas fa-user-check"></i></button>
-                    </span>
+                    <strong>U toku:</strong> Prihvatili ste projekat i radite na njemu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-user-check text-primary"></i>
@@ -133,9 +134,7 @@
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-undo-alt  text-danger"></i>
-                    <strong> Potrebne su korekcije:</strong> Projekat je označen kao završen, ali kupac zahteva dodatne izmene ili korekcije pre finalnog kompletiranja.<br>
-                    <span style="margin-left: 3%;"><i class="fas fa-file-upload text-primary"></i> Proverite uputstva i uputite izmene prema zahtevima kupca.</span><br>
-                    <span style="margin-left: 4.8%;"> Ako su potrebni dodatni dokumenti za korekciju, možete ih postaviti koristeći obrazac.</span>
+                    <strong> Potrebne su korekcije:</strong> Projekat je označen kao završen, ali kupac zahteva dodatne izmene ili korekcije pre finalnog kompletiranja.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-check-circle text-success"></i>
@@ -143,11 +142,11 @@
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
-                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.<br>
-                    <span style="margin-left: 3%;"><i class="fas fa-exclamation-circle text-warning"></i> Ako smatrate da je status projekta sporan, možete uložiti prigovor. Naša podrška će doneti konačnu odluku.</span><br>
-                    <span style="margin-left: 3%;"><i class="fas fa-ban text-danger"></i> Obe strane su saglasne da projekat nije završen prema očekivanjima. </span><br>
-                    <span style="margin-left: 5%">Kupac će dobiti povrat sredstava, a projekat će biti zatvoren u statusu nekompletiran.</span>
-
+                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-reply text-danger"></i>
+                    <strong>Neuspešno završeno:</strong> Projekat nije uspešno završen, sredstva su vraćena kupcu.
                 </li>
             </ul>
         </div>

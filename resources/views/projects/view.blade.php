@@ -29,7 +29,7 @@
                                         <button type="submit" class="btn btn-sm btn-warning">Nije završen <i class="fas fa-exclamation-triangle"></i></button>
                                     </form>
 
-                                    <form action="{{ route('projects.confirmationdone', $project) }}" method="POST">
+                                    <form action="{{ route('projects.confirmationcorrectionbuyer', $project) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-danger">Korekcije <i class="fas fa-undo-alt"></i></button>
                                     </form>
@@ -98,12 +98,23 @@
                     @break
 
                     @case('uncompleted')
-                         <li class="mb-2">
-                            <i class="fas fa-exclamation-triangle text-warning"></i>
-                            <strong>Nije završeno</strong> <br>
-                            <span style="margin-left: 3%;">Označili ste da projekat nije završen, rezervisana sredstva su zamrznuta.</span><br>
-                            <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor. Naša podrška će doneti konačnu odluku.</span><br>
-                        </li>
+                        @if($project->seller_uncomplete_decision === 'accepted')
+                                <i class="fas fa-reply text-danger"></i>
+                                <strong>Neuspešno završen</strong><br>
+                                <span style="margin-left: 3%;">Projekat nije uspešno završen, sredstva su vraćena vama.</span>
+                        @else
+                             <li class="mb-2">
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                <strong>Nije završeno</strong> <br>
+                                <span style="margin-left: 3%;">Označili ste da projekat nije završen, rezervisana sredstva su zamrznuta.</span><br>
+                                <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor ili prihvatiti projekat kao nekompletiran.</span><br>
+                                <span style="margin-left: 9%;">Ako je status projekta "nekompletiran" sredstva se refundiraju vama.</span><br>
+
+                                @if($countReply > 0)
+                                    <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-danger"></i> Izvršilac je uložio prigovor. Naša podrška će doneti konačnu odluku.</span>
+                                @endif
+                            </li>
+                        @endif
                     @break
                 @endswitch
                 </ul>

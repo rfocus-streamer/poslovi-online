@@ -28,6 +28,7 @@ class ServiceController extends Controller
         $favoriteCount = 0;
         $cartCount = 0;
         $seller = [];
+        $projectCount = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
@@ -35,6 +36,7 @@ class ServiceController extends Controller
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
                 ->whereNotIn('status', ['completed', 'uncompleted'])
                 ->count();
+            $projectCount = Project::where('buyer_id', Auth::id())->count();
         }
 
         return view('index', compact(
@@ -42,6 +44,7 @@ class ServiceController extends Controller
                     'categories',
                     'favoriteCount',
                     'cartCount',
+                    'projectCount',
                     'seller'
                 ));
     }

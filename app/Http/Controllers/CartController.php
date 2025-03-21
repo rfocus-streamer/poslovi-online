@@ -6,6 +6,7 @@ use App\Models\CartItem;
 use App\Models\Service;
 use App\Models\Category;
 use App\Models\Favorite;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,13 +19,15 @@ class CartController extends Controller
         $cartItems = Auth::user()->cartItems()->with('service', 'user')->get();
         $favoriteCount = 0;
         $cartCount = 0;
+        $projectCount = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
+            $projectCount = Project::where('buyer_id', Auth::id())->count();
         }
 
-        return view('cart.index', compact('cartItems', 'categories', 'favoriteCount', 'cartCount'));
+        return view('cart.index', compact('cartItems', 'categories', 'favoriteCount', 'cartCount', 'projectCount'));
     }
 
     // Dodaj servis u korpu

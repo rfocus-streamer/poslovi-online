@@ -22,7 +22,7 @@
                                     </form>
 
 
-                                    <form action="{{ route('projects.acceptoffer', $project) }}" method="POST">
+                                    <form action="{{ route('projects.rejectoffer', $project) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-danger">Odbij <i class="fas fa-times-circle"></i></button>
                                     </form>
@@ -60,10 +60,21 @@
                                     @endif
 
                                     @if($project->seller_uncomplete_decision !== 'accepted')
-                                        <form action="{{ route('projects.confirmationuncompleteseller', $project) }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Slažem se</button>
-                                        </form>
+                                        @if($countReply > 0)
+                                            <a href="{{ route('complaints.create', $project) }}">
+                                                <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Pogledaj arbitražu</button>
+                                            </a>
+
+                                            <form action="{{ route('projects.confirmationuncompleteseller', $project) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Slažem se</button>
+                                            </form>
+                                        @else
+                                            <form action="{{ route('projects.confirmationuncompleteseller', $project) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Slažem se</button>
+                                            </form>
+                                        @endif
                                     @endif
                                 </div>
                             @break
@@ -136,16 +147,22 @@
 
                     @case('uncompleted')
                          <li class="mb-2">
-                            <i class="fas fa-exclamation-triangle text-warning"></i>
-                            <strong>Nije završeno</strong> <br>
-                            <span style="margin-left: 3%;">Projekat nije završen, rezervisana sredstva su zamrznuta.</span>
-                            <br>
-                            <div style="margin-left: 6%;">
-                                <i class="fas fa-exclamation-circle text-warning"></i>
-                                Možete uložiti prigovor. Naša podrška će doneti konačnu odluku.<br>
-                                <i class="fas fa-ban text-danger"></i> <span>Saglasan sam da projekat nije završen prema očekivanjima.</span><br>
-                                <span style="margin-left: 3.2%;">Kupac će dobiti povrat sredstava, a projekat će biti zatvoren u statusu nekompletiran.</span>
-                            </div>
+                            @if($project->seller_uncomplete_decision === 'accepted')
+                                <i class="fas fa-reply text-danger"></i>
+                                <strong>Neuspešno završen</strong><br>
+                                <span style="margin-left: 3%;">Projekat nije uspešno završen, sredstva su vraćena kupcu.</span>
+                            @else
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                <strong>Nije završeno</strong> <br>
+                                <span style="margin-left: 3%;">Projekat nije završen, rezervisana sredstva su zamrznuta.</span>
+                                <br>
+                                <div style="margin-left: 6%;">
+                                    <i class="fas fa-exclamation-circle text-warning"></i>
+                                    Možete uložiti prigovor. Naša podrška će doneti konačnu odluku.<br>
+                                    <i class="fas fa-ban text-danger"></i> <span>Saglasan sam da projekat nije završen prema očekivanjima.</span><br>
+                                    <span style="margin-left: 3.2%;">Kupac će dobiti povrat sredstava, a projekat će biti zatvoren u statusu nekompletiran.</span>
+                                </div>
+                            @endif
                         </li>
                     @break
                 @endswitch

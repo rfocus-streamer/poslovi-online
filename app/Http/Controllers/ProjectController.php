@@ -10,11 +10,13 @@ use App\Models\CartItem;
 use App\Models\ProjectFile;
 use App\Models\AdditionalCharge;
 use App\Models\Complaint;
+use App\Models\Commission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Carbon\Carbon;
 
 class ProjectController extends Controller
 {
@@ -29,6 +31,7 @@ class ProjectController extends Controller
         $projects = [];
         $favoriteCount = 0;
         $cartCount = 0;
+        $projectCount = 0;
 
         if ($user->role == 'buyer') {
             $projects = Project::where('buyer_id', $user->id)->with('service')->get();
@@ -39,9 +42,10 @@ class ProjectController extends Controller
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
+            $projectCount = Project::where('buyer_id', Auth::id())->count();
         }
 
-        return view('projects.index', compact('projects','categories', 'favoriteCount', 'cartCount', 'reserved_amount'));
+        return view('projects.index', compact('projects','categories', 'favoriteCount', 'cartCount', 'projectCount', 'reserved_amount'));
     }
 
     public function view(Project $project)
@@ -93,23 +97,28 @@ class ProjectController extends Controller
                 'userServiceCount',
                 'userStars',
                 'hasPendingRequest',
-                'countReply'
+                'countReply',
             ));
         }else{
             // Izračunaj broj servisa za tog sellera
             $userServiceCount = Service::where('user_id', $project->seller_id)->count();
             $userStars = $project->seller->stars;
+            $projectCount = Project::where('buyer_id', Auth::id())->count();
+
+            $countReply = Complaint::where('user_id', $project->seller_id)->count();
 
             return view('projects.view', compact(
                 'title',
                 'project',
+                'projectCount',
                 'categories',
                 'service',
                 'favoriteCount',
                 'cartCount',
                 'reserved_amount',
                 'userServiceCount',
-                'userStars'
+                'userStars',
+                'countReply'
             ));
         }
     }
@@ -123,6 +132,7 @@ class ProjectController extends Controller
         $favoriteCount = 0;
         $cartCount = 0;
         $seller = [];
+        $totalEarnings = 0;
 
         if ($user->role == 'buyer') {
             $projects = Project::where('buyer_id', $user->id)->with('service')->get();
@@ -136,9 +146,24 @@ class ProjectController extends Controller
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
                 ->whereNotIn('status', ['completed', 'uncompleted'])
                 ->count();
+            // Dohvati trenutni mesec i godinu
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+            $totalEarnings = Commission::where('seller_id', Auth::id())
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear)
+                ->sum('seller_amount');
         }
 
-        return view('projects.seller', compact('projects', 'seller', 'categories', 'favoriteCount', 'cartCount', 'reserved_amount'));
+        return view('projects.seller', compact(
+            'projects',
+            'seller',
+            'categories',
+            'favoriteCount',
+            'cartCount',
+            'reserved_amount',
+            'totalEarnings'
+        ));
     }
 
     /**
@@ -270,6 +295,77 @@ class ProjectController extends Controller
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
+    public function rejectOffer(Project $project)
+    {
+        // Konvertujemo naziv paketa u mala slova
+        $packageColumn = strtolower($project->package) . '_price';
+        $project->reserved_funds = $project->service->$packageColumn;
+        $project->status = 'rejected';
+        $project->buyer->deposits += $project->service->$packageColumn;
+
+        // Spremanje promena na korisniku
+        $project->buyer->save();
+
+        // Spremanje promena na projektu
+        $project->save();
+
+        return redirect()
+                    ->back()
+                    ->with('success', "Odbili ste ovaj projekat, rezervisana sredstva vracaju se kupcu !")
+                    ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
+    }
+
+    public function doneConfirmation(Project $project)
+    {
+        // Provera da li je projekat već završen
+        if ($project->status === 'completed') {
+            return redirect()
+                      ->back()
+                      ->with('error', 'Projekat je već završen.');
+        }
+
+        // Provera da li je provizija već obračunata
+        if ($project->commission) {
+            return redirect()
+                      ->back()
+                      ->with('error', 'Provizija za ovaj projekat je već obračunata.');
+        }
+
+        // Izračunavanje 13% i 87% od ukupnog iznosa
+        $packageColumn = strtolower($project->package) . '_price';
+        $packageAmount = $project->service->$packageColumn;
+        $amountToAdd = $packageAmount * 0.87; // 87% za deposits prodavca
+        $commissionAmount = $packageAmount * 0.13; // 13% za komisiju
+
+        // Dodavanje 87% na deposits prodavca
+        $project->seller->deposits += $amountToAdd;
+
+        // Spremanje promena na prodavcu
+        $project->seller->save();
+
+        // Dodavanje 13% u tabelu za komisije
+        Commission::create([
+            'project_id' => $project->id,
+            'seller_id' => $project->seller->id,
+            'buyer_id' => $project->buyer->id,
+            'amount' => $packageAmount, // Ukupan iznos projekta
+            'percentage' => 13, // Hardkodovani procenat provizije
+            'commission_amount' => $commissionAmount, // 13% od ukupnog iznosa
+            'seller_amount' => $amountToAdd // prodavceva zarada od projekta
+        ]);
+
+        // Ažuriranje statusa projekta na "completed"
+        $project->status = 'completed';
+
+        // Spremanje promena na projektu
+        $project->save();
+
+        return redirect()
+                  ->back()
+                  ->with('success', "Uspešno ste potvrdili da je projekat završen!")
+                  ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
+    }
+
     public function waitingConfirmation(Project $project)
     {
         $project->status = 'waiting_confirmation';
@@ -285,6 +381,16 @@ class ProjectController extends Controller
     {
         $project->status = 'uncompleted';
         $project->seller_uncomplete_decision = 'accepted';
+
+        // Konvertujemo naziv paketa u mala slova
+        $packageColumn = strtolower($project->package) . '_price';
+        $project->reserved_funds = $project->service->$packageColumn;
+        $project->buyer->deposits += $project->service->$packageColumn;
+
+        // Spremanje promena na korisniku
+        $project->buyer->save();
+
+        // Spremanje promena na projektu
         $project->save();
 
         return redirect()
@@ -296,11 +402,23 @@ class ProjectController extends Controller
     public function uncompleteConfirmationBuyer(Project $project)
     {
         $project->status = 'uncompleted';
+        $project->seller_uncomplete_decision = null; // Postavljanje na null
         $project->save();
 
         return redirect()
                     ->back()
                     ->with('success', "Vaša odluka je sačuvana da projekat nije završen!")
+                    ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
+    }
+
+    public function correctionConfirmationBuyer(Project $project)
+    {
+        $project->status = 'requires_corrections';
+        $project->save();
+
+        return redirect()
+                    ->back()
+                    ->with('success', "Vaša odluka je sačuvana da projektu treba korekcije!")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 

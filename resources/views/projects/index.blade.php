@@ -95,7 +95,11 @@
                                         @break
 
                                         @case('uncompleted')
-                                            <i class="fas fa-exclamation-triangle text-warning mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                            @if($project->seller_uncomplete_decision === 'accepted')
+                                                <i class="fas fa-reply text-danger mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                            @else
+                                                <i class="fas fa-exclamation-triangle text-warning mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                            @endif
                                         @break
                                     @endswitch
 
@@ -128,8 +132,7 @@
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-undo-alt  text-danger"></i>
-                    <strong> Potrebne su korekcije:</strong> Projekat je označen kao završen, ali vi zahtevate dodatne izmene ili korekcije pre finalnog kompletiranja.<br>
-                   <!--  <strong style="margin-left: 3%;">Detalji korekcije:</strong> Proverite uputstva i uputite izmene prema zahtevima kupca. -->
+                    <strong> Potrebne su korekcije:</strong> Projekat je označen kao završen, ali vi zahtevate dodatne izmene ili korekcije pre finalnog kompletiranja.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-times-circle text-danger"></i>
@@ -141,9 +144,11 @@
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
-                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.<br>
-                   <!--  <span style="margin-left: 3%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor. Naša podrška će doneti konačnu odluku.</span><br>
-                    <span style="margin-left: 3%;"><i class="fas fa-ban text-danger"></i> Obe strane su saglasne da projekat nije završen prema očekivanjima. Vama ide povrat sredstava, a projekat će biti zatvoren u statusu nekompletiran.</span> -->
+                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-reply text-danger"></i>
+                    <strong>Neuspešno završeno:</strong> Projekat nije uspešno završen, sredstva su vraćena vama.
                 </li>
             </ul>
         </div>

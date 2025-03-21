@@ -41,9 +41,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/projects/{project}/view', [ProjectController::class, 'view'])->name('projects.view');
     Route::get('/project-file/{file}', [ProjectController::class, 'downloadFile'])->name('project.file.download')->middleware('auth');
     Route::post('/projects/{project}/accept', [ProjectController::class, 'acceptOffer'])->name('projects.acceptoffer');
+    Route::post('/projects/{project}/reject', [ProjectController::class, 'rejectOffer'])->name('projects.rejectoffer');
     Route::post('/projects/{project}/waitingconfirmation', [ProjectController::class, 'waitingConfirmation'])->name('projects.waitingconfirmation');
     Route::post('/projects/{project}/confirmationuncompleteseller', [ProjectController::class, 'uncompleteConfirmationSeller'])->name('projects.confirmationuncompleteseller');
     Route::post('/projects/{project}/confirmationuncompletebuyer', [ProjectController::class, 'uncompleteConfirmationBuyer'])->name('projects.confirmationuncompletebuyer');
+    Route::post('/projects/{project}/confirmationcorrectionbuyer', [ProjectController::class, 'correctionConfirmationBuyer'])->name('projects.confirmationcorrectionbuyer');
     Route::post('/projects/{project}/confirmationdone', [ProjectController::class, 'doneConfirmation'])->name('projects.confirmationdone');
     Route::post('/projects/{project}/upload', [ProjectController::class, 'upload'])->name('projects.upload');
     Route::put('/projects/{project}/update-description', [ProjectController::class, 'updateDescription'])
