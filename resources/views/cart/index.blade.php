@@ -110,7 +110,7 @@
                                     </form>
                                 @else
                                     <!-- Ako korisnik nema dovoljno novca, prikazujemo dugme za deponovanje novca -->
-                                    <a href="{{ route('deposit.create') }}" data-bs-toggle="tooltip" title="Deponuj novac"> <button class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"><i class="fas fa-credit-card"></i></button>
+                                    <a href="{{ route('deposit.form') }}" data-bs-toggle="tooltip" title="Deponuj novac"> <button class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"><i class="fas fa-credit-card"></i></button>
                                     </a>
                                 @endif
                                 <form action="{{ route('cart.destroy', $cartItem) }}" method="POST">

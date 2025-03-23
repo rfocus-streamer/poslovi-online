@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->decimal('amount', 12, 2);
+            $table->string('currency')->default('USD');
+            $table->string('payment_method'); // paypal, stripe, wise
+            $table->string('transaction_id')->nullable();
+            $table->string('status')->default('pending');
+            $table->text('payload')->nullable(); // Raw response od payment gatewaya
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
