@@ -53,4 +53,8 @@ return [
             'log.LogLevel' => 'ERROR'
         ],
     ],
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'public' => env('STRIPE_KEY'),
+    ],
 ];

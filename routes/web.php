@@ -68,9 +68,10 @@ Route::middleware('auth')->group(function () {
         ->name('complaints.update');
 
     Route::get('/deposit', [DepositController::class, 'showDepositForm'])->name('deposit.form');
-    Route::post('/deposit/paypal/create', [DepositController::class, 'createPayPalPayment'])->name('deposit.paypal.create');
+    Route::post('/deposit/paypal/create', [DepositController::class, 'createPayment'])->name('deposit.create');
     Route::get('/deposit/paypal/success', [DepositController::class, 'payPalSuccess'])->name('deposit.paypal.success');
     Route::get('/deposit/paypal/cancel', [DepositController::class, 'payPalCancel'])->name('deposit.paypal.cancel');
+
 });
 
 // Social Login rute
