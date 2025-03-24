@@ -12,8 +12,8 @@ class ServiceSeeder extends Seeder
         $services = [
             [
                 'user_id' => 2, // Prodavac 1
-                'category_id' => 1, // Web Development
-                'subcategory_id' => 1, // HTML/CSS
+                'category_id' => 2, // PROGRAMIRANJE
+                'subcategory_id' => 1, // Izrada WordPress web-sajtova
                 'title' => 'Izrada WordPress sajta',
                 'description' => 'Profesionalni WordPress sajtovi po vašim željama.',
                 'basic_price' => 5000,
@@ -28,7 +28,7 @@ class ServiceSeeder extends Seeder
             ],
             [
                 'user_id' => 2, // Prodavac 1
-                'category_id' => 2, // Video Editing
+                'category_id' => 4, // FOTO I VIDEO
                 'subcategory_id' => 4, // Premiere Pro
                 'title' => 'Video montaža za YouTube',
                 'description' => 'Profesionalna montaža video sadržaja za YouTube kanale.',
@@ -44,8 +44,8 @@ class ServiceSeeder extends Seeder
             ],
             [
                 'user_id' => 3, // Prodavac 2
-                'category_id' => 3, // Graphic Design
-                'subcategory_id' => 7, // Logo Design
+                'category_id' => 1, // Graphic Design
+                'subcategory_id' => 1, // Logo Design
                 'title' => 'Dizajn logoa',
                 'description' => 'Kreiranje unikatnih logoa za vaš brend.',
                 'basic_price' => 3000,

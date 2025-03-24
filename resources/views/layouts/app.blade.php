@@ -81,11 +81,12 @@
 
                     @auth
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user"></i> Profile
+                            <a class="nav-link {{ request()->routeIs('deposit.form') ? 'active' : '' }}" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user {{ request()->routeIs('deposit.form', 'logout') ? 'text-danger' : '' }}"></i> Profil
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="#">Profil</a></li>
+                                <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -169,16 +170,14 @@
                 <div class="col-md-3 col-10 mb-4 text-center text-md-start">
                     <h5>Kontakt</h5>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-envelope me-2"></i>podrska@poslovionline.com</li>
-                        <li><i class="fas fa-phone me-2"></i>+381 11 123 456</li>
-                        <li><i class="fas fa-map-marker-alt me-2"></i>Beograd, Srbija</li>
+                        <li><a class="text-white" href="#"><i class="fas fa-envelope me-2"></i>Kontaktirajte nas</a></li>
                     </ul>
                 </div>
 
                 <!-- Socijalne mreže -->
                 <div class="col-md-3 col-10 mb-4 text-center">
                     <h5>Pratite nas</h5>
-                    <div class="social-links d-flex justify-content-center gap-3">
+                    <div class="social-links d-flex justify-content-center gap-3 mt-4">
                         <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
                         <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
                         <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>

@@ -8,8 +8,8 @@
 <!-- Hero sekcija sa pozadinom -->
 <div class="hero-section">
     <div class="hero-content text-center text-white">
-        <span class="hero-subtitle">Usluge po Vašoj meri uz</span>
-        <h1 class="hero-title">Poslovi<mark>online</mark></h1>
+        <span class="hero-subtitle">Tvoja online platforma za sigurno poslovanje</span>
+        <h1 class="hero-title mt-1">Poslovi<mark>online</mark></h1>
 
         <!-- Search bar -->
         <div class="search-container mt-4">
@@ -24,7 +24,7 @@
 
 <!-- Top usluge -->
 <div class="container mt-5">
-    <p class="xxs mt-5">Ne propustite!</p>
+    <p class="xxs mt-5">Najbolji prodavci, najtraženije usluge!</p>
     <h2 class="mb-4 top-usluge">Top ponude</h2>
     <div class="row" id="servicesContainer">
         @foreach($services as $service)

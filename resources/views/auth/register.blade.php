@@ -145,9 +145,6 @@
 
                     <!-- Rola -->
                     <div class="form-group mb-4">
-                        <label class="form-label">
-                            <i class="fas fa-user-tie me-1"></i> Uloga
-                        </label>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-check">

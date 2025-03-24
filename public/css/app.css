@@ -81,6 +81,10 @@ footer a:hover {
     margin-bottom: 8px;
 }
 
+ .navbar-expand-lg .navbar-collapse {
+    width: 90% !important;
+ }
+
 /* Stil za prilagođeno toggler dugme */
 /* Stil za mobilni prikaz kategorija */
 @media (max-width: 992px) {
