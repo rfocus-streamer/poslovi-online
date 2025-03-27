@@ -9,6 +9,7 @@ use App\Http\Controllers\DepositController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\AdditionalChargeController;
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\PackageController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -72,6 +73,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/deposit/paypal/success', [DepositController::class, 'payPalSuccess'])->name('deposit.paypal.success');
     Route::get('/deposit/paypal/cancel', [DepositController::class, 'payPalCancel'])->name('deposit.paypal.cancel');
 
+    Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
+    Route::patch('/package/{package}', [PackageController::class, 'activatePackage'])->name('package.activate');
+
 });
 
 // Social Login rute
@@ -85,6 +89,7 @@ Route::prefix('login')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.changePassword');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

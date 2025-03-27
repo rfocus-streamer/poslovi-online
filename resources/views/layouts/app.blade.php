@@ -85,8 +85,11 @@
                                 <i class="fas fa-user {{ request()->routeIs('deposit.form', 'logout') ? 'text-danger' : '' }}"></i> Profil
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="#">Profil</a></li>
+                                <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
                                 <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
+                                @if(Auth::user()->role == 'seller' || Auth::user()->role == 'both')
+                                    <li><a class="dropdown-item" href="{{ route('packages.index') }}">Paketi</a></li>
+                                @endif
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

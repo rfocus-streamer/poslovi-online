@@ -12,10 +12,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             CategorySeeder::class,
             ServiceSeeder::class,
-            SubscriptionSeeder::class,
+            //SubscriptionSeeder::class,
             AffiliateSeeder::class,
             ServiceImageSeeder::class, // Dodajte ovu liniju
             ReviewSeeder::class,
+            PackageSeeder::class,
         ]);
     }
 }

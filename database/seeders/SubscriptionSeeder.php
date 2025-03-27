@@ -12,7 +12,7 @@ class SubscriptionSeeder extends Seeder
         Subscription::create([
             'user_id' => 2, // Prodavac 1
             'package' => 'standard',
-            'allowed_services' => 5,
+            'amount' => 500,
             'expires_at' => now()->addMonth(),
         ]);
     }

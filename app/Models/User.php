@@ -23,7 +23,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'deposits'
+        'deposits',
+        'package_id',
+        'package_expires_at',
     ];
 
     /**
@@ -74,5 +76,10 @@ class User extends Authenticatable
     public function complaints()
     {
         return $this->hasMany(Complaint::class, 'user_id');
+    }
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
     }
 }

@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subscriptions', function (Blueprint $table) {
+        Schema::create('packages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->enum('package', ['basic', 'standard', 'premium']); // 1, 5, 10 usluga
-            $table->decimal('amount', 12, 2);
-            $table->date('expires_at');
+            $table->string('name');  // pun naziv (npr. "Premium")
+            $table->string('slug');  // skraćenica (npr. "premium")
+            $table->text('description')->nullable();  // opis
+            $table->decimal('price', 12, 2);
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscriptions');
+        Schema::dropIfExists('packages');
     }
 };

@@ -12,7 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('packages:check-expiry')
+             ->dailyAt('03:00') // Pokreće se svakog dana u 3:00 ujutru
+             ->onOneServer() // Važno ako koristite više servera
+             ->timezone('Europe/Belgrade'); // Postavite odgovarajuću vremensku zonu
     }
 
     /**
