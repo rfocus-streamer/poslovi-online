@@ -14,9 +14,9 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             //SubscriptionSeeder::class,
             AffiliateSeeder::class,
-            ServiceImageSeeder::class, // Dodajte ovu liniju
-            ReviewSeeder::class,
+            ServiceImageSeeder::class,
             PackageSeeder::class,
+            ReviewSeeder::class, //poslednji seeder zbog Class "Faker\Factory" not found
         ]);
     }
 }
