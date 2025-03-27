@@ -1,10 +1,21 @@
 @extends('layouts.app')
-
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
+<style>
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
 
-        <div class="col-md-6">
+    .blinking-alert {
+        animation: blink 1s infinite;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Glavni sadržaj -->
+        <div class="col-md-8">
             <!-- Prikaz poruka -->
             @if(session('success'))
                 <div id="deposit-message" class="alert alert-success text-center">
@@ -17,9 +28,9 @@
                     {{ session('error') }}
                 </div>
             @endif
-            <div class="card">
 
-                <div class="card-header text-center card-header bg-primary text-white"><i class="fas fa-credit-card"></i> Depozit novca na vašem balansu !</div>
+            <div class="card">
+                <div class="card-header text-center card-header text-white" style="background-color: #198754"><i class="fas fa-credit-card"></i> Depozit novca na tvom balansu !</div>
 
                 <div class="card-body">
                     <form id="depositForm" method="POST" action="{{ route('deposit.create') }}">
@@ -107,7 +118,7 @@
                         </div>
                         <!-- <button type="submit" class="btn btn-primary ms-3">Nastavi na plaćanje</button> -->
                         <div class="mt-4">
-                            <button type="submit" id="submit-button" class="btn btn-primary w-100">
+                            <button type="submit" id="submit-button" class="btn w-100" style="background-color: #198754">
                                 <span id="button-text">Plati</span>
                             </button>
                         </div>
@@ -115,6 +126,93 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="text-center mb-4">
+                            @if(Auth::user()->role === 'seller')
+                                <span class="badge bg-success px-3 py-2">Prodavac</span>
+                            @elseif(Auth::user()->role === 'buyer')
+                                <span class="badge bg-primary px-3 py-2">Kupac</span>
+                            @elseif(Auth::user()->role === 'both')
+                                <span class="badge bg-warning text-dark px-3 py-2">Prodavac & Kupac</span>
+                            @else
+                                <span class="badge bg-secondary px-3 py-2">Nepoznat</span>
+                            @endif
+                        </div>
+
+                        <h6 class="text-secondary">
+                            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} RSD</strong>
+                        </h6>
+
+                        @if( Auth::user()->role === 'seller' or  Auth::user()->role === 'both')
+                            @php
+                                $sellerLevels = [
+                                    0 => 'Novi prodavac',
+                                    1 => 'Novi prodavac',
+                                    2 => 'Level 1 prodavac',
+                                    3 => 'Level 2 prodavac',
+                                    4 => 'Top Rated prodavac',
+                                ];
+
+                                $sellerLevelName = $sellerLevels[Auth::user()->seller_level] ?? 'Nepoznat nivo';
+                            @endphp
+
+                            @if(Auth::user()->package)
+                                <div class="package">
+                                    <h6 class="text-secondary">
+                                        <i class="fas fa-calendar-alt text-secondary"></i> Mesečni plan:
+
+
+                                    @if(Auth::user()->package->slug === 'start')
+                                        <i class="fas fa-box text-primary"></i>
+                                    @elseif(Auth::user()->package->slug === 'pro')
+                                        <i class="fas fa-gift text-success"></i>
+                                    @elseif(Auth::user()->package->slug === 'premium')
+                                        <i class="fas fa-gem text-warning"></i>
+                                    @endif
+                                    <strong class="text-success">{{ Auth::user()->package->name }}</strong>
+                                    </h6>
+                                    <h6 class="text-secondary">
+                                       <i class="fas fa-file-text"></i> Plan opis: <strong class="text-success">{{ Auth::user()->package->description }}</strong>
+                                    </h6>
+                                    <h6 class="text-secondary">
+                                       <i class="fas fa-calendar-times"></i> Plan ističe: <strong class="text-success">{{ \Carbon\Carbon::parse(Auth::user()->package_expires_at)->format('d.m.Y H:i:s') }}</strong>
+                                    </h6>
+                                </div>
+                                <hr>
+                            @else
+                                <div class="alert alert-danger text-center">
+                                    <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemate aktivan paket!
+                                </div>
+
+                                <div class="text-warning mb-2">
+                                    <a href="{{ route('packages.index') }}" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> <i class="fas fa-calendar-alt"></i>
+                                    </a>
+                                    <p class="text-center text-secondary">Odaberite paket</p>
+                                </div>
+                            @endif
+
+
+                            <h6 class="text-secondary">
+                                <i class="fas fa-user"></i> Nivo prodavca: <strong class="text-success">{{ $sellerLevelName }}</strong>
+                            </h6>
+                            <h6 class="text-secondary">
+                                <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} RSD</strong>
+                            </h6>
+                        @endif
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--  Modal -->
+
+
     </div>
 </div>
 @endsection
