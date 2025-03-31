@@ -202,7 +202,7 @@ class ServiceController extends Controller
             'start_inclusions' => 'required|string',
             'standard_inclusions' => 'required|string',
             'premium_inclusions' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:5048'
         ]);
 
         $visible = $request->has('visible') ? 1 : 0;
@@ -393,7 +393,7 @@ class ServiceController extends Controller
             'start_inclusions' => 'required|string',
             'standard_inclusions' => 'required|string',
             'premium_inclusions' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:5048'
         ]);
 
         $visible = $request->has('visible') ? 1 : 0;
