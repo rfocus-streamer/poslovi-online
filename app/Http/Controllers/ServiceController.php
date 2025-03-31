@@ -425,29 +425,43 @@ class ServiceController extends Controller
                 $images = $request->file('serviceImages');
                 $images = array_slice($images, 0, $remainingSlots);
                 $uploadSuccess = true;
+                $errorMessage = '';
+
+                // Proveri i kreiraj direktorijum ako ne postoji
+                $directory = 'public/services';
+                if (!Storage::exists($directory)) {
+                    Storage::makeDirectory($directory, 0755, true);
+                }
 
                 foreach ($images as $image) {
                     $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
                     // Čuvanje slike u storage
-                    $image->storeAs('public/services', $filename);
+                    try {
+                        $image->storeAs($directory, $filename);
 
-                    // Provera da li je slika zaista sačuvana
-                    if (!Storage::exists('public/services/'.$filename)) {
+                        // Provera da li je slika zaista sačuvana
+                        if (!Storage::exists($directory.'/'.$filename)) {
+                            throw new \Exception("Slika nije sačuvana na disku");
+                        }
+
+                        // Čuvanje podataka u bazu
+                        $service->serviceImages()->create([
+                            'service_id' => $service->id,
+                            'image_path' => $filename
+                        ]);
+
+                    } catch (\Exception $e) {
                         $uploadSuccess = false;
-                        continue; // Možete i break ako želite da prekinete dalje uploadovanje
+                        $errorMessage = 'Došlo je do greške pri čuvanju slika: ' . $e->getMessage();
+                        \Log::error('Image upload failed: ' . $e->getMessage());
+                        break; // Prekidamo petlju pri prvoj grešci
                     }
-
-                    // Čuvanje podataka u bazu
-                    $service->serviceImages()->create([
-                        'service_id' => $service->id,
-                        'image_path' => $filename
-                    ]);
                 }
 
                 if (!$uploadSuccess) {
                     return redirect()->route('services.index', $service)
-                        ->with('error', 'Neke od slika nisu uspešno sačuvane. Proverite serverške permisije.');
+                        ->with('error', $errorMessage);
                 }
             } else {
                 return redirect()->route('services.index', $service)
