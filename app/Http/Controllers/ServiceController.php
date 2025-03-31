@@ -423,9 +423,8 @@ class ServiceController extends Controller
 
             if ($remainingSlots > 0) {
                 $images = $request->file('serviceImages');
-
-                // Ograničavamo broj slika na preostale slotove
                 $images = array_slice($images, 0, $remainingSlots);
+                $uploadSuccess = true;
 
                 foreach ($images as $image) {
                     $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
@@ -433,12 +432,26 @@ class ServiceController extends Controller
                     // Čuvanje slike u storage
                     $image->storeAs('public/services', $filename);
 
+                    // Provera da li je slika zaista sačuvana
+                    if (!Storage::exists('public/services/'.$filename)) {
+                        $uploadSuccess = false;
+                        continue; // Možete i break ako želite da prekinete dalje uploadovanje
+                    }
+
                     // Čuvanje podataka u bazu
                     $service->serviceImages()->create([
                         'service_id' => $service->id,
                         'image_path' => $filename
                     ]);
                 }
+
+                if (!$uploadSuccess) {
+                    return redirect()->route('services.index', $service)
+                        ->with('error', 'Neke od slika nisu uspešno sačuvane. Proverite serverške permisije.');
+                }
+            } else {
+                return redirect()->route('services.index', $service)
+                    ->with('error', 'Dostigli ste maksimalan broj slika (10) za ovaj servis.');
             }
         }
 
