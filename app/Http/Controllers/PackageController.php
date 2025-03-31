@@ -9,6 +9,7 @@ use App\Models\CartItem;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PackageController extends Controller
 {
@@ -41,8 +42,29 @@ class PackageController extends Controller
     public function activatePackage(Package $package)
     {
         $user = Auth::user();
+        $price = 0;
 
-        if($user->deposits < $package->price)
+        if($user->package){
+
+            // Datum isteka aktivnog paketa
+            $expiresAt = Carbon::parse($user->package_expires_at);
+            $today = Carbon::now();
+
+            // Broj preostalih dana
+            $daysRemaining = $today->diffInDays($expiresAt, false); // false da dobijemo i negativne vrednosti ako je isteklo
+
+            // Cena paketa
+            $monthly_price = $user->package->price; // Cena paketa u dinarima/eurima (prilagodite)
+
+            // Proporcionalni iznos preostale pretplate
+            $daily_price = $monthly_price / 30; // Pretpostavljamo 30 dana u mesecu
+            $remaining_amount = max(0, $daysRemaining * $daily_price); // Ako je isteklo, vraća 0
+            $price = ($package->price - number_format($remaining_amount, 2, '.', ''));
+        }else{
+            $price = $package->price;
+        }
+
+        if($user->deposits < $price)
         {
             return redirect()->route('deposit.form')->with('error', 'Nema dovoljno sredstava na računu, deponuj !');
         }
@@ -50,14 +72,14 @@ class PackageController extends Controller
         // Dodela paketa korisniku
         $user->package_id = $package->id; // Start paket
         $user->package_expires_at = now()->addMonth();
-        $user->deposits -= $package->price;
+        $user->deposits -= $price;
         $user->save();
 
         // Sada kreiramo podatke o uplatama paketa
         $subscription = Subscription::create([
                 'user_id' => Auth::id(),
                 'package' => $package->id,
-                'amount' => $package->price,
+                'amount' => $price,
                 'expires_at' => now()->addMonth()
         ]);
 

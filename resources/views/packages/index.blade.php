@@ -59,14 +59,29 @@
                                         <h6 class="card-title text-center package-category"><i class="{{ $key == 0 ? 'fas fa-box text-primary' : ($key == 1 ? 'fas fa-gift text-success' : 'fas fa-gem text-warning') }}"></i> {{$package->name}}</h6>
                                         <div class="text-center mb-5">
                                             <p>{{$package->description}}</p>
-                                            <p><strong>Cena: </strong>{{$package->price}} RSD</p>
+                                            <p><strong>Cena: </strong>{{$package->price}} <i class="fas fa-euro-sign"></i></p>
                                         </div>
 
                                         @if(Auth::user()->deposits >= $package->price)
-                                            <!-- Submit Button -->
-                                            <button type="submit" class="btn text-white w-100" style="background-color: #198754">
-                                                <i class="fa fa-check-circle me-1"></i> Aktiviraj
-                                            </button>
+                                            @if(Auth::user()->package)
+                                                @if(Auth::user()->package->price < $package->price)
+                                                    <!-- Submit Button -->
+                                                    <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                        <i class="fa fa-check-circle me-1"></i> Aktiviraj
+                                                    </button>
+                                                @endif
+
+                                                @if(Auth::user()->package->id === $package->id)
+                                                   <button type="button" class="btn text-white w-100 btn-secondary">
+                                                        <i class="fa fa-check-circle me-1"></i> Aktiviran
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <!-- Submit Button -->
+                                                <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                    <i class="fa fa-check-circle me-1"></i> Aktiviraj
+                                                </button>
+                                            @endif
                                         @else
                                             <a href="{{ route('deposit.form') }}" class="btn btn-warning ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Deponuj novac"> <i class="fas fa-credit-card"></i> Deponuj novac
                                             </a>
@@ -103,7 +118,6 @@
                                 <h6 class="text-secondary">
                                         <i class="fas fa-calendar-alt text-secondary"></i> Mesečni plan:
 
-
                                     @if(Auth::user()->package->slug === 'start')
                                         <i class="fas fa-box text-primary"></i>
                                     @elseif(Auth::user()->package->slug === 'pro')
@@ -137,12 +151,12 @@
                             <i class="fas fa-user"></i> Nivo prodavca: <strong class="text-success">{{ $sellerLevelName }}</strong>
                         </h6>
                         <h6 class="text-secondary">
-                            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} RSD</strong>
+                            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} <i class="fas fa-euro-sign"></i></strong>
                         </h6>
 
 
                         <h6 class="text-secondary">
-                            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} RSD</strong>
+                            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
                         </h6>
 
                         <div class="text-warning mb-2">
@@ -154,8 +168,17 @@
                     </div>
                 </div>
             </div>
-        </div>
 
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <p><i class="fas fa-info-circle"></i> Promena mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!--  Modal -->
 
 

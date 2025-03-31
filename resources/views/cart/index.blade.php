@@ -21,7 +21,7 @@
 
         <!-- Balans korisnika desno -->
         <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} RSD</strong>
+            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
          <!-- pretraga omiljenih ponuda desno -->
         <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25">
@@ -38,7 +38,7 @@
                     <th>Usluga</th>
                     <th>Paket</th>
                     <th style="width: 18% !important;">Količina</th>
-                    <th>Cena RSD</th>
+                    <th>Cena <i class="fas fa-euro-sign"></i></th>
                     <th>Ukupno</th>
                     <th>Ažuriraj</th>
                     <th class="text-center">Akcije</th>
@@ -89,7 +89,7 @@
                                 @elseif($cartItem->package == 'Premium')
                                     <span>{{ number_format($cartItem->service->premium_price, 2) }}</span>
                                 @else
-                                    <span>N/A RSD</span> <!-- Ako paket nije definisan ili je neka druga vrednost -->
+                                    <span>N/A <i class="fas fa-euro-sign"></i></span> <!-- Ako paket nije definisan ili je neka druga vrednost -->
                                 @endif
                         </td>
                         <td>

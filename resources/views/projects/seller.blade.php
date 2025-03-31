@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h4><i class="fas fa-handshake"></i> Vaši poslovi</h4>
         <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} RSD</strong>
+            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
     </div>
 

@@ -40,6 +40,9 @@ return new class extends Migration
             $table->integer('premium_delivery_days');
             $table->text('premium_inclusions');
 
+            $table->boolean('visible')->nullable();
+            $table->timestamp('visible_expires_at')->nullable();
+
             $table->timestamps();
         });
     }

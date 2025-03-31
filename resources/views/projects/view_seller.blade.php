@@ -238,7 +238,7 @@
                     <ul class="list-unstyled">
                         <li><i class="fas fa-calendar-alt text-info"></i> <strong>Datum početka:</strong> {{ $project->start_date ?? 'N/A' }}</li>
                         <li><i class="fas fa-calendar-check text-success"></i> <strong>Datum završetka:</strong> {{ $project->end_date ?? 'N/A' }}</li>
-                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} RSD</li>
+                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} <i class="fas fa-euro-sign"></i></li>
                     </ul>
                 </div>
             </div>
@@ -275,7 +275,7 @@
                             @foreach($project->additionalCharges as $charge)
                                 <li class="mb-1 card">
                                     <div class="ml-2">
-                                        <strong>Iznos:</strong> {{ number_format($charge->amount, 2) }} RSD<br>
+                                        <strong>Iznos:</strong> {{ number_format($charge->amount, 2) }} <i class="fas fa-euro-sign"></i><br>
                                         @if($charge->status == 'waiting_confirmation')
                                             <strong>Status: </strong> <i class="fas fa-hourglass-half text-warning"></i> Čeka se odobrenje kupca za naplatu<br>
                                         @elseif($charge->status == 'rejected')
@@ -467,7 +467,7 @@
                     <form action="{{ route('additional_charges.store', $project) }}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label for="amount" class="form-label">Iznos u RSD:</label>
+                            <label for="amount" class="form-label">Iznos u <i class="fas fa-euro-sign"></i>:</label>
                             <input type="number" step="0.01" name="amount" id="amount" class="form-control" value="0.00" required>
                         </div>
                         <div class="mb-3">

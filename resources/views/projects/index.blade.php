@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h4><i class="fas fa-project-diagram"></i> Vaši projekti</h4>
         <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva: <strong class="text-success">{{ number_format($reserved_amount, 2) }} RSD</strong>
+            <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva: <strong class="text-success">{{ number_format($reserved_amount, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
     </div>
 

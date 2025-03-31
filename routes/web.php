@@ -26,6 +26,14 @@ Route::get('/ponuda/{id}', [ServiceController::class, 'show'])->name('services.s
 
 // Rute za logovane korisnike
 Route::middleware('auth')->group(function () {
+    Route::get('/services', [ServiceController::class, 'sellerServices'])->name('services.index');
+    Route::get('/services/{service}', [ServiceController::class, 'viewServices'])->name('services.view');
+    Route::put('/services/{service}', [ServiceController::class, 'update'])->name('services.update');
+    Route::get('/service/new', [ServiceController::class, 'create'])->name('services.create');
+    Route::post('/service/new', [ServiceController::class, 'store'])->name('services.store');
+    Route::delete('/service/image/{image}', [ServiceController::class, 'deleteServiceImage'])->name('services.image.delete');
+    Route::delete('/service/{service}', [ServiceController::class, 'destroy'])->name('services.delete');
+
     Route::get('/favorites/search', [FavoriteController::class, 'search'])->name('favorites.search');
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{service}', [FavoriteController::class, 'store'])->name('favorites.store');

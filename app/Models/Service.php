@@ -8,6 +8,24 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     protected $with = ['category', 'subcategory', 'user'];
+    protected $fillable = [
+        'user_id',
+        'category_id',
+        'subcategory_id',
+        'title',
+        'description',
+        'basic_price',
+        'basic_delivery_days',
+        'basic_inclusions',
+        'standard_price',
+        'standard_delivery_days',
+        'standard_inclusions',
+        'premium_price',
+        'premium_delivery_days',
+        'premium_inclusions',
+        'visible',
+        'visible_expires_at'
+    ];
     use HasFactory;
 
     public function category()

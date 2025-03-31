@@ -1,5 +1,6 @@
 @extends('layouts.app')
 <link href="{{ asset('css/show.css') }}" rel="stylesheet">
+<link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <title>Poslovi Online | {{ $title }}</title>
 @section('content')
 <div class="container py-5">
@@ -8,6 +9,61 @@
         <div class="col-md-8">
             <!-- Naslov i osnovne informacije -->
             <h1 class="mb-4">{{ $service->title }}</h1>
+            <div class="col-12 text-end">
+                <span class="fw-bold">Podeli na:</span>
+
+                <!-- Facebook -->
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
+                   target="_blank"
+                   class="btn btn-outline-primary btn-sm rounded-circle"
+                   title="Podeli na Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+
+                <!-- Twitter (X) -->
+                <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($title ?? 'Pogledajte ovo') }}"
+                   target="_blank"
+                   class="btn btn-outline-info btn-sm rounded-circle"
+                   title="Podeli na Twitter (X)">
+                    <i class="fab fa-twitter"></i>
+                </a>
+
+                <!-- LinkedIn -->
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(url()->current()) }}"
+                   target="_blank"
+                   class="btn btn-outline-primary btn-sm rounded-circle"
+                   title="Podeli na LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+
+                <!-- WhatsApp -->
+                <a href="https://wa.me/?text={{ urlencode(($title ?? 'Pogledajte ovo') . ' ' . url()->current()) }}"
+                   target="_blank"
+                   class="btn btn-outline-success btn-sm rounded-circle"
+                   title="Podeli na WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+
+                <!-- Copy Link -->
+                <button onclick="copyLink()"
+                        class="btn btn-outline-secondary btn-sm rounded-circle"
+                        title="Kopiraj link">
+                    <i class="fas fa-link"></i>
+                </button>
+            </div>
+
+            <!-- Bootstrap Toast Obaveštenje -->
+            <div class="toast-container position-fixed top-0 end-0 p-3">
+                <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ✅ Link je uspešno kopiran!
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+
             <div class="d-flex align-items-center mb-4">
                 <span class="badge bg-primary me-2">{{ $service->category->name }}</span>
                 @if($service->subcategory)
@@ -30,7 +86,6 @@
                     @endif
                 </div>
                 @endauth
-
             </div>
 
             <!-- Slike usluge -->
@@ -39,7 +94,7 @@
                     @foreach($service->serviceImages as $image)
                         <div class="col-md-4 mb-3">
                             <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ $loop->index }}">
-                                <img src="{{ asset('service/images/' . $image->image_path) }}"
+                                <img src="{{ asset('storage/services/' . $image->image_path) }}"
                                      class="img-fluid rounded service-image"
                                      alt="Slika usluge">
                             </a>
@@ -54,7 +109,7 @@
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-body text-center">
-                            <img src="{{ asset('service/images/' . $image->image_path) }}"
+                            <img src="{{ asset('storage/services/' . $image->image_path) }}"
                                  class="img-fluid"
                                  alt="Slika usluge">
                         </div>
@@ -83,7 +138,7 @@
                         <div class="col-md-4 text-center">
                             <div class="text-warning mb-2">
                                 @for ($j = 1; $j <= 5; $j++)
-                                    @if ($j <= rand(3, 5)) <!-- Nasumična ocena između 3 i 5 -->
+                                    @if ($j <= $service->average_rating)
                                         <i class="fas fa-star"></i>
                                     @else
                                         <i class="far fa-star"></i>
@@ -91,7 +146,7 @@
                                 @endfor
                             </div>
                             <p>
-                                <p>({{ count($service->reviews) }} ocena)</p>
+                                <p>{{ $service->average_rating }}/5 ( od {{count($service->reviews) }} recenzija)</p>
                             </p>
                         </div>
 
@@ -155,7 +210,7 @@
                                         {{ Str::limit($service->basic_inclusions, 15) }}
                                         <i class="fa fa-info-circle ml-2 text-primary mt-1" data-toggle="modal" data-target="#basicInclusionsModal" style="cursor: pointer;"></i>
                                     </p>
-                                    <p><strong ><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->basic_price, 0, ',', '.') }} RSD</p>
+                                    <p><strong ><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->basic_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->basic_delivery_days }} dana</p>
 
                                     @auth
@@ -186,7 +241,7 @@
                                         {{ Str::limit($service->standard_inclusions, 15) }}
                                         <i class="fa fa-info-circle ml-2 text-primary mt-1" data-toggle="modal" data-target="#standardInclusionsModal" style="cursor: pointer;"></i>
                                     </p>
-                                    <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->standard_price, 0, ',', '.') }} RSD</p>
+                                    <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->standard_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->standard_delivery_days }} dana</p>
 
                                     @auth
@@ -217,7 +272,7 @@
                                         {{ Str::limit($service->premium_inclusions, 15) }}
                                         <i class="fa fa-info-circle ml-2 mt-1 text-primary" data-toggle="modal" data-target="#premiumInclusionsModal" style="cursor: pointer;"></i>
                                     </p>
-                                    <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->premium_price, 0, ',', '.') }} RSD</p>
+                                    <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->premium_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->premium_delivery_days }} dana</p>
                                     @auth
                                         @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Premium'))
@@ -487,5 +542,16 @@ function nextImage(currentIndex) {
         nextModal.show();
     }
 }
+</script>
+
+<script>
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+            let copyToast = new bootstrap.Toast(document.getElementById('copyToast'));
+            copyToast.show();
+        }, function(err) {
+            console.error("Greška pri kopiranju: ", err);
+        });
+    }
 </script>
 @endsection

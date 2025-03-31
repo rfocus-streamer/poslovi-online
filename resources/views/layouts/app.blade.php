@@ -64,7 +64,7 @@
                         @endif
                         @if(Auth::user()->role == 'seller' || Auth::user()->role == 'both')
                             <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-file-signature {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Ponude</a>
+                                <a class="nav-link {{ request()->routeIs('services.index', 'services.view') ? 'active' : '' }}" href="{{ route('services.index') }}"><i class="fas fa-file-signature {{ request()->routeIs('services.index', 'services.view') ? 'text-danger' : '' }}"></i> Ponude</a>
                             </li>
 
                             <li class="nav-item">
@@ -76,6 +76,11 @@
                                 </a>
                             </li>
 
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('packages.index') ? 'active' : '' }}" href="{{ route('packages.index') }}">
+                                    <i class="fas fa-calendar-alt {{ request()->routeIs('packages.index') ? 'text-danger' : '' }}"></i> Plan
+                                </a>
+                            </li>
                         @endif
                     @endauth
 
@@ -87,9 +92,6 @@
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
                                 <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
-                                @if(Auth::user()->role == 'seller' || Auth::user()->role == 'both')
-                                    <li><a class="dropdown-item" href="{{ route('packages.index') }}">Paketi</a></li>
-                                @endif
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

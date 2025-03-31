@@ -33,7 +33,7 @@ class ProjectController extends Controller
         $cartCount = 0;
         $projectCount = 0;
 
-        if ($user->role == 'buyer') {
+        if ($user->role == 'buyer' or $user->role == 'both') {
             $projects = Project::where('buyer_id', $user->id)->with('service')->get();
         } elseif ($user->role == 'seller') {
             $projects = Project::where('seller_id', $user->id)->with('service')->get();

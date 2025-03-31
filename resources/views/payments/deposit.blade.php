@@ -44,8 +44,6 @@
                         <div class="mb-3">
                             <label for="currency" class="form-label">Valuta</label>
                             <select class="form-select" id="currency" name="currency">
-                                <option value="RSD">RSD</option>
-                                <option value="USD">USD</option>
                                 <option value="EUR">EUR</option>
                             </select>
                         </div>
@@ -144,7 +142,7 @@
                         </div>
 
                         <h6 class="text-secondary">
-                            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} RSD</strong>
+                            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
                         </h6>
 
                         @if( Auth::user()->role === 'seller' or  Auth::user()->role === 'both')
@@ -200,7 +198,7 @@
                                 <i class="fas fa-user"></i> Nivo prodavca: <strong class="text-success">{{ $sellerLevelName }}</strong>
                             </h6>
                             <h6 class="text-secondary">
-                                <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} RSD</strong>
+                                <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} <i class="fas fa-euro-sign"></i></strong>
                             </h6>
                         @endif
 

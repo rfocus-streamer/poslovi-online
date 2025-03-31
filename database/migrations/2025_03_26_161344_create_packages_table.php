@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug');  // skraćenica (npr. "premium")
             $table->text('description')->nullable();  // opis
             $table->decimal('price', 12, 2);
+            $table->integer('quantity')->default(1); // Količina (podrazumevano 1)
             $table->timestamps();
         });
     }
