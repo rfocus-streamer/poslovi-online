@@ -232,6 +232,15 @@ class ServiceController extends Controller
             if ($request->hasFile('serviceImages')) {
                 $remainingSlots = 10 - $service->serviceImages()->count();
 
+                $maxSize = ini_get('upload_max_filesize');
+
+                foreach ($request->file('serviceImages') as $image) {
+                    if ($image->getSize() > $this->convertToBytes($maxSize)) {
+                        return back()->with('error', "Slika {$image->getClientOriginalName()} premašuje maksimalnu dozvoljenu veličinu od {$maxSize}");
+                    }
+                }
+
+
                 if ($remainingSlots > 0) {
                     $images = $request->file('serviceImages');
 
@@ -496,5 +505,19 @@ class ServiceController extends Controller
         return redirect()
                 ->back()
                 ->with('success', "Uspešno ste uklonili ponudu");
+    }
+
+    // Helper metoda za konverziju (npr. 20M u bajte)
+    private function convertToBytes($size)
+    {
+        $unit = strtoupper(substr($size, -1));
+        $value = (int)substr($size, 0, -1);
+
+        switch ($unit) {
+            case 'G': return $value * 1024 * 1024 * 1024;
+            case 'M': return $value * 1024 * 1024;
+            case 'K': return $value * 1024;
+            default: return $value;
+        }
     }
 }
