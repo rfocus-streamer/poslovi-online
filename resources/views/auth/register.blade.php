@@ -40,6 +40,9 @@
                 <form method="POST" action="{{ route('register') }}" onsubmit="return validatePasswords()">
                     @csrf
 
+                    <!-- Dodajte ovo na početak forme -->
+                    <input type="hidden" name="affiliateCode" value="{{ request('affiliateCode') }}">
+
                     <!-- Ime i Prezime -->
                     <div class="row mb-1">
                         <div class="col-md-6">

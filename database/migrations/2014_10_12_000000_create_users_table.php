@@ -19,13 +19,19 @@ return new class extends Migration
             $table->string('phone')->nullable(); // Omogućite NULL vrednosti
             $table->string('payment_method')->nullable(); // PayPal, bankovni račun...
             $table->decimal('deposits', 10, 2)->default(0.00); // Maksimalno 10 cifara, 2 decimalna mesta
-            $table->enum('role', ['buyer', 'seller', 'both', 'admin'])->default('buyer');
+            $table->enum('role', ['buyer', 'seller', 'both', 'support', 'admin'])->default('buyer');
             $table->string('avatar')->nullable();
             $table->integer('stars')->default(0); // 0 = Novi, 1 = Level 1...
             $table->boolean('is_verified')->default(false);
             $table->integer('seller_level')->default(0); // 0 = Novi, 1 = Level 1...
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // Affiliate polja
+            $table->string('affiliate_code')->unique()->nullable();
+            $table->foreignId('referred_by')->nullable()->constrained('users');
+            $table->decimal('affiliate_balance', 10, 2)->default(0.00);
+
             $table->rememberToken();
             $table->timestamps();
         });

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('project_id'); // Relacija ka projektu
             $table->unsignedBigInteger('user_id'); // Relacija ka prodavcu
+            $table->unsignedBigInteger('service_id')->nullable(); // Relacija ka servisu (opciono)
             $table->text('message'); // Tekst prigovora
             $table->string('attachment')->nullable(); // Prilog (opciono)
             $table->timestamps();
@@ -22,6 +23,7 @@ return new class extends Migration
             // Strani ključevi
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('service_id')->references('id')->on('services')->onDelete('cascade');
         });
     }
 

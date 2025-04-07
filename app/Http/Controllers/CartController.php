@@ -57,8 +57,8 @@ class CartController extends Controller
 
         return redirect()
                 ->back()
-                ->with('success', "Uspešno ste dodali u korpu $package paket")
-                ->withFragment('cart-message'); // Skrolujte do elementa sa ID "cart-message"
+                ->with('success', "Uspešno si dodao u korpu $package paket, nastavi kupovinu unutar same korpe !");
+                //->withFragment('cart-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
      // Ažuriraj količinu u korpi

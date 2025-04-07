@@ -11,9 +11,12 @@
         <a href="{{ route('services.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Nazad</a>
     </div>
 
-    <form action="{{ route('services.update', $service) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('services.update', $service) }}" method="POST" enctype="multipart/form-data" id="serviceForm">
         @csrf
         @method('PUT')
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="alert alert-danger text-center" style="display: none;"></div>
 
         <div class="row">
             <!-- Glavni sadržaj -->
@@ -123,9 +126,19 @@
 
         <!-- Upload slika -->
         <div class="mb-3">
-            <label class="form-label">Dodaj slike (maks. {{ (10 - $service->serviceImages->count()) }})</label>
+            <label class="form-label">Dodaj slike (maks. <span class="remaining-slots">{{ 10 - $service->serviceImages->count() }}</span>)</label>
             <input type="file" name="serviceImages[]" class="form-control" multiple accept="image/*">
-            <small class="text-muted">Možeš dodati još {{ (10 - $service->serviceImages->count()) }} slika.</small>
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">* Možeš dodati još <span class="remaining-slots">{{ 10 - $service->serviceImages->count() }}</span> slika.</small>
+                <small class="text-muted">* Dozvoljena maksimalna veličina slike 2MB</small>
+            </div>
+        </div>
+
+        <!-- Progress Bar Container -->
+        <div class="upload-progress" id="upload-progress" style="display: none; margin: 20px 0; position: relative; height: 30px; border-radius: 5px; background-color: #f0f0f0;">
+            <div class="progress-bar" style="width: 0%; height: 100%; background-color: #4CAF50; transition: width 0.3s ease; border-radius: 5px; position: relative;">
+                <div class="progress-text" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">0%</div>
+            </div>
         </div>
 
        <!-- Prikaz trenutnih slika -->
@@ -144,7 +157,7 @@
             </div>
         @endif
 
-        <button type="submit" class="btn btn-success w-100" style="background-color: #198754">Sačuvaj promene</button>
+        <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Sačuvaj promene</button>
     </form>
 
     <!-- Modal za potvrdu brisanja -->
@@ -177,14 +190,154 @@
                             <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body" id="notificationMessage">
+                <div class="modal-body text-center" id="notificationMessage">
                     <!-- Poruka će biti dinamički postavljena ovde -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" aria-label="Zatvori"><i class="fas fa-check-circle"></i> U redu</button>
                 </div>
             </div>
         </div>
     </div>
 
 </div>
+<script>
+document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.querySelector('.progress-text');
+    const progressContainer = document.querySelector('.upload-progress');
+    const statusMessage = document.getElementById('statusMessage');
+
+    // Prikaži progress bar
+    progressContainer.style.display = 'block';
+    submitBtn.disabled = true;
+    statusMessage.style.display = 'none';
+
+    try {
+        const formData = new FormData(form);
+
+        // Provera broja slika pre slanja
+        const files = formData.getAll('serviceImages[]');
+        if (files.length > 10) {
+            showError('Možete uploadovati najviše 10 slika odjednom.');
+            return;
+        }
+
+        // Računanje ukupne veličine za progress
+        let totalSize = 0;
+        for (const [name, value] of formData.entries()) {
+            if (name === 'serviceImages[]' && value instanceof File) {
+                totalSize += value.size;
+            }
+        }
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            if (response.status === 422) {
+                showError('Jedna ili više slika premašuje maksimalnu dozvoljenu veličinu od 2MB');
+                return;
+            }
+            throw new Error(errorData.message || 'Došlo je do greške');
+        }
+
+        const reader = response.body.getReader();
+        let received = 0;
+        let chunks = [];
+
+        while(true) {
+            const {done, value} = await reader.read();
+
+            if(done) {
+                break;
+            }
+
+            chunks.push(value);
+            received += value.length;
+
+            // Update progress bara
+            const progress = Math.round((received / totalSize) * 100);
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${progress}%`;
+        }
+
+        // Finalni rezultat
+        const body = new Uint8Array(received);
+        let position = 0;
+        for(const chunk of chunks) {
+            body.set(chunk, position);
+            position += chunk.length;
+        }
+
+        const result = new TextDecoder("utf-8").decode(body);
+        const jsonResponse = JSON.parse(result);
+
+        if(jsonResponse.redirect) {
+            window.location.href = jsonResponse.redirect;
+        } else if(jsonResponse.error) {
+            showError(jsonResponse.error);
+        }
+
+    } catch (error) {
+        showError('Došlo je do greške prilikom upload-a');
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
+
+function showError(message) {
+    const statusMessage = document.getElementById('statusMessage');
+    statusMessage.style.display = 'block';
+    statusMessage.textContent = message;
+      // Dodajemo klasu za tranziciju
+    statusMessage.classList.remove('hide');
+
+     // Skrol do "upload-progress"
+    document.getElementById('statusMessage')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('upload-progress').style.display = 'none';
+
+    const messageElementDanger = document.getElementById('statusMessage');
+    if (messageElementDanger) {
+        // Dodajemo klasu za tranziciju
+        messageElementDanger.classList.add('fade-out');
+
+        // Sakrijemo poruku nakon 5 sekundi
+        setTimeout(() => {
+            messageElementDanger.classList.add('hide');
+        }, 5000); // Poruka će početi da nestaje nakon 5s
+    }
+    // Resetujemo file input
+    resetFileInput();
+}
+
+function resetFileInput() {
+    const fileInput = document.querySelector('input[name="serviceImages[]"]');
+    if(fileInput) {
+        // Kreirajemo novi input element da bismo resetovali stanje
+        const newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.name = 'serviceImages[]';
+        newInput.multiple = true;
+        newInput.accept = 'image/*';
+        newInput.className = fileInput.className;
+
+        // Zameni stari input sa novim
+        fileInput.parentNode.replaceChild(newInput, fileInput);
+    }
+}
+</script>
+
 <script>
     // Podaci o kategorijama i podkategorijama
     const categories = @json($categories); // Laravel JSON encoding kategorija sa podkategorijama
@@ -219,25 +372,18 @@
 
 document.querySelectorAll('.delete-image').forEach(button => {
     button.addEventListener('click', function () {
-        const imageId = this.getAttribute('data-image-id'); // ID slike koju treba obrisati
-        const imageElement = document.getElementById('image-' + imageId); // Element slike na stranici
-
-        // Generisanje URL-a za brisanje slike
-        const deleteImageUrl = "{{ route('services.image.delete', ':imageId') }}";
-        // Zamenjujemo placeholder ":imageId" sa stvarnim ID-jem
-        const url = deleteImageUrl.replace(':imageId', imageId);
-
-        // Otvorite modal za potvrdu
+        const imageId = this.getAttribute('data-image-id');
+        const imageElement = document.getElementById('image-' + imageId);
+        const deleteImageUrl = "{{ route('services.image.delete', ':imageId') }}".replace(':imageId', imageId);
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
         deleteModal.show();
 
-        // Kada korisnik potvrdi brisanje
         document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-            // Slanje DELETE zahteva putem AJAX-a
-            fetch(url, {
+            fetch(deleteImageUrl, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 }
             })
             .then(response => response.json())
@@ -245,33 +391,38 @@ document.querySelectorAll('.delete-image').forEach(button => {
                 const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
 
                 if (data.success) {
-                    // Ako je uspešno obrisana, ukloni sliku sa stranice
                     imageElement.remove();
 
-                    // Prikazivanje uspešne poruke u modalnom oknu
-                    document.getElementById('notificationMessage').innerHTML = '<i class="fas fa-check-circle text-success"></i> Slika je uspešno obrisana.';
+                    // Ažuriranje preostalih slotova
+                    const currentImages = document.querySelectorAll('[id^="image-"]').length;
+                    const remainingSlots = 10 - currentImages;
+
+                    document.querySelectorAll('.remaining-slots').forEach(element => {
+                        element.textContent = remainingSlots;
+                    });
+
+                    const fileInput = document.querySelector('input[name="serviceImages[]"]');
+                    fileInput.disabled = remainingSlots <= 0;
+                    fileInput.parentNode.querySelector('label').style.opacity = remainingSlots <= 0 ? 0.5 : 1;
+
+                    document.getElementById('notificationMessage').innerHTML =
+                        '<i class="fas fa-check-circle text-success"></i> Slika je uspešno obrisana.';
                     notificationModal.show();
                     deleteModal.hide();
-
-                    // Reload stranice nakon uspešnog brisanja
-                    setTimeout(function() {
-                        location.reload();
-                    }, 2500); // Reload nakon 2.5 sekunde
                 } else {
-                    // Ako dođe do greške, prikaži grešku u modalnom oknu
-                    document.getElementById('notificationMessage').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Došlo je do greške pri brisanju slike.';
+                    document.getElementById('notificationMessage').innerHTML =
+                        '<i class="fas fa-exclamation-triangle text-danger"></i> ' + data.message;
                     notificationModal.show();
                 }
             })
             .catch(error => {
                 console.error('Greška:', error);
-
-                // Ako se desi greška pri slanju zahteva
                 const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-                document.getElementById('notificationMessage').innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Došlo je do greške.';
+                document.getElementById('notificationMessage').innerHTML =
+                    '<i class="fas fa-exclamation-triangle text-danger"></i> Došlo je do greške.';
                 notificationModal.show();
             });
-        });
+        }, {once: true});
     });
 });
 

@@ -95,7 +95,7 @@
                         <!-- Email -->
                         <div class="form-group mb-1">
                             <label for="email" class="form-label"><i class="fas fa-envelope me-1"></i>Email</label>
-                            <input type="email" id="email" name="email" class="form-control" value="{{ Auth::user()->email }}" required>
+                            <input type="email" id="email" name="email" class="form-control" value="{{ Auth::user()->email }}" disabled="">
                         </div>
 
                         <!-- Telefon -->
@@ -148,6 +148,7 @@
                             @else
                                 <span class="badge bg-secondary px-3 py-2">Nepoznat</span>
                             @endif
+
                         </div>
 
                         @if( Auth::user()->role === 'seller' or  Auth::user()->role === 'both')
@@ -188,13 +189,13 @@
                                 <hr>
                             @else
                                 <div class="alert alert-danger text-center">
-                                    <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemate aktivan paket!
+                                    <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemaš aktivan paket!
                                 </div>
 
                                 <div class="text-warning mb-2">
                                     <a href="{{ route('packages.index') }}" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> <i class="fas fa-calendar-alt"></i>
                                     </a>
-                                    <p class="text-center text-secondary">Odaberite paket</p>
+                                    <p class="text-center text-secondary">Odaberi paket</p>
                                 </div>
                             @endif
 
@@ -207,16 +208,51 @@
                             </h6>
                         @endif
 
+                        <h6 class="text-secondary">
+                            <i class="fas fa-users"></i> Tvoj affiliate kod: <strong class="text-success">{{ Auth::user()->affiliate_code }} </strong>
+                            <input type="hidden" class="form-control" id="affiliateLinkInput"
+                               value="{{ url('/register') }}?affiliateCode={{ Auth::user()->affiliate_code }}"
+                               readonly>
+                        </h6>
+
+                        <h6 class="text-secondary">
+                            <i class="fas fa-money-bill-wave"></i> Tvoja affiliate zarada: <strong class="text-success">{{ number_format(Auth::user()->affiliate_balance, 2) }} <i class="fas fa-euro-sign"></i></strong>
+                        </h6>
+
+                        <div class="text-warning mb-1 modal-header">
+                            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#affiliatePayoutModal">
+                                <i class="fas fa-money-bill-wave me-1"></i> Povuci affiliate novac
+                            </button>
+                        </div>
+
+                        <div class="text-warning mb-3 modal-header">
+                            <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#affiliateStatsModal">
+                                <i class="fas fa-chart-line me-1"></i> Pregled affiliate statistike
+                            </button>
+                        </div>
+
+                        <div class="text-warning text-center">
+                            <a onclick="copyLink()" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Kopiraj link"> <i class="fas fa-link"></i>
+                            </a>
+                            <small class="text-secondary">Preporuči nas i zaradi — podeli svoj affiliate link!</small>
+                            <p class="modal-header"></p>
+                        </div>
+
 
                         <h6 class="text-secondary">
                             <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
                         </h6>
 
-                        <div class="text-warning mb-2">
-                            <a href="{{ route('deposit.form') }}" class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"> <i class="fas fa-credit-card"></i>
-                            </a>
-                            <p class="text-center text-secondary">Deponuj novac</p>
-                        </div>
+                        @if(Auth::user()->role === 'seller' or Auth::user()->role === 'both')
+                            <div class="text-warning mb-2">
+                                <button type="button" class="btn btn-info w-100 mb-2" data-bs-toggle="modal" data-bs-target="#fiatPayoutModal">
+                                    <i class="fas fa-money-bill-wave me-1"></i> Povuci novac
+                                </button>
+                                <a href="{{ route('deposit.form') }}" class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"> <i class="fas fa-credit-card"></i>
+                                </a>
+                                <p class="text-center text-secondary">Deponuj novac</p>
+                            </div>
+                        @endif
 
                         <div class="text-warning mb-4 text-center">
                             @for ($j = 1; $j <= 5; $j++)
@@ -227,7 +263,7 @@
                                 @endif
                             @endfor
                             <br>
-                            <span class="text-dark"> Vaša ukupna ocena: {{ Auth::user()->stars }}</span>
+                            <span class="text-secondary"> Tvoja ukupna ocena: {{ Auth::user()->stars }}</span>
                         </div>
 
                         <div class="text-warning mb-2 text-center">
@@ -273,6 +309,243 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Affiliate Stats Modal -->
+        <div class="modal fade" id="affiliateStatsModal" tabindex="-1" aria-labelledby="affiliateStatsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="w-100 text-center">
+                            <h5 class="modal-title" id="affiliateStatsModalLabel">
+                                <i class="fas fa-users"></i> Tvoji affiliate korisnici
+                            </h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-subtitle mb-2 text-muted">Ukupno referala</h6>
+                                        <h3 class="card-title">{{ Auth::user()->referrals->count() }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-subtitle mb-2 text-muted">Ukupna zarada</h6>
+                                        <h3 class="card-title">{{ number_format(Auth::user()->commissionsEarned->sum('amount'), 2) }}€</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-subtitle mb-2 text-muted">Aktivnih paketa</h6>
+                                        <h3 class="card-title">{{ Auth::user()->referrals->filter(function($user) { return $user->package; })->count() }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Korisnik</th>
+                                        <th>Registrovan</th>
+                                        <th>Paket</th>
+                                        <th>Cena</th>
+                                        <th>Zarada</th>
+                                        <th>Aktiviran</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse(Auth::user()->referrals as $referral)
+
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ $referral->avatar ? asset('storage/user/'.$referral->avatar) : asset('images/default-avatar.jpg') }}"
+                                                     class="rounded-circle me-2" width="30" height="30">
+                                                {{ $referral->firstname }} {{ $referral->lastname }}
+                                            </div>
+                                        </td>
+                                        <td>{{ $referral->created_at->format('d.m.Y.') }}</td>
+                                        <td>
+                                            @if($referral->package)
+                                                {{ $referral->package->name }}
+                                            @else
+                                               -
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($referral->package)
+                                                {{ number_format($referral->package->price, 2) }}€
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                        <td class="text-success fw-bold">
+                                            @php
+                                                $commission = $referral->referralCommissions->sum('amount');
+                                            @endphp
+                                            {{ $commission ? number_format($commission, 2).'€' : '-' }}
+                                        </td>
+                                        <td>
+                                            <span class="badge {{ $referral->package ? 'bg-success' : 'bg-secondary' }}">
+                                                {{ $referral->referralCommissions->isNotEmpty() ? $referral->referralCommissions->first()->created_at->format('d.m.Y H:i') : 'Neaktivan' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center">Nema registrovanih korisnika</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payout Affiliate Modal -->
+        <div class="modal fade" id="affiliatePayoutModal" tabindex="-1" aria-labelledby="affiliatePayoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header text-center">
+                        <h5 class="modal-title" id="affiliatePayoutModalLabel">
+                            <i class="fas fa-money-bill-wave"></i> Zahtev za affiliate isplatu
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="payoutForm" method="POST" action="{{ route('affiliate.payout') }}">
+                            @csrf
+
+                            <div class="d-flex mb-3">
+                                <h6 class="form-label">
+                                    Dostupno za isplatu: <strong class="text-success">{{ number_format(Auth::user()->affiliate_balance, 2) }} €</strong>
+                                </h6>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="payoutAmount" class="form-label">Iznos za isplatu (€)</label>
+                                <input type="number" step="1" min="100" max="1000"
+                                       class="form-control" id="payoutAmount" name="amount" required
+                                       placeholder="Minimalno 100€">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Način isplate</label>
+                                <select class="form-select" id="paymentMethod" name="payment_method" required>
+                                    <option value="">Izaberite način isplate</option>
+                                    <option value="paypal">PayPal</option>
+                                   <!--  <option value="bank">Bankovni transfer</option>
+                                    <option value="crypto">Kriptovaluta</option> -->
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="paypalEmailField" style="display: none;">
+                                <label for="paypalEmail" class="form-label">PayPal email</label>
+                                <input type="email" class="form-control" id="paypalEmail" name="paypal_email">
+                            </div>
+
+                            <div class="mb-3" id="bankDetailsField" style="display: none;">
+                                <label for="bankAccount" class="form-label">Broj bankovnog računa</label>
+                                <input type="text" class="form-control" id="bankAccount" name="bank_account">
+                            </div>
+
+                            <div id="payoutError" class="alert alert-danger d-none"></div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-2"></i>Pošalji zahtev
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <!-- Payout Fiat Modal -->
+        <div class="modal fade" id="fiatPayoutModal" tabindex="-1" aria-labelledby="fiatPayoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header text-center">
+                        <h5 class="modal-title" id="fiatPayoutModalLabel">
+                            <i class="fas fa-money-bill-wave"></i> Zahtev za isplatu
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="payoutForm" method="POST" action="{{ route('affiliate.payout') }}">
+                            @csrf
+
+                            <div class="d-flex mb-3">
+                                <h6 class="form-label">
+                                    Dostupno za isplatu: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} €</strong>
+                                </h6>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="payoutAmount" class="form-label">Iznos za isplatu (€)</label>
+                                <input type="number" step="1" min="100" max="1000"
+                                       class="form-control" id="payoutAmount" name="amount" required
+                                       placeholder="Minimalno 100€">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Način isplate</label>
+                                <select class="form-select" id="paymentMethod" name="payment_method" required>
+                                    <option value="">Izaberite način isplate</option>
+                                    <option value="paypal">PayPal</option>
+                                   <!--  <option value="bank">Bankovni transfer</option>
+                                    <option value="crypto">Kriptovaluta</option> -->
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="paypalEmailField" style="display: none;">
+                                <label for="paypalEmail" class="form-label">PayPal email</label>
+                                <input type="email" class="form-control" id="paypalEmail" name="paypal_email">
+                            </div>
+
+                            <div class="mb-3" id="bankDetailsField" style="display: none;">
+                                <label for="bankAccount" class="form-label">Broj bankovnog računa</label>
+                                <input type="text" class="form-control" id="bankAccount" name="bank_account">
+                            </div>
+
+                            <div id="payoutError" class="alert alert-danger d-none"></div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-2"></i>Pošalji zahtev
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap Toast Obaveštenje -->
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                         ✅ Link je uspešno kopiran!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             </div>
         </div>
@@ -326,4 +599,15 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+<script>
+    function copyLink() {
+        const affiliateLink = document.getElementById('affiliateLinkInput');
+        navigator.clipboard.writeText(affiliateLink.value).then(function() {
+            let copyToast = new bootstrap.Toast(document.getElementById('copyToast'));
+            copyToast.show();
+        }, function(err) {
+            console.error("Greška pri kopiranju: ", err);
+        });
+    }
+</script>
 @endsection

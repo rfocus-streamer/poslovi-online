@@ -19,14 +19,14 @@
     @endif
 
     <div class="d-flex justify-content-between align-items-center">
-        <h4><i class="fas fa-handshake"></i> Vaši poslovi</h4>
+        <h4><i class="fas fa-handshake"></i> Tvoji poslovi</h4>
         <h6 class="text-secondary">
             <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
     </div>
 
-    @if($projects->isEmpty())
-        <p>Nemate aktivnih poslova.</p>
+    @if(empty($projects))
+        <p>Nemaš aktivnih poslova.</p>
     @else
         <table class="table">
             <thead>
@@ -38,7 +38,7 @@
                     <th>Paket</th>
                     <th>Početak</th>
                     <th>Završetak</th>
-                    <th>Rez. sredstva</th>
+                    <th>Rezervisano <i class="fas fa-euro-sign"></i></th>
                     <th class="text-center">Status/Akcije</th>
                 </tr>
             </thead>
@@ -67,7 +67,7 @@
                         <td class="text-center">{{$project->package}}</td>
                         <td>{{ $project->start_date ? $project->start_date : 'N/A' }}</td>
                         <td>{{ $project->end_date ? $project->end_date : 'N/A' }}</td>
-                        <td>{{ number_format($project->reserved_funds, 2) }}</td>
+                        <td class="text-center">{{ number_format($project->reserved_funds, 2) }}</td>
                         <td>
                             @if(Auth::user()->role == 'seller')
                                 <div class="d-flex gap-2 justify-content-center">
@@ -93,10 +93,22 @@
                                         @break
 
                                         @case('uncompleted')
-                                            @if($project->seller_uncomplete_decision === 'accepted')
-                                                <i class="fas fa-reply text-danger mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                            @if($project->admin_decision === 'rejected')
+                                                <i class="fas fa-balance-scale text-danger mt-2"></i>
+                                                <i class="fas fa-times-circle text-danger mt-2"></i>
+                                            @elseif($project->admin_decision === 'accepted')
+                                                <i class="fas fa-balance-scale text-danger mt-2"></i>
+                                                <i class="fas fa-check-circle text-success mt-2"></i>
+                                            @elseif($project->admin_decision === 'partially')
+                                                <i class="fas fa-balance-scale text-danger mt-2"></i>
+                                                <i class="fas fa-adjust text-warning mt-2"></i>
+                                            @elseif($project->admin_decision === null and $project->seller_uncomplete_decision === 'accepted')
+                                                <i class="fas fa-exclamation-triangle text-warning mt-2"></i>
+                                                <i class="fas fa-check-circle text-success mt-2"></i>
+                                            @elseif($project->admin_decision === null and $project->seller_uncomplete_decision === 'arbitration')
+                                                <i class="fas fa-balance-scale text-danger mt-2"></i>
                                             @else
-                                                <i class="fas fa-exclamation-triangle text-warning mt-2" title="Projekat nije kompletiran" style="font-size: 1.1em;"></i>
+                                                <i class="fas fa-exclamation-triangle text-warning mt-2"></i>
                                             @endif
                                         @break
                                     @endswitch
@@ -122,15 +134,15 @@
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-times-circle text-danger"></i>
-                    <strong>Odbijeno:</strong> Odbili ste projekat, rezervisana sredstva se refundiranju kupcu.
+                    <strong>Odbijeno:</strong> Odbio si projekat, rezervisana sredstva se refundiranju kupcu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-tasks text-primary"></i>
-                    <strong>U toku:</strong> Prihvatili ste projekat i radite na njemu.
+                    <strong>U toku:</strong> Prihvatio si projekat i radiš na njemu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-user-check text-primary"></i>
-                    <strong>Zahtev za odobrenje:</strong> Završili ste projekat, čeka se potvrda kupca.
+                    <strong>Zahtev za odobrenje:</strong> Završio si projekat, čeka se potvrda kupca.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-undo-alt  text-danger"></i>
@@ -138,15 +150,21 @@
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-check-circle text-success"></i>
-                    <strong>Završeno:</strong> Projekat je uspešno završen, sredstva su prebačena vama.
+                    <strong>Završeno:</strong> Projekat je uspešno završen, sredstva su prebačena na tvoj račun.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
-                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.
+                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.<br>
+                    <span style="margin-left: 3%;"><i class="fas fa-check-circle text-success"></i> Saglasan si da je projekat "nekompletiran", sredstva su refundirana kupcu</span>
                 </li>
                 <li class="mb-2">
-                    <i class="fas fa-reply text-danger"></i>
-                    <strong>Neuspešno završeno:</strong> Projekat nije uspešno završen, sredstva su vraćena kupcu.
+                    <i class="fas fa-balance-scale text-danger"></i>
+                    <strong>Arbitražni postupak:</strong> Podrška odlučuje o pokrenutom sporu<br>
+                    <span style="margin-left: 3%;"><i class="fas fa-check-circle text-success"></i> <strong>Potpuno završen:</strong> <i>Rezervisana sredstva su prebačena na tvoj račun<i></span><br>
+                    <span style="margin-left: 3%;">
+                        <i class="fas fa-adjust text-warning"></i> <strong>Delimično završen:</strong> <i>Rezervisana sredstva su podeljena između tvog i kupčevog računa a po visini procene podrške</i>
+                    </span><br>
+                    <span style="margin-left: 3%;"><i class="fas fa-times-circle text-danger"></i> <strong>Nekompletiran projekat:</strong> <i>Rezervisana sredstva su refundirana na račun kupca</i></span>
                 </li>
             </ul>
         </div>

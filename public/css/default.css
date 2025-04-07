@@ -119,3 +119,267 @@
 .twitter { background-color: #1da1f2; }
 .linkedin { background-color: #0077b5; }
 .whatsapp { background-color: #25d366; }
+
+.fade-out {
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+}
+
+.fade-out.hide {
+    opacity: 0;
+}
+
+/*Paginacija stilizacija*/
+/* Sakrij default Laravel paginaciju */
+nav .flex.justify-between.flex-1.sm\:hidden {
+    display: none;
+}
+
+.pagination-buttons nav, section {
+  display: block;
+  text-align: center;
+}
+
+/* Stilizacija paginacionih dugmadi */
+.pagination-buttons .relative {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem; /* Bootstrap btn-sm font-size */
+    padding: 1px;
+    height: 30px; /* Približna visina Bootstrap btn-sm */
+    border: none; /* Uklanja default border */
+    text-decoration: none;
+    transition: background 0.2s ease-in-out;
+}
+
+.pagination-buttons .relative:hover {
+    /*background-color: #7a131f !important;*/
+}
+
+.pagination-buttons .relative a
+{
+    background-color: #7a131f !important;
+    color: white;
+}
+
+/* Stilizacija neaktivnih dugmadi */
+.pagination-buttons .relative span {
+    border-radius: 0.5rem;
+    background-color: silver;
+}
+
+/* Stilizacija prethodne i sledeće stranice */
+.pagination-buttons .relative a[rel="prev"],
+.pagination-buttons .relative a[rel="next"] {
+    background-color: #198754 !important;
+    color: white;
+    height: 30px;
+}
+
+/* Hover efekat */
+.pagination-buttons .relative a[rel="prev"]:hover,
+.pagination-buttons .relative a[rel="next"]:hover {
+    background-color: #146c43 !important;
+}
+
+/* Sakrij onemogućene dugmadi */
+span[aria-disabled="true"] {
+    display: none;
+}
+
+/* Ikonica za sledeću stranicu */
+a[rel="next"]::after {
+    font-family: "Font Awesome 5 Free";
+    content: "\f105"; /* fa-chevron-right */
+    font-weight: 900;
+    margin-left: 10px;
+    padding-right: 10px;
+}
+
+/* Ikonica za prethodnu stranicu */
+a[rel="prev"]::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f104"; /* fa-chevron-left */
+    font-weight: 900;
+    margin-right: 10px;
+    padding-left: 10px;
+}
+/*Paginacija stilizacija*/
+
+.upload-progress {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* Stilovi za slike */
+.service-image {
+    width: 100%;
+    height: 200px !important; /* Fiksna visina */
+    object-fit: cover; /* Obezbeđuje da slika popuni prostor */
+    transition: transform 0.3s ease;
+}
+
+.service-image:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+/* Stilovi za modal */
+.modal-content {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-body img {
+    max-height: 80vh; /* Ograničava visinu slike u modalu */
+    width: auto;
+    margin: 0 auto;
+}
+
+/* Stilovi za prodavca */
+.card-title {
+    color: #9c1c2c;
+}
+
+.btn-primary {
+    background-color: #9c1c2c;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #7a1623;
+}
+
+.modal-footer{
+    justify-content: center !important;
+}
+
+/* Stilovi za informacije ispod opisa */
+.card-body .row > div {
+    border-right: 1px solid #eee;
+}
+
+.card-body .row > div:last-child {
+    border-right: none;
+}
+
+/* Stilovi za pakete */
+.card.h-100 {
+    transition: transform 0.3s ease;
+}
+
+.card.h-100:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    background-color: #9c1c2c;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #7a1623;
+}
+
+/* Stil za dugme */
+.btn-service-choose {
+    background: linear-gradient(45deg, #9c1c2c, #c82333);
+    color: white !important;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-service-choose:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(156,28,44,0.3);
+    color: white;
+}
+
+.service-package{
+    border-bottom: 2px solid green;
+    padding-bottom: 10px;
+    margin: 20px auto;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #9c1c2c !important;
+    font-size: 30px;
+}
+
+.choos-label {
+    text-align: center;
+    color: rgba(44, 132, 20, 0.9);
+    font-size: 13px;
+    margin-bottom: -30px;
+}
+
+.upload-progress {
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px; /* Da bi tekst bio vidljiv i za 0% */
+}
+
+.progress-text {
+    font-size: 14px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.error-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+}
+.error-list li {
+    color: #dc3545;
+    font-size: 0.9em;
+    padding: 2px 0;
+}
+
+.disabled-upload {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating-input input {
+    display: none;
+}
+
+.rating-input label {
+    position: relative;
+    width: 1.1em;
+    font-size: 1.3rem;
+    color: #FFD700;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.rating-input label:hover,
+.rating-input label:hover ~ label,
+.rating-input input:checked ~ label {
+    color: #ffb900;
+}
+
+.rating-input label i {
+    transition: all 0.2s ease;
+}

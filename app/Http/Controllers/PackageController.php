@@ -6,9 +6,13 @@ use App\Models\Package;
 use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\CartItem;
+use App\Models\User;
+use App\Models\Affiliate;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PackageController extends Controller
@@ -67,6 +71,37 @@ class PackageController extends Controller
         if($user->deposits < $price)
         {
             return redirect()->route('deposit.form')->with('error', 'Nema dovoljno sredstava na računu, deponuj !');
+        }
+
+        if (!$user->package && $user->referred_by) {
+            try {
+                DB::transaction(function () use ($user, $price, $package) {
+                    $affiliate = User::where('id', $user->referred_by)->lockForUpdate()->first();
+
+                    if ($affiliate) {
+                        $commission = $price * 0.7;
+
+                        // Zaokruži na 2 decimale
+                        $commission = round($commission, 2);
+
+                        // Ažuriraj deposits
+                        $affiliate->increment('affiliate_balance', $commission);
+
+                        // Kreiraj istoriju transakcije
+                        Affiliate::create([
+                            'affiliate_id' => $affiliate->id,
+                            'referral_id' => $user->id, // promenjeno
+                            'package_id' => $package->id,
+                            'amount' => $commission,
+                            'percentage' => 70,
+                            'status' => 'completed'
+                        ]);
+                    }
+                });
+            } catch (\Exception $e) {
+                Log::error('Affiliate commission error: ' . $e->getMessage());
+                // Možete dodati notifikaciju adminima o grešci
+            }
         }
 
         // Dodela paketa korisniku

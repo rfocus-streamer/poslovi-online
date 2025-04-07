@@ -187,6 +187,12 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
+        // Povećanje limita za upload
+        ini_set('upload_max_filesize', '20M');
+        ini_set('post_max_size', '20M');
+        ini_set('max_execution_time', '300');
+        ini_set('max_input_time', '300');
+
         // Validacija podataka
         $validated = $request->validate([
             'category' => 'required|exists:categories,id',
@@ -202,7 +208,7 @@ class ServiceController extends Controller
             'start_inclusions' => 'required|string',
             'standard_inclusions' => 'required|string',
             'premium_inclusions' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:5048'
+            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $visible = $request->has('visible') ? 1 : 0;
@@ -232,35 +238,78 @@ class ServiceController extends Controller
             if ($request->hasFile('serviceImages')) {
                 $remainingSlots = 10 - $service->serviceImages()->count();
 
-                $maxSize = ini_get('upload_max_filesize');
-
-                foreach ($request->file('serviceImages') as $image) {
-                    if ($image->getSize() > $this->convertToBytes($maxSize)) {
-                        return back()->with('error', "Slika {$image->getClientOriginalName()} premašuje maksimalnu dozvoljenu veličinu od {$maxSize}");
-                    }
+                if ($request->ajax() and $remainingSlots === 0) {
+                    return response()->json([
+                        'error' => 'Dostigli ste maksimalan broj slika (10) za ovaj servis !'
+                    ]);
                 }
 
+                $maxSize = ini_get('upload_max_filesize');
 
                 if ($remainingSlots > 0) {
                     $images = $request->file('serviceImages');
-
-                    // Ograničavamo broj slika na preostale slotove
                     $images = array_slice($images, 0, $remainingSlots);
+                    $uploadSuccess = true;
+                    $errorMessage = '';
+
+                    // Proveri i kreiraj direktorijum ako ne postoji
+                    $directory = 'public/services';
+                    if (!Storage::exists($directory)) {
+                        Storage::makeDirectory($directory, 0755, true);
+                    }
 
                     foreach ($images as $image) {
+                        // Provera veličine slike
+                        if ($image->getSize() > 2 * 1024 * 1024) { // 2MB u bajtovima
+                            continue; // Preskoči sliku koja prelazi limit
+                        }
+
                         $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
                         // Čuvanje slike u storage
-                        $image->storeAs('public/services', $filename);
+                        try {
+                            $image->storeAs($directory, $filename);
 
-                        // Čuvanje podataka u bazu
-                        $service->serviceImages()->create([
-                            'service_id' => $service->id,
-                            'image_path' => $filename
-                        ]);
+                            // Provera da li je slika zaista sačuvana
+                            if (!Storage::exists($directory.'/'.$filename)) {
+                                throw new \Exception("Slika nije sačuvana na disku");
+                            }
+
+                            // Čuvanje podataka u bazu
+                            $service->serviceImages()->create([
+                                'service_id' => $service->id,
+                                'image_path' => $filename
+                            ]);
+
+                        } catch (\Exception $e) {
+                            $uploadSuccess = false;
+                            $errorMessage = 'Došlo je do greške pri čuvanju slika: ' . $e->getMessage();
+                            \Log::error('Image upload failed: ' . $e->getMessage());
+                            break; // Prekidamo petlju pri prvoj grešci
+                        }
                     }
+
+                    if (!$uploadSuccess) {
+                        return redirect()->route('services.index', $service)
+                            ->with('error', $errorMessage);
+                    }
+                } else {
+                    return redirect()->route('services.index', $service)
+                        ->with('error', 'Dostigli ste maksimalan broj slika (10) za ovaj servis.');
                 }
             }
+
+            // Umesto redirect-a vraćamo JSON odgovor
+            if ($request->ajax()) {
+                $successMessage = 'Ponuda '.$validated['title'].' je uspešno dodata.';
+                // Postavljanje flash poruke u sesiju
+                $request->session()->flash('success', $successMessage);
+
+                return response()->json([
+                    'redirect' => route('services.index', $service)
+                ]);
+            }
+
 
             return redirect()->route('services.index', $service)
                 ->with('success', 'Ponuda je uspešno dodata.');
@@ -387,6 +436,12 @@ class ServiceController extends Controller
      */
     public function update(Service $service, Request $request)
     {
+        // Povećanje limita za upload
+        ini_set('upload_max_filesize', '20M');
+        ini_set('post_max_size', '20M');
+        ini_set('max_execution_time', '300');
+        ini_set('max_input_time', '300');
+
         // Validacija podataka
         $validated = $request->validate([
             'category' => 'required|exists:categories,id',
@@ -402,7 +457,7 @@ class ServiceController extends Controller
             'start_inclusions' => 'required|string',
             'standard_inclusions' => 'required|string',
             'premium_inclusions' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:5048'
+            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $visible = $request->has('visible') ? 1 : 0;
@@ -430,6 +485,14 @@ class ServiceController extends Controller
         if ($request->hasFile('serviceImages')) {
             $remainingSlots = 10 - $service->serviceImages()->count();
 
+            if ($request->ajax() and $remainingSlots === 0) {
+                return response()->json([
+                    'error' => 'Dostigli ste maksimalan broj slika (10) za ovaj servis !'
+                ]);
+            }
+
+            $maxSize = ini_get('upload_max_filesize');
+
             if ($remainingSlots > 0) {
                 $images = $request->file('serviceImages');
                 $images = array_slice($images, 0, $remainingSlots);
@@ -443,6 +506,11 @@ class ServiceController extends Controller
                 }
 
                 foreach ($images as $image) {
+                    // Provera veličine slike
+                    if ($image->getSize() > 2 * 1024 * 1024) { // 2MB u bajtovima
+                        continue; // Preskoči sliku koja prelazi limit
+                    }
+
                     $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
                     // Čuvanje slike u storage
@@ -476,6 +544,17 @@ class ServiceController extends Controller
                 return redirect()->route('services.index', $service)
                     ->with('error', 'Dostigli ste maksimalan broj slika (10) za ovaj servis.');
             }
+        }
+
+        // Umesto redirect-a vraćamo JSON odgovor
+        if ($request->ajax()) {
+            $successMessage = 'Ponuda '.$validated['title'].' je uspešno ažurirana.';
+            // Postavljanje flash poruke u sesiju
+            $request->session()->flash('success', $successMessage);
+
+            return response()->json([
+                'redirect' => route('services.index', $service)
+            ]);
         }
 
         return redirect()->route('services.index', $service)

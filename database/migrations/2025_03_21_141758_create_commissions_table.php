@@ -14,12 +14,15 @@ return new class extends Migration
         Schema::create('commissions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('project_id');
+            $table->string('project_number')->unique(); // Jedinstveni broj projekta
             $table->unsignedBigInteger('seller_id');
             $table->unsignedBigInteger('buyer_id');
             $table->decimal('amount', 12, 2); // Ukupna vrednost projekta
-            $table->decimal('percentage', 5, 2); // Procent provizije
-            $table->decimal('commission_amount', 12, 2); // amount * percentage
+            $table->decimal('seller_percentage', 5, 2); // Procent provizije za prodavca
+            $table->decimal('buyer_percentage', 5, 2); // Procent provizije za kupca
+            $table->decimal('commission_amount', 12, 2); // amount * percentage (zbirno za prodavca i kupca )
             $table->decimal('seller_amount', 12, 2); // prodavceva zarada od projekta
+            $table->decimal('buyer_amount', 12, 2); // prodavceva zarada od projekta
             $table->timestamps();
 
             // Strani ključevi

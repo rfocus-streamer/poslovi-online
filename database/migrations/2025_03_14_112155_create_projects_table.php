@@ -32,7 +32,7 @@ return new class extends Migration
             $table->decimal('reserved_funds', 10, 2)->default(0.00);
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->enum('admin_decision', ['accepted', 'rejected'])->nullable(); // Status prigovora (odluka podrške)
+            $table->enum('admin_decision', ['accepted', 'rejected', 'partially'])->nullable(); // Status prigovora (odluka podrške)
             $table->enum('admin_decision_reply', ['enabled', 'disabled'])->nullable(); // status odgovora
             $table->enum('seller_uncomplete_decision', ['accepted', 'arbitration'])->nullable(); // Status prigovora (odluka podrške)
             $table->timestamps();

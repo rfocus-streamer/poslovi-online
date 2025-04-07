@@ -11,12 +11,15 @@ class Commission extends Model
     // app/Models/Commission.php
     protected $fillable = [
         'project_id',
+        'project_number',
         'seller_id',
         'buyer_id',
         'amount',
-        'percentage',
+        'seller_percentage',
+        'buyer_percentage',
         'commission_amount',
-        'seller_amount'
+        'seller_amount',
+        'buyer_amount'
     ];
 
     public function project() {

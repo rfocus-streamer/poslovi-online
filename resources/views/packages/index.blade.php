@@ -67,19 +67,19 @@
                                                 @if(Auth::user()->package->price < $package->price)
                                                     <!-- Submit Button -->
                                                     <button type="submit" class="btn text-white w-100" style="background-color: #198754">
-                                                        <i class="fa fa-check-circle me-1"></i> Aktiviraj
+                                                        <i class="fa fas fa-shopping-cart me-1"></i> Kupi
                                                     </button>
                                                 @endif
 
                                                 @if(Auth::user()->package->id === $package->id)
                                                    <button type="button" class="btn text-white w-100 btn-secondary">
-                                                        <i class="fa fa-check-circle me-1"></i> Aktiviran
+                                                        <i class="fa fa-check-circle me-1"></i> Kupljen
                                                     </button>
                                                 @endif
                                             @else
                                                 <!-- Submit Button -->
                                                 <button type="submit" class="btn text-white w-100" style="background-color: #198754">
-                                                    <i class="fa fa-check-circle me-1"></i> Aktiviraj
+                                                    <i class="fa fas fa-shopping-cart me-1"></i> Kupi
                                                 </button>
                                             @endif
                                         @else
@@ -91,7 +91,7 @@
                             </div>
                         </div>
                     @endforeach
-
+                    <small><i class="fas fa-info-circle"></i> Promena mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
                     </div>
                 </div>
             </div>
@@ -138,11 +138,11 @@
                             </div>
                         @else
                             <div class="alert alert-danger text-center">
-                                <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemate aktivan paket!
+                                <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemaš aktivan paket!
                                 </div>
 
                                 <div class="text-warning mb-2">
-                                    <p class="text-center text-secondary">Odaberite paket</p>
+                                    <p class="text-center text-secondary">Odaberi paket</p>
                                 </div>
                         @endif
 
@@ -169,15 +169,6 @@
                 </div>
             </div>
 
-            <div class="col-md-8">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <p><i class="fas fa-info-circle"></i> Promena mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         <!--  Modal -->
 

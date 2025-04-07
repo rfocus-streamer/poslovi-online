@@ -14,6 +14,47 @@ use Illuminate\Support\Facades\Storage;
 class ComplaintController extends Controller
 {
     /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
+
+        $query = Project::with(['complaints', 'seller', 'service']);
+
+        // Primena uslova samo ako nije pretraga
+        if (!$request->has('search') || empty($request->search)) {
+            $query->where('seller_uncomplete_decision', 'arbitration');
+        }
+
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereHas('service', function($serviceQuery) use ($searchTerm) {
+                    $serviceQuery->where('title', 'like', "%$searchTerm%");
+                })
+                ->orWhereHas('seller', function($sellerQuery) use ($searchTerm) {
+                    $sellerQuery->where('firstname', 'like', "%$searchTerm%")
+                               ->orWhere('lastname', 'like', "%$searchTerm%");
+                })
+                ->orWhereHas('complaints', function($complaintQuery) use ($searchTerm) {
+                    $complaintQuery->where('description', 'like', "%$searchTerm%");
+                });
+            });
+        }
+
+        $complaints = $query->paginate(25);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('complaints.support', compact('categories', 'complaints'))->render()
+            ]);
+        }
+
+        return view('complaints.support', compact('categories', 'complaints'));
+    }
+
+    /**
      * Prikaz forme za podnošenje prigovora.
      */
     public function create(Project $project)
@@ -25,9 +66,12 @@ class ComplaintController extends Controller
         $favoriteCount = 0;
         $cartCount = 0;
 
-        // Provera da li je korisnik prodavac i da li je status projekta 'uncompleted'
-        if (auth()->id() !== $project->seller_id || $project->status !== 'uncompleted') {
-            abort(403, 'Nemate pravo da podnesete prigovor.');
+        if($user->role !== 'support')
+        {
+            // Provera da li je korisnik prodavac i da li je status projekta 'uncompleted'
+            if (auth()->id() !== $project->seller_id || $project->status !== 'uncompleted') {
+                abort(403, 'Nemate pravo da podnesete prigovor.');
+            }
         }
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
@@ -43,9 +87,13 @@ class ComplaintController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        // Provera da li je korisnik prodavac i da li je status projekta 'uncompleted'
-        if (auth()->id() !== $project->seller_id || $project->status !== 'uncompleted') {
-            abort(403, 'Nemate pravo da podnesete prigovor.');
+        $user = Auth::user();
+        if($user->role !== 'support')
+        {
+            // Provera da li je korisnik prodavac i da li je status projekta 'uncompleted'
+            if (auth()->id() !== $project->seller_id || $project->status !== 'uncompleted') {
+                abort(403, 'Nemate pravo da podnesete prigovor.');
+            }
         }
 
         // Validacija unosa
@@ -56,7 +104,8 @@ class ComplaintController extends Controller
 
         // Čuvanje prigovora
         $complaint = new Complaint([
-            'message' => $request->input('message')
+            'message' => $request->input('message'),
+            'service_id' => $project->service->id
         ]);
 
         // Čuvanje priloga (ako postoji)
@@ -65,19 +114,28 @@ class ComplaintController extends Controller
             $complaint->attachment = $path;
         }
 
-        $countReply = Complaint::where('user_id', Auth::id())->count();
-
         // Poveži prigovor sa projektom i prodavcem
         $complaint->project()->associate($project);
         $complaint->participant()->associate(auth()->user());
+        $complaint->service()->associate($project->service);
         $complaint->save();
+
+        $countReply = Complaint::where('user_id', Auth::id())->count();
 
         if($countReply > 0)
         {
-            $project->admin_decision_reply = 'disabled';
             $project->seller_uncomplete_decision = 'arbitration';
-            $project->save();
         }
+
+        $enablereply = $request->has('enablereply') ? 1 : 0;
+        if($user->role === 'support' and $enablereply === 1)
+        {
+            $project->admin_decision_reply = 'enabled';
+        }else{
+            $project->admin_decision_reply = 'disabled';
+        }
+
+        $project->save();
 
         return redirect()->route('complaints.create', $project)
             ->with('success', 'Prigovor je uspešno podnet.');

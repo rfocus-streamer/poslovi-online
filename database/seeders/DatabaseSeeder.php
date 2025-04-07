@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ServiceSeeder::class,
             //SubscriptionSeeder::class,
-            AffiliateSeeder::class,
             ServiceImageSeeder::class,
             PackageSeeder::class,
             ReviewSeeder::class, //poslednji seeder zbog Class "Faker\Factory" not found

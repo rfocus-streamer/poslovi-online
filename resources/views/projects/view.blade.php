@@ -1,9 +1,22 @@
 @extends('layouts.app')
-<link href="{{ asset('css/show.css') }}" rel="stylesheet">
+<link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <title>Poslovi Online | {{ $title }}</title>
 @section('content')
 <div class="container py-5">
     <div class="row">
+        <!-- Prikaz poruke sa anchor ID -->
+        @if(session('success'))
+            <div id="service-message" class="alert alert-success text-center">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div id="service-message-danger" class="alert alert-danger text-center">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Glavni sadržaj -->
         <div class="col-md-8 g-0">
             <!-- Naslov i osnovne informacije -->
@@ -16,7 +29,7 @@
                         @switch($project->status)
                             @case('waiting_confirmation')
                                 <div class="text-center">
-                                    <i class="fas fa-hand-point-down text-primary"></i> Kliknite da preduzmete akciju <i class="fas fa-hand-point-down text-primary"></i>
+                                    <i class="fas fa-hand-point-down text-primary"></i> Klikni da preduzmeš akciju <i class="fas fa-hand-point-down text-primary"></i>
                                 </div>
                                 <div class="d-flex gap-2 justify-content-center">
                                     <form action="{{ route('projects.confirmationdone', $project) }}" method="POST">
@@ -63,21 +76,21 @@
                         <li class="mb-2">
                             <i class="fas fa-user-check text-primary"></i>
                             <strong>Čeka se odobrenje</strong><br>
-                            <strong>Vi možete da preduzmete akciju:</strong><br>
-                            <i class="fas fa-check-circle text-success"></i> Izvršilac je završio projekat prema vašim očekivanjima.<br>
+                            <strong>Možeš da preduzmeš sledeće akcije:</strong><br>
+                            <i class="fas fa-check-circle text-success"></i> Izvršilac je završio projekat prema tvojim očekivanjima.<br>
                             <i class="fas fa-exclamation-triangle text-warning"></i>
                             Projekat nije završen, rezervisana sredstva biće zamrznuta.<br>
                             <span style="margin-left: 3%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor. Naša podrška će doneti konačnu odluku.</span><br>
                             <i class="fas fa-undo-alt  text-danger"></i>
-                            Zahtevate dodatne korekcije pre finalnog kompletiranja.<br>
-                            <span style="margin-left: 3%;"><i class="fas fa-folder-open"></i> <a class="text-dark" href="#datoteke_kupca">Dodajte korekcije u odeljku vaših datoteka</a></span>
+                            Zahtevaš dodatne korekcije pre finalnog kompletiranja.<br>
+                            <span style="margin-left: 3%;"><i class="fas fa-folder-open"></i> <a class="text-dark" href="#datoteke_kupca">Dodaj korekcije u odeljku tvojih datoteka</a></span>
                         </li>
                     @break
 
                     @case('rejected')
                         <li class="mb-2">
                             <i class="fas fa-times-circle text-danger"></i>
-                            <strong>Odbijeno:</strong><br> Izvršilac je odbio projekat, sredstva su vama refundirana.
+                            <strong>Odbijeno:</strong><br> Izvršilac je odbio projekat, sredstva su tebi refundirana.
                         </li>
                     @break
 
@@ -85,8 +98,8 @@
                         <li class="mb-2">
                             <i class="fas fa-undo-alt  text-danger"></i>
                             <strong> Potrebne su korekcije:</strong><br>
-                            <span style="margin-left: 3%;">Zahtevate dodatne korekcije pre finalnog kompletiranja</span><br>
-                            <span style="margin-left: 3%;"><i class="fas fa-folder-open"></i> <a class="text-dark" href="#datoteke_kupca">Pogledajte u odeljku vaših datoteka</a></span>
+                            <span style="margin-left: 3%;">Zahtevaš dodatne korekcije pre finalnog kompletiranja</span><br>
+                            <span style="margin-left: 3%;"><i class="fas fa-folder-open"></i> <a class="text-dark" href="#datoteke_kupca">Dodaj korekcije ( datoteku sa opisom ) u odeljku tvojih datoteka</a></span>
                         </li>
                     @break
 
@@ -98,17 +111,41 @@
                     @break
 
                     @case('uncompleted')
-                        @if($project->seller_uncomplete_decision === 'accepted')
+
+                        @if($project->admin_decision === 'rejected')
                                 <i class="fas fa-reply text-danger"></i>
-                                <strong>Neuspešno završen</strong><br>
-                                <span style="margin-left: 3%;">Projekat nije uspešno završen, sredstva su vraćena vama.</span>
+                                <strong>Nekompletiran</strong><br>
+                                @if($countReply > 0)
+                                    <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-danger"></i> Izvršilac je uložio prigovor. Naša podrška će doneti konačnu odluku.</span><br>
+                                @endif
+                                <span style="margin-left: 6%;"><i class="fas fa-times-circle text-danger"></i> Podrška je odbila prigovor prodavca, te rezervisana sredstva su vraćena na tvoj račun.</span>
+                        @elseif($project->admin_decision === 'accepted')
+                                <i class="fas fa-reply text-danger"></i>
+                                <strong>Delimično ili potpuno završen</strong><br>
+                                @if($countReply > 0)
+                                    <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-danger"></i> Izvršilac je uložio prigovor. Naša podrška će doneti konačnu odluku.</span><br>
+                                @endif
+                                <span style="margin-left: 6%;"><i class="fas fa-check-circle text-success"></i> Podrška je prihvatila prigovor izvršioca</span><br>
+                                <span style="margin-left: 6%;"><i class="fas fa-check-circle text-success"></i> Rezervisana sredstva su prebačena na račun prodavca.</span>
+                        @elseif($project->admin_decision === null and $project->seller_uncomplete_decision === 'accepted')
+                            <li class="mb-2">
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                <strong>Nije završeno</strong> <br>
+                                <span style="margin-left: 6%;"><i class="fas fa-check-circle text-success"></i> Izvršilac se složio da je projekat "nekompletiran", sredstva su refundirana vama.</span>
+                            </li>
+                        @elseif($project->admin_decision === 'partially')
+                            <li class="mb-2">
+                                <i class="fas fa-adjust text-warning"></i>
+                                <strong>Delimično završen</strong> <br>
+                                <span style="margin-left: 3%;"> Rezervisana sredstva su podeljena između tvog i prodavčevog računa a po visini procene podrške.</span>
+                            </li>
                         @else
                              <li class="mb-2">
                                 <i class="fas fa-exclamation-triangle text-warning"></i>
                                 <strong>Nije završeno</strong> <br>
-                                <span style="margin-left: 3%;">Označili ste da projekat nije završen, rezervisana sredstva su zamrznuta.</span><br>
+                                <span style="margin-left: 3%;">Označio si da projekat nije završen, rezervisana sredstva su zamrznuta.</span><br>
                                 <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor ili prihvatiti projekat kao nekompletiran.</span><br>
-                                <span style="margin-left: 9%;">Ako je status projekta "nekompletiran" sredstva se refundiraju vama.</span><br>
+                                <span style="margin-left: 9%;">Ako je status projekta "nekompletiran" sredstva se refundiraju na tvoj račun.</span><br>
 
                                 @if($countReply > 0)
                                     <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-danger"></i> Izvršilac je uložio prigovor. Naša podrška će doneti konačnu odluku.</span>
@@ -156,23 +193,30 @@
                      <div class="text-warning ms-auto mb-4">
                             <p class="text-secondary">Ukupno ponuda: {{ $userServiceCount }}</p>
                             <p class="text-secondary">Ukupna ocena:
+                                <div class="text-warning">
                                 @if ($service->user->stars > 0)
-                                    @for ($j = 1; $j <= $service->user->stars; $j++)
-                                        <i class="fas fa-star text-warning"></i>
+                                    @for ($j = 1; $j <= 5; $j++)
+                                        @if ($j <= $service->user->stars)
+                                            <i class="fas fa-star"></i>
+                                        @else
+                                            <i class="far fa-star"></i>
+                                        @endif
                                     @endfor
                                 @elseif ($service->user->stars == 0)
                                     <p>No stars available</p>
                                 @endif
-
-                                <small class="ms-2">({{ $service->user->stars }})</small>
+                                 <small class="ms-2">({{ $service->user->stars }})</small>
+                                </div>
                             </p>
                     </div>
 
                     @auth
-                        <!-- Dugme za kontakt -->
-                        <a href="#" class="btn btn-success w-100">
-                            <i class="fas fa-envelope me-2"></i>Kontaktirajte prodavca
-                        </a>
+                        @if($project->admin_decision === null)
+                            <!-- Dugme za kontakt -->
+                            <a href="#" class="btn btn-success w-100">
+                                <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
+                            </a>
+                        @endif
                     @endauth
                 </div>
             </div>
@@ -249,14 +293,14 @@
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije</h6>
-                    <p>Možete popunjavati detalje projekta sve dok izvršilac ne prihvati projekat. Nakon prihvatanja, izmene više neće biti moguće</p>
+                    <p>Možeš popunjavati detalje projekta sve dok izvršilac ne prihvati projekat. Nakon prihvatanja, izmene više neće biti moguće</p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-8 mb-2 g-0">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body mb-5">
                     <h5><i class="fas fa-folder-open"></i></i> <span class="card-title mb-4 text-success">Datoteke izvršioca</span></h5>
                      @php
                         // Filtriranje fajlova koje je upload-ovao prodavac
@@ -275,26 +319,37 @@
                             @endforeach
                         </ul>
                     @else
-                        <p>Trenutno nema datoteka od izvršioca</p>
+                        <p>Nema datoteka od izvršioca</p>
                     @endif
+                </div>
+            </div>
+        </div>
+
+         <div class="col-md-4 mb-2 g-0">
+            <div class="card">
+                <div class="card-body mb-2">
+                    <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o datotekama</h6>
+                    <small>Izvršilac će u ovom odeljku dodati datoteke vezane za projekat, kojim ćeš moći da pregledaš u toku rada. Takođe, po završetku projekta, sve relevantne datoteke će biti dostupne.</small>
                 </div>
             </div>
         </div>
 
         <div class="col-md-8 mb-2 g-0" id="datoteke_kupca">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body mb-4">
                     <h5 class="mb-0">
                         <i class="fas fa-folder-open"></i>
-                        <span class="text-success">Vaše datoteke</span>
+                        <span class="text-success">Tvoje datoteke</span>
                     </h5>
 
-                    <form action="{{ route('projects.upload', $project) }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-baseline gap-2 ms-auto mt-1">
-                            @csrf
-                        <input type="file" name="files[]" multiple class="form-control form-control-sm">
-                        <input type="text" name="description" placeholder="Opis fajla" class="form-control form-control-sm">
-                        <button type="submit" class="btn btn-success btn-sm">Upload</button>
-                    </form>
+                    @if($project->admin_decision === null)
+                        <form action="{{ route('projects.upload', $project) }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-baseline gap-2 ms-auto mt-1">
+                                @csrf
+                            <input type="file" name="files[]" multiple class="form-control form-control-sm">
+                            <input type="text" name="description" placeholder="Opis fajla" class="form-control form-control-sm">
+                            <button type="submit" class="btn btn-success btn-sm">Upload</button>
+                        </form>
+                    @endif
 
                     @php
                         // Filtriranje fajlova koje je upload-ovao kupac
@@ -313,23 +368,152 @@
                             @endforeach
                         </ul>
                     @else
-                        <p>Trenutno nema vaših datoteka</p>
+                        <br>
+                        <p>Nisi dodao ništa od datoteka</p>
                     @endif
                 </div>
             </div>
         </div>
 
-
-        <div class="col-md-8 mb-2 g-0">
+        <div class="col-md-4 mb-2 g-0">
             <div class="card">
-                <div class="card-body">
-                    <h5><i class="fas fa-bullhorn"></i></i> <span class="card-title mb-4 text-success">Recinzija</span></h5>
-                    <p>Recenziju možete ostaviti tek nakon što se kompletira projekat ili nakon arbitraže</p>
+                <div class="card-body mb-3">
+                    <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o tvojoj datoteci</h6>
+                    <small>Možeš dostaviti datoteke neophodne za rad na projektu, koje će izvršilac koristiti za njegovo uspešno izvođenje.</small>
                 </div>
             </div>
         </div>
+
+        @if($project->admin_decision !== null or $project->status === 'completed')
+            @php
+                $review = Auth::user()->reviewForAuthUser(Auth::user()->id);
+            @endphp
+            @if($review)
+                <div class="col-md-8 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <div class="d-flex">
+                                <label for="rating" class="col-md-4">Tvoja ocena: </label>
+                                <div class="text-warning ">
+                                    @for ($j = 1; $j <= 5; $j++)
+                                        @if ($j <= $review->rating)
+                                            <i class="fas fa-star"></i>
+                                        @else
+                                            <i class="far fa-star"></i>
+                                        @endif
+                                    @endfor
+
+                                    <span class="text-secondary">( {{$review->rating}} )</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex">
+                                <label for="rating" class="col-md-4">Tvoj komentar: </label>
+                                <span class="text-secondary">{{$review->comment}}</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="col-md-8 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5><i class="fas fa-bullhorn"></i></i> <span class="card-title mb-4 text-success">Recinzija</span></h5>
+                            <form method="POST" action="{{ route('reviews.store', $project) }}">
+                                @csrf
+
+                                <div class="form-group row">
+                                    <label for="rating" class="col-md-4 col-form-label text-md-right">Označi ocenu</label>
+                                    <div class="col-md-6 mt-3">
+                                        <div class="rating-input">
+                                            @for($i = 5; $i >= 1; $i--)
+                                                <input type="radio" id="star{{ $i }}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} />
+                                                <label for="star{{ $i }}" title="{{ $i }} stars">
+                                                    <i class="{{ old('rating') >= $i ? 'fas' : 'far' }} fa-star"></i>
+                                                </label>
+                                            @endfor
+                                        </div>
+
+                                        @error('rating')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="comment" class="col-md-4 col-form-label text-md-right">Dodaj komentar</label>
+
+                                    <div class="col-md-6">
+                                        <textarea id="comment" class="form-control @error('comment') is-invalid @enderror" name="comment" required rows="4">{{ old('comment') }}</textarea>
+                                    </div>
+                                 </div>
+
+                                <div class="form-group row mb-0">
+                                    <div class="col-md-6 offset-md-4">
+                                        <button type="submit" class="btn text-white w-100 mb-4" style="background-color: #198754">
+                                    <i class="fa fa-floppy-disk me-1"></i> Sačuvaj
+                                </button>
+                                     </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @else
+            <div class="col-md-8 mb-2 g-0">
+                <div class="card">
+                    <div class="card-body">
+                        <h5><i class="fas fa-bullhorn"></i></i> <span class="card-title mb-4 text-success">Recinzija</span></h5>
+                        <p>Recenziju možeš ostaviti tek nakon što se kompletira projekat ili nakon završetka arbitraže</p>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
 
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+     // Automatsko sakrivanje poruka
+    const messageElement = document.getElementById('service-message');
+    if (messageElement) {
+        setTimeout(() => {
+            messageElement.remove();
+        }, 5000);
+    }
+
+    const messageElementDanger = document.getElementById('service-message-danger');
+    if (messageElementDanger) {
+        setTimeout(() => {
+            messageElementDanger.remove();
+        }, 5000);
+    }
+
+    const stars = document.querySelectorAll('.rating-input input');
+
+        stars.forEach(star => {
+            star.addEventListener('change', function() {
+                const rating = this.value;
+                const labels = document.querySelectorAll('.rating-input label i');
+
+                labels.forEach((label, index) => {
+                    if (index < 5 - rating) {
+                        label.classList.remove('fas');
+                        label.classList.add('far');
+                    } else {
+                        label.classList.remove('far');
+                        label.classList.add('fas');
+                    }
+                });
+            });
+        });
+});
+</script>
 @endsection

@@ -10,6 +10,8 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\AdditionalChargeController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\AffiliateController;
+use App\Http\Controllers\ReviewController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -54,6 +56,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/projects/{project}/waitingconfirmation', [ProjectController::class, 'waitingConfirmation'])->name('projects.waitingconfirmation');
     Route::post('/projects/{project}/confirmationuncompleteseller', [ProjectController::class, 'uncompleteConfirmationSeller'])->name('projects.confirmationuncompleteseller');
     Route::post('/projects/{project}/confirmationuncompletebuyer', [ProjectController::class, 'uncompleteConfirmationBuyer'])->name('projects.confirmationuncompletebuyer');
+
+    Route::post('/projects/{project}/confirmationuncompletesupport', [ProjectController::class, 'uncompleteConfirmationSupport'])->name('projects.confirmationuncompletesupport');
+    Route::post('/projects/{project}/confirmationcompletesupport', [ProjectController::class, 'completeConfirmationSupport'])->name('projects.confirmationcompletesupport');
+    Route::post('/projects/{project}/partiallycompletedsupport', [ProjectController::class, 'partiallyCompletedSupport'])->name('projects.partiallycompletedsupport');
+
     Route::post('/projects/{project}/confirmationcorrectionbuyer', [ProjectController::class, 'correctionConfirmationBuyer'])->name('projects.confirmationcorrectionbuyer');
     Route::post('/projects/{project}/confirmationdone', [ProjectController::class, 'doneConfirmation'])->name('projects.confirmationdone');
     Route::post('/projects/{project}/upload', [ProjectController::class, 'upload'])->name('projects.upload');
@@ -69,6 +76,8 @@ Route::middleware('auth')->group(function () {
         ->name('additional_charges.index');
 
     // Rute za prigovore
+    Route::get('/complaints/', [ComplaintController::class, 'index'])
+        ->name('complaints.index');
     Route::get('/projects/{project}/complaints', [ComplaintController::class, 'create'])
         ->name('complaints.create');
     Route::post('/projects/{project}/complaints', [ComplaintController::class, 'store'])
@@ -83,6 +92,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
     Route::patch('/package/{package}', [PackageController::class, 'activatePackage'])->name('package.activate');
+
+    Route::post('/affiliate/payout', [AffiliateController::class, 'requestPayout'])->name('affiliate.payout');
+
+    Route::post('/reviews/{project}', [ReviewController::class, 'store'])->name('reviews.store');
 
 });
 

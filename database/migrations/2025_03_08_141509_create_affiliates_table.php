@@ -13,11 +13,27 @@ return new class extends Migration
     {
         Schema::create('affiliates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('referrer_id')->constrained('users'); // Ko je preporučio
-            $table->foreignId('referred_id')->constrained('users'); // Novi prodavac
-            $table->decimal('commission', 10, 2)->default(0);
-            $table->boolean('is_paid')->default(false);
+
+            // Koristimo referred_by umesto referred_user_id za konzistentnost
+            $table->foreignId('affiliate_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('referral_id')->constrained('users')->onDelete('cascade'); // onaj koji deli share
+
+            $table->foreignId('package_id')->nullable()->constrained('packages')->onDelete('set null');
+
+            $table->decimal('amount', 10, 2);
+            $table->unsignedTinyInteger('percentage');
+            $table->enum('status', ['pending', 'completed', 'canceled', 'paid'])->default('pending');
+
+            $table->timestamp('paid_at')->nullable();
+            $table->string('payment_method')->nullable();
+            $table->text('notes')->nullable();
+
             $table->timestamps();
+            $table->softDeletes();
+
+            // Indeksi
+            $table->index(['affiliate_id', 'status']);
+            $table->index(['referral_id']);
         });
     }
 

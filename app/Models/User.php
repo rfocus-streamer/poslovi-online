@@ -22,10 +22,14 @@ class User extends Authenticatable
         'lastname',
         'email',
         'password',
+        'phone',
+        'avatar',
         'role',
         'deposits',
         'package_id',
         'package_expires_at',
+        'affiliate_code',
+        'referred_by'
     ];
 
     /**
@@ -82,4 +86,33 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Package::class);
     }
+
+    // Svi korisnici koje je ovaj korisnik preporučio
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'referred_by');
+    }
+
+    // Sve provizije koje je zaradio kao affiliate
+    public function commissionsEarned()
+    {
+        return $this->hasMany(Affiliate::class, 'affiliate_id');
+    }
+
+    // Provizije generisane preko njegovih preporuka
+    public function referralCommissions()
+    {
+        return $this->hasMany(Affiliate::class, 'referral_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function reviewForAuthUser($userId)
+    {
+        return $this->reviews()->where('user_id', $userId)->first();
+    }
+
 }

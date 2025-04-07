@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use App\Models\Category;
+use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
@@ -54,6 +55,18 @@ class RegisteredUserController extends Controller
             $role = '';
         }
 
+       // Proveri i obradi affiliate kod PRE kreiranja korisnika
+        $referredById = null;
+        if ($request->affiliateCode) {
+            $referrer = User::where('affiliate_code', $request->affiliateCode)->first();
+
+            if ($referrer && $referrer->id !== auth()->id()) {
+                $referredById = $referrer->id;
+            } else {
+                Log::warning("Invalid or self-referral affiliate code: " . $request->affiliateCode);
+            }
+        }
+
         $user = User::create([
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,
@@ -61,7 +74,9 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'role' => $role, // Ubacujemo rolu
-            'avatar' => 'user.jpg'
+            'avatar' => 'user.jpg',
+            'affiliate_code' => $this->generateUniqueAffiliateCode(),
+            'referred_by' => $referredById,
         ]);
 
         event(new Registered($user));
@@ -70,5 +85,14 @@ class RegisteredUserController extends Controller
 
         //return redirect(RouteServiceProvider::HOME);
         return redirect()->back()->with('success', 'Uspešno ste se registrovali. Proverite email i verifikujte nalog putem poslatog linka.');
+    }
+
+    protected function generateUniqueAffiliateCode(): string
+    {
+        do {
+            $code = strtoupper(Str::random(8));
+        } while (User::where('affiliate_code', $code)->exists());
+
+        return $code;
     }
 }

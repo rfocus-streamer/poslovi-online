@@ -1,5 +1,5 @@
 @extends('layouts.app')
-<title>Poslovi Online | Vaša korpa</title>
+<title>Poslovi Online | Tvoja korpa</title>
 @section('content')
 <div class="container">
     <!-- Prikaz poruke sa anchor ID -->
@@ -17,7 +17,7 @@
 
     <div class="d-flex justify-content-between align-items-center">
         <!-- Naslov korpe levo -->
-        <h4><i class="fas fa-shopping-cart"></i> Vaša korpa</h4>
+        <h4><i class="fas fa-shopping-cart"></i> Tvoja korpa</h4>
 
         <!-- Balans korisnika desno -->
         <h6 class="text-secondary">
@@ -29,19 +29,21 @@
 
 
     @if($cartItems->isEmpty())
-        <p>Vaša korpa je prazna.</p>
+        <p>Tvoja korpa je prazna.</p>
     @else
         <table class="table">
             <thead>
                 <tr>
                     <th></th>
-                    <th>Usluga</th>
-                    <th>Paket</th>
-                    <th style="width: 18% !important;">Količina</th>
-                    <th>Cena <i class="fas fa-euro-sign"></i></th>
-                    <th>Ukupno</th>
-                    <th>Ažuriraj</th>
-                    <th class="text-center">Akcije</th>
+                    <th style="width: 15% !important;">Usluga</th>
+                    <th style="width: 11% !important;">Paket</th>
+                    <th style="width: 14% !important;" class="text-center">Količina</th>
+                    <th style="width: 8% !important;">Cena</th>
+                    <th style="width: 8% !important;">Ukupno</th>
+                    <th style="width: 8% !important;">Provizija</th>
+                    <th style="width: 8% !important;">Svega <i class="fas fa-euro-sign"></i></th>
+                    <th style="width: 10% !important;">Ažuriraj</th>
+                    <th class="text-center" style="width: 18% !important;">Akcije</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,6 +63,11 @@
 
                         // Korisnički balans
                         $userBalance = Auth::user()->deposits;
+
+                        // Izračunavanje 3% od ukupnog iznosa ( provizija )
+                        $packageAmount = $totalPrice;
+                        $commissionAmount = $packageAmount * 0.03; // 3% za komisiju
+                        $totalWithCommisionPrice = $totalPrice + $commissionAmount;
                     @endphp
                     <tr>
                         <td>{{ $key +1 }}</td>
@@ -78,7 +85,7 @@
                                     <option value="Premium" {{ $cartItem->package == 'Premium' ? 'selected' : '' }}>Premium</option>
                                 </select>
                         </td>
-                        <td>
+                        <td class="text-center">
                                     <input type="number" name="quantity" value="{{ $cartItem->quantity }}" min="1" style="width: 40% !important;">
                         </td>
                         <td>
@@ -95,28 +102,30 @@
                         <td>
                             <span>{{ number_format($totalPrice, 2) }}</span>
                         </td>
+                        <td>{{number_format( $commissionAmount, 2)}}</td>
+                        <td>{{number_format($totalWithCommisionPrice, 2)}}</td>
                         <td>
-                            <button type="submit" class="btn btn-outline-primary"><i class="fas fa-sync"></i></button>
+                            <button type="submit" class="btn btn-primary btn-sm">Izmeni <i class="fas fa-sync"></i></button>
                         </td>
                         </form>
                         </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                @if($userBalance >= $totalPrice)
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                @if($userBalance >= $totalWithCommisionPrice)
                                     <form action="{{ route('projects.store', $cartItem) }}" method="POST">
                                         @csrf
                                         @method('POST')
-                                        <button class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Pokreni projekat"><i class="fas fa-rocket"></i></button>
+                                        <button class="btn btn-success ms-auto w-100 btn-sm" data-bs-toggle="tooltip" title="Kupi i pokreni projekat">Kupi <i class="fas fa-shopping-cart"></i></button>
                                     </form>
                                 @else
                                     <!-- Ako korisnik nema dovoljno novca, prikazujemo dugme za deponovanje novca -->
-                                    <a href="{{ route('deposit.form') }}" data-bs-toggle="tooltip" title="Deponuj novac"> <button class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"><i class="fas fa-credit-card"></i></button>
+                                    <a href="{{ route('deposit.form') }}" data-bs-toggle="tooltip" title="Deponuj novac"> <button class="btn btn-warning ms-auto w-100 btn-sm" data-bs-toggle="tooltip" title="Deponuj novac">Dopuni <i class="fas fa-credit-card"></i></button>
                                     </a>
                                 @endif
                                 <form action="{{ route('cart.destroy', $cartItem) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Ukloni iz korpe"><i class="fas fa-trash"></i></button>
+                                    <button class="btn btn-danger ms-auto w-100 btn-sm" data-bs-toggle="tooltip" title="Ukloni iz korpe">Obriši <i class="fas fa-trash"></i></button>
                                 </form>
                             </div>
                         </td>
@@ -130,23 +139,19 @@
             <ul class="list-unstyled">
                 <li class="mb-2">
                     <i class="fas fa-sync text-primary"></i>
-                    <strong>Ažuriranje:</strong> Pritiskom na dugme možete promeniti paket ili količinu usluga u korpi.
+                    <strong>Ažuriranje:</strong> Pritiskom na dugme možeš promeniti paket ili količinu usluga u korpi.
                 </li>
                 <li class="mb-2">
-                    <i class="fas fa-rocket text-success"></i>
-                    <strong>Pokretanje projekta:</strong> Klikom na dugme aktivira se usluga koju ste odabrali.
-                </li>
-                <li class="mb-2">
-                    <i class="fas fa-check-circle text-success"></i>
-                    <strong>Projekat je aktivan:</strong> Vaš projekat je već pokrenut i aktivan.
+                    <i class="fas fas fa-shopping-cart text-success"></i>
+                    <strong>Kupovina usluge:</strong> Klikom na dugme aktivira se usluga koju si odabrao i sredstva se rezervišu sa tvog računa.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-credit-card text-warning"></i>
-                    <strong>Deponovanje novca:</strong> Da biste mogli koristiti usluge, potrebno je da imate dovoljno sredstava na računu.
+                    <strong>Deponovanje novca:</strong> Da bi mogao koristiti usluge, potrebno je da imaš dovoljno sredstava na računu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-trash text-danger"></i>
-                    <strong>Uklanjanje iz korpe:</strong> Klikom na dugme brišete uslugu iz vaše korpe (trajno).
+                    <strong>Uklanjanje iz korpe:</strong> Klikom na dugme brišeš uslugu iz tvoje korpe (trajno).
                 </li>
             </ul>
         </div>

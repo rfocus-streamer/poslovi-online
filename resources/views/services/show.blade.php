@@ -1,15 +1,25 @@
 @extends('layouts.app')
-<link href="{{ asset('css/show.css') }}" rel="stylesheet">
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <title>Poslovi Online | {{ $title }}</title>
 @section('content')
 <div class="container py-5">
-    <div class="row">
-        <!-- Glavni sadržaj -->
-        <div class="col-md-8">
-            <!-- Naslov i osnovne informacije -->
+    <div class="row d-flex">
+        <!-- Prikaz poruke sa anchor ID -->
+        @if(session('success'))
+            <div id="cart-message" class="alert alert-success text-center">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('danger'))
+            <div id="cart-message-danger" class="alert alert-danger text-center">
+                {{ session('danger') }}
+            </div>
+        @endif
+
+        <!-- Naslov i osnovne informacije -->
             <h1 class="mb-4">{{ $service->title }}</h1>
-            <div class="col-12 text-end">
+            <div class="col-8 text-end">
                 <span class="fw-bold">Podeli na:</span>
 
                 <!-- Facebook -->
@@ -44,6 +54,14 @@
                     <i class="fab fa-whatsapp"></i>
                 </a>
 
+                <!-- Instagram (otvara profil ili stranicu) -->
+                <a href="https://www.instagram.com/your_profile_name"
+                   target="_blank"
+                   class="btn btn-outline-danger btn-sm rounded-circle"
+                   title="Pogledaj na Instagramu">
+                    <i class="fab fa-instagram"></i>
+                </a>
+
                 <!-- Copy Link -->
                 <button onclick="copyLink()"
                         class="btn btn-outline-secondary btn-sm rounded-circle"
@@ -64,73 +82,92 @@
                 </div>
             </div>
 
-            <div class="d-flex align-items-center mb-4">
+            <div class="col-8 d-flex align-items-center mb-4">
                 <span class="badge bg-primary me-2">{{ $service->category->name }}</span>
                 @if($service->subcategory)
                     <span class="badge bg-secondary">{{ $service->subcategory->name }}</span>
                 @endif
 
                 @auth
-                <div class="ms-auto mt-3"> <!-- Ovo gura dugmad na desno -->
-                    @if(Auth::user()->favorites->contains('service_id', $service->id))
-                        <form action="{{ route('favorites.destroy', $service) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-outline-danger ms-auto" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Ukloni <i class="fas fa-heart"></i></button>
-                        </form>
-                    @else
-                        <form action="{{ route('favorites.store', $service) }}" method="POST">
-                            @csrf
-                            <button class="btn btn-outline-success ms-auto" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Dodaj <i class="fas fa-heart"></i></button>
-                        </form>
+                    @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
+                        <div class="ms-auto mt-3"> <!-- Ovo gura dugmad na desno -->
+                            @if(Auth::user()->favorites->contains('service_id', $service->id))
+                                <form action="{{ route('favorites.destroy', $service) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-outline-danger ms-auto btn-sm" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Ukloni <i class="fas fa-heart"></i></button>
+                                </form>
+                            @else
+                                <form action="{{ route('favorites.store', $service) }}" method="POST">
+                                    @csrf
+                                    <button class="btn btn-outline-success ms-auto btn-sm" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Dodaj <i class="fas fa-heart"></i></button>
+                                </form>
+                            @endif
+                        </div>
                     @endif
-                </div>
                 @endauth
             </div>
 
-            <!-- Slike usluge -->
-            <div class="service-images mb-4">
-                <div class="row">
-                    @foreach($service->serviceImages as $image)
-                        <div class="col-md-4 mb-3">
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ $loop->index }}">
-                                <img src="{{ asset('storage/services/' . $image->image_path) }}"
-                                     class="img-fluid rounded service-image"
-                                     alt="Slika usluge">
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <!-- Glavni sadržaj -->
+        <div class="col-md-8">
 
-            <!-- Modali za svaku sliku -->
-            @foreach($service->serviceImages as $image)
-            <div class="modal fade" id="imageModal{{ $loop->index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ $loop->index }}" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-body text-center">
-                            <img src="{{ asset('storage/services/' . $image->image_path) }}"
-                                 class="img-fluid"
-                                 alt="Slika usluge">
-                        </div>
-                        <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" onclick="prevImage({{ $loop->index }})">
-                                    <i class="fas fa-chevron-left"></i> Prethodna
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="nextImage({{ $loop->index }})">
-                                    Sledeća <i class="fas fa-chevron-right"></i>
-                                </button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+            <!-- Slike usluge -->
+            <div class="service-images mb-2">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        @if($service->serviceImages->first())
+                            <img src="{{ asset('storage/services/' . $service->serviceImages[0]->image_path) }}"
+                                 class="img-fluid rounded w-100 h-100 object-fit-cover gallery-image"
+                                 alt="Glavna slika usluge"
+                                 style="max-height: 500px; object-fit: cover; cursor: pointer;"
+                                 data-index="0"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#imageModal">
+                        @endif
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="row">
+                            @foreach($service->serviceImages->skip(1) as $index => $image)
+                                <div class="col-4 mb-3">
+                                    <img src="{{ asset('storage/services/' . $image->image_path) }}"
+                                         class="img-fluid rounded gallery-image"
+                                         alt="Dodatna slika"
+                                         style="height: 100px; object-fit: cover; cursor: pointer;"
+                                         data-index="{{ $index + 1 }}"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#imageModal">
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
             </div>
-            @endforeach
 
-        </div>
-        <div class="col-md-8">
+            <!-- Modal (samo jedan) -->
+            <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="text-end mr-3 mt-3">
+                            <button type="button" class="close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img id="modalImage" src="" class="img-fluid" alt="Galerija slika">
+                            <p id="imageCounter" class="mt-3 text-muted"></p> <!-- Brojač slike -->
+                        </div>
+                        <div class="modal-footer d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-secondary btn-sm" id="prevImage">
+                                <i class="fas fa-chevron-left"></i> Prethodna
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="nextImage">
+                                Sledeća <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Ocene usluge -->
+        <!-- Ocene usluge -->
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="row">
@@ -176,19 +213,6 @@
             <!-- Paketi -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <!-- Prikaz poruke sa anchor ID -->
-                    @if(session('success'))
-                        <div id="cart-message" class="alert alert-success text-center">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if(session('danger'))
-                        <div id="cart-message-danger" class="alert alert-danger text-center">
-                            {{ session('danger') }}
-                        </div>
-                    @endif
-
                     @php
                         $cartItemCount = 0;
                         if (Auth::check()) {
@@ -196,15 +220,14 @@
                         }
                     @endphp
 
-
-                    <p class="choos-label">Odaberite</p>
+                    <p class="choos-label">Odaberi</p>
                     <h5 class="card-title mb-4 service-package">Paket</h5>
                     <div class="row">
                         <!-- Basic paket -->
                         <div class="col-md-4">
                             <div class="card h-100">
                                 <div class="card-body card-text">
-                                    <h6 class="card-title text-center package-category">Basic</h6>
+                                    <h6 class="card-title text-center package-category"><i class="fas fa-box text-primary"></i> Basic</h6>
                                     <!-- Prikazivanje skraćenog teksta i ikone -->
                                     <p class="text-center d-flex align-items-center">
                                         {{ Str::limit($service->basic_inclusions, 15) }}
@@ -214,6 +237,7 @@
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->basic_delivery_days }} dana</p>
 
                                     @auth
+                                      @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
                                         @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Basic'))
                                             <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Basic')->first()->id ?? 0) }}" method="POST">
                                                 @csrf
@@ -226,6 +250,7 @@
                                                 <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
                                             </form>
                                         @endif
+                                      @endif
                                     @endauth
                                 </div>
                             </div>
@@ -235,7 +260,7 @@
                         <div class="col-md-4">
                             <div class="card h-100">
                                 <div class="card-body card-text">
-                                    <h6 class="card-title text-center package-category">Standard</h6>
+                                    <h6 class="card-title text-center package-category"><i class="fas fa-gift text-success"></i> Standard</h6>
                                     <!-- Prikazivanje skraćenog teksta i ikone -->
                                     <p class="text-center d-flex align-items-center">
                                         {{ Str::limit($service->standard_inclusions, 15) }}
@@ -245,6 +270,7 @@
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->standard_delivery_days }} dana</p>
 
                                     @auth
+                                      @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
                                         @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Standard'))
                                             <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Standard')->first()->id ?? 0) }}" method="POST">
                                                 @csrf
@@ -257,6 +283,7 @@
                                                 <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
                                             </form>
                                         @endif
+                                      @endif
                                     @endauth
                                 </div>
                             </div>
@@ -266,7 +293,7 @@
                         <div class="col-md-4">
                             <div class="card h-100">
                                 <div class="card-body card-text">
-                                    <h6 class="card-title text-center package-category">Premium</h6>
+                                    <h6 class="card-title text-center package-category"><i class="fas fa-gem text-warning"></i> Premium</h6>
                                     <!-- Prikazivanje skraćenog teksta i ikone -->
                                     <p class="text-center d-flex align-items-center">
                                         {{ Str::limit($service->premium_inclusions, 15) }}
@@ -275,6 +302,7 @@
                                     <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->premium_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->premium_delivery_days }} dana</p>
                                     @auth
+                                      @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
                                         @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Premium'))
                                             <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Premium')->first()->id ?? 0) }}" method="POST">
                                                 @csrf
@@ -287,6 +315,7 @@
                                                 <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
                                             </form>
                                         @endif
+                                      @endif
                                     @endauth
                                 </div>
                             </div>
@@ -394,9 +423,9 @@
                     {{ $reviews->links() }}
                 </div>
             </div>
-        </div>
-
     </div>
+</div>
+
      <!-- Sidebar sa informacijama o prodavcu -->
         <div class="col-md-4">
             <div class="card">
@@ -445,15 +474,16 @@
                     </div>
 
                     @auth
-                        <!-- Dugme za kontakt -->
-                        <a href="#" class="btn btn-success w-100">
-                            <i class="fas fa-envelope me-2"></i>Kontaktirajte prodavca
-                        </a>
+                        @if(Auth::user()->role !== 'seller')
+                            <!-- Dugme za kontakt -->
+                            <a href="#" class="btn btn-success w-100">
+                                <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
+                            </a>
+                        @endif
                     @endauth
                 </div>
             </div>
         </div>
-</div>
 
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function () {
@@ -521,28 +551,41 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-function prevImage(currentIndex) {
-    const prevIndex = currentIndex - 1;
-    if (prevIndex >= 0) {
-        const currentModal = bootstrap.Modal.getInstance(document.getElementById(`imageModal${currentIndex}`));
-        currentModal.hide();
-
-        const prevModal = new bootstrap.Modal(document.getElementById(`imageModal${prevIndex}`));
-        prevModal.show();
-    }
-}
-
-function nextImage(currentIndex) {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < {{ count($service->serviceImages) }}) {
-        const currentModal = bootstrap.Modal.getInstance(document.getElementById(`imageModal${currentIndex}`));
-        currentModal.hide();
-
-        const nextModal = new bootstrap.Modal(document.getElementById(`imageModal${nextIndex}`));
-        nextModal.show();
-    }
-}
 </script>
+
+<script>
+    const images = @json($service->serviceImages->pluck('image_path'));
+    let currentIndex = 0;
+
+    document.querySelectorAll('.gallery-image').forEach(img => {
+        img.addEventListener('click', function () {
+            if(this.dataset.index <= 0){
+                currentIndex = parseInt(this.dataset.index);
+            }else{
+                currentIndex = parseInt(this.dataset.index)-1;
+            }
+
+            updateModalImage();
+        });
+    });
+
+    document.getElementById('nextImage').addEventListener('click', () => {
+        currentIndex = (currentIndex + 1) % images.length;
+        updateModalImage();
+    });
+
+    document.getElementById('prevImage').addEventListener('click', () => {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        updateModalImage();
+    });
+
+    function updateModalImage() {
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = `/storage/services/${images[currentIndex]}`;
+        imageCounter.textContent = `Slika ${currentIndex+1} od ${images.length}`;
+    }
+</script>
+
 
 <script>
     function copyLink() {

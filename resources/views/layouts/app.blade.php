@@ -27,6 +27,18 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarOptions">
                 <ul class="navbar-nav">
                     @auth
+                        @if(Auth::user()->role == 'support' || Auth::user()->role == 'admin')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('complaints.index') ? 'active' : '' }}" href="{{ route('complaints.index') }}">
+                                    @if(isset($complaintCount) && $complaintCount > 0)
+                                        <i class="fas fa-balance-scale {{ request()->routeIs('complaints.index') ? 'text-danger' : '' }}"></i> Arbitraža <span class="badge bg-danger">{{ $complaintCount }}</span>
+                                    @else
+                                        <i class="fas fa-balance-scale {{ request()->routeIs('complaints.index') ? 'text-danger' : '' }}"></i> Arbitraža
+                                    @endif
+                                </a>
+                            </li>
+                        @endif
+
                         @if(Auth::user()->role == 'buyer' || Auth::user()->role == 'both')
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('favorites.index') ? 'active' : '' }}" href="{{ route('favorites.index') }}">

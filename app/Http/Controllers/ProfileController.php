@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\Favorite;
 use App\Models\CartItem;
+use App\Models\Commission;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
+use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
@@ -33,6 +35,13 @@ class ProfileController extends Controller
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
             $projectCount = Project::where('buyer_id', Auth::id())->count();
+              // Dohvati trenutni mesec i godinu
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+            $totalEarnings = Commission::where('seller_id', Auth::id())
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear)
+                ->sum('seller_amount');
         }
 
         return view('profile.edit', compact(
@@ -57,7 +66,7 @@ class ProfileController extends Controller
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB, samo slike
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id, // Proverava da email nije zauzet osim ako pripada korisniku
+            //'email' => 'required|email|unique:users,email,' . $user->id, // Proverava da email nije zauzet osim ako pripada korisniku
             'phone' => 'nullable|string|regex:/^[0-9]{9,15}$/',
             'roles' => 'nullable|array',
         ]);
@@ -80,7 +89,6 @@ class ProfileController extends Controller
         // Ažuriranje ostalih podataka
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
-        $user->email = $request->email;
         $user->phone = $request->phone;
 
         // Ažuriranje role
