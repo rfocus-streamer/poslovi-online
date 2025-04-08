@@ -386,12 +386,18 @@
 
         @if($project->admin_decision !== null or $project->status === 'completed')
             @php
-                $review = Auth::user()->reviewForAuthUser(Auth::user()->id);
+                $review = Auth::user()->reviewForAuthUser(Auth::user()->id, $project->service_id);
             @endphp
             @if($review)
                 <div class="col-md-8 mb-2">
                     <div class="card">
                         <div class="card-body">
+
+                            <div class="text-end">
+                                <small class="text-secondary">
+                                    <i class="fas fa-clock"></i> {{$review->created_at->format('d.m.Y H:i')}}
+                                </small>
+                            </div>
 
                             <div class="d-flex">
                                 <label for="rating" class="col-md-4">Tvoja ocena: </label>
@@ -412,7 +418,6 @@
                                 <label for="rating" class="col-md-4">Tvoj komentar: </label>
                                 <span class="text-secondary">{{$review->comment}}</span>
                             </div>
-
                         </div>
                     </div>
                 </div>

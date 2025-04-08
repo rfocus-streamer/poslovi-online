@@ -157,9 +157,9 @@ class ProjectController extends Controller
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
             $totalEarnings = Commission::where('seller_id', Auth::id())
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear)
-                ->sum('seller_amount');
+                                ->whereMonth('created_at', $currentMonth)
+                                ->whereYear('created_at', $currentYear)
+                                ->sum(DB::raw('amount - seller_amount'));
         }
 
         return view('projects.seller', compact(

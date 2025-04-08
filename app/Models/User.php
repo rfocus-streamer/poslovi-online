@@ -110,9 +110,9 @@ class User extends Authenticatable
         return $this->hasMany(Review::class);
     }
 
-    public function reviewForAuthUser($userId)
+    public function reviewForAuthUser($userId, $service_id)
     {
-        return $this->reviews()->where('user_id', $userId)->first();
+        return $this->reviews()->where('user_id', $userId)->where('service_id', $service_id)->first();
     }
 
 }

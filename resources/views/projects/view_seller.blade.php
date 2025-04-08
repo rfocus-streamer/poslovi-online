@@ -1,9 +1,21 @@
 @extends('layouts.app')
-<link href="{{ asset('css/show.css') }}" rel="stylesheet">
+<link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <title>Poslovi Online | {{ $title }}</title>
 @section('content')
 <div class="container py-5">
     <div class="row">
+        <!-- Prikaz poruke sa anchor ID -->
+        @if(session('success'))
+            <div id="service-message" class="alert alert-success text-center">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div id="service-message-danger" class="alert alert-danger text-center">
+                {{ session('error') }}
+            </div>
+        @endif
         <!-- Glavni sadržaj -->
         <div class="col-md-8 g-0">
             <!-- Naslov i osnovne informacije -->
@@ -471,12 +483,18 @@
 
         @if($project->admin_decision !== null or $project->status === 'completed')
             @php
-                $review = Auth::user()->reviewForAuthUser(Auth::user()->id);
+                $review = Auth::user()->reviewForAuthUser(Auth::user()->id, $project->service_id);
             @endphp
             @if($review)
                 <div class="col-md-8 mb-2">
                     <div class="card">
                         <div class="card-body">
+
+                            <div class="text-end">
+                                <small class="text-secondary">
+                                    <i class="fas fa-clock"></i> {{$review->created_at->format('d.m.Y H:i')}}
+                                </small>
+                            </div>
 
                             <div class="d-flex">
                                 <label for="rating" class="col-md-4">Tvoja ocena: </label>
@@ -590,4 +608,41 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+     // Automatsko sakrivanje poruka
+    const messageElement = document.getElementById('service-message');
+    if (messageElement) {
+        setTimeout(() => {
+            messageElement.remove();
+        }, 5000);
+    }
+
+    const messageElementDanger = document.getElementById('service-message-danger');
+    if (messageElementDanger) {
+        setTimeout(() => {
+            messageElementDanger.remove();
+        }, 5000);
+    }
+
+    const stars = document.querySelectorAll('.rating-input input');
+
+        stars.forEach(star => {
+            star.addEventListener('change', function() {
+                const rating = this.value;
+                const labels = document.querySelectorAll('.rating-input label i');
+
+                labels.forEach((label, index) => {
+                    if (index < 5 - rating) {
+                        label.classList.remove('fas');
+                        label.classList.add('far');
+                    } else {
+                        label.classList.remove('far');
+                        label.classList.add('fas');
+                    }
+                });
+            });
+        });
+});
+</script>
 @endsection

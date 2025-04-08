@@ -359,7 +359,7 @@
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Korisnik</th>
+                                        <th>#</th>
                                         <th>Registrovan</th>
                                         <th>Paket</th>
                                         <th>Cena</th>
@@ -368,14 +368,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse(Auth::user()->referrals as $referral)
+                                    @forelse(Auth::user()->referrals as $key => $referral)
 
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="{{ $referral->avatar ? asset('storage/user/'.$referral->avatar) : asset('images/default-avatar.jpg') }}"
-                                                     class="rounded-circle me-2" width="30" height="30">
-                                                {{ $referral->firstname }} {{ $referral->lastname }}
+                                                {{ $key +1 }}
                                             </div>
                                         </td>
                                         <td>{{ $referral->created_at->format('d.m.Y.') }}</td>
