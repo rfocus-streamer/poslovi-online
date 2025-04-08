@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Carbon\Carbon;
 
@@ -39,9 +40,9 @@ class ProfileController extends Controller
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
             $totalEarnings = Commission::where('seller_id', Auth::id())
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear)
-                ->sum('seller_amount');
+                                ->whereMonth('created_at', $currentMonth)
+                                ->whereYear('created_at', $currentYear)
+                                ->sum(DB::raw('amount - seller_amount'));
         }
 
         return view('profile.edit', compact(
