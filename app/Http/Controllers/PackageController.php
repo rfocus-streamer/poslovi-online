@@ -9,6 +9,7 @@ use App\Models\CartItem;
 use App\Models\User;
 use App\Models\Affiliate;
 use App\Models\Subscription;
+use App\Models\Commission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,13 @@ class PackageController extends Controller
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
+            // Dohvati trenutni mesec i godinu
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+            $totalEarnings = Commission::where('seller_id', Auth::id())
+                                ->whereMonth('created_at', $currentMonth)
+                                ->whereYear('created_at', $currentYear)
+                                ->sum(DB::raw('amount - seller_amount'));
 
         }
 

@@ -36,7 +36,7 @@ class ProfileController extends Controller
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
             $projectCount = Project::where('buyer_id', Auth::id())->count();
-              // Dohvati trenutni mesec i godinu
+            // Dohvati trenutni mesec i godinu
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
             $totalEarnings = Commission::where('seller_id', Auth::id())
