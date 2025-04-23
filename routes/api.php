@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MessageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Route::middleware('auth:api')->group(function () {
+//     Route::post('/messages', [MessageController::class, 'store']);
+    //Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
+//     Route::get('/unread-count', fn () => response()->json(['count' => auth()->user()->unread_messages_count]));
+//     Route::post('/activity-ping', function () {
+//         auth()->user()->update([
+//             'last_seen_at' => now(),
+//             'is_online' => true
+//         ]);
+//         return response()->json();
+//     });
+// });
+
+Route::middleware('auth:api')->group(function () {
+    Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
 });
+
+
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });

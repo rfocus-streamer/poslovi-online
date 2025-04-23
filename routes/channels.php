@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,20 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+// U channels.php (na samom početku)
+//Broadcast::routes(['middleware' => ['api', 'auth:sanctum']]); // Za Sanctum
+
+// Broadcast::channel('messages.{userId}', function ($user) {
+//     return auth()->check(); // Samo autentifikovani korisnici
+// });
+
+// Autorizacija za chat kanal
+Broadcast::channel('messages', function ($user) {
+    return auth()->check(); // Samo autentifikovani korisnici
 });
+
+// Autorizacija za presence kanal (online status)
+Broadcast::channel('presence-online-status', function ($user) {
+    return ['id' => $user->id, 'name' => $user->name];
+});
+

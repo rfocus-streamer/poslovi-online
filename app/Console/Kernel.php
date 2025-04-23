@@ -16,6 +16,11 @@ class Kernel extends ConsoleKernel
              ->dailyAt('03:00') // Pokreće se svakog dana u 3:00 ujutru
              ->onOneServer() // Važno ako koristite više servera
              ->timezone('Europe/Belgrade'); // Postavite odgovarajuću vremensku zonu
+
+        $schedule->command('check:online-status')
+            ->everyMinute()
+            ->runInBackground() // Dodajte za paralelno izvršavanje
+            ->withoutOverlapping(5); // Max 5 minuta izvršavanja
     }
 
     /**

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Cache; // Dodajte ovaj use statement
 
 class User extends Authenticatable
 {
@@ -115,4 +116,15 @@ class User extends Authenticatable
         return $this->reviews()->where('user_id', $userId)->where('service_id', $service_id)->first();
     }
 
+    public function getIsOnlineAttribute()
+    {
+        return Cache::has('user-is-online-'.$this->id);
+    }
+
+    public function updateLastSeen()
+    {
+        $this->last_seen_at = now();
+        $this->save();
+        Cache::put('user-is-online-'.$this->id, true, now()->addMinutes(5));
+    }
 }

@@ -19,7 +19,6 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $topServices = Service::with([
             'user',
             'category',
@@ -57,29 +56,9 @@ class ServiceController extends Controller
                 : 5;
         });
 
-
-        $favoriteCount = 0;
-        $cartCount = 0;
-        $seller = [];
-        $projectCount = 0;
-
-        if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-            $seller['countProjects'] = Project::where('seller_id', Auth::id())
-                ->whereNotIn('status', ['completed', 'uncompleted'])
-                ->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
-        }
-
         return view('index', compact(
                     'topServices',
-                    'lastServices',
-                    'categories',
-                    'favoriteCount',
-                    'cartCount',
-                    'projectCount',
-                    'seller'
+                    'lastServices'
                 ));
     }
 

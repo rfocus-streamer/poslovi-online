@@ -476,9 +476,14 @@
                     @auth
                         @if(Auth::user()->role !== 'seller')
                             <!-- Dugme za kontakt -->
-                            <a href="#" class="btn btn-success w-100">
+                            @php
+                                $encryptedServiceId = Crypt::encrypt($service->id);
+                            @endphp
+
+                            <a href="{{ route('messages.index', ['service_id' => $encryptedServiceId]) }}" class="btn btn-success w-100">
                                 <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
                             </a>
+
                         @endif
                     @endauth
                 </div>

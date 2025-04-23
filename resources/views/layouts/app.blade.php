@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/js/app.js'])
 </head>
 <body>
     <!-- Prvi navbar: Logo + opcije -->
@@ -50,9 +52,11 @@
                                 </a>
                             </li>
                         @endif
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
+                        <li class="nav-item" id="messages">
+                            <a class="nav-link {{ request()->routeIs('messages.index') ? 'active' : '' }}" href="{{ route('messages.index') }}">
                                 <i class="fas fa-envelope"></i> Poruke
+                                <!-- Dodajemo span za broj novih poruka -->
+                                <span class="badge bg-danger" id="unread-count" style="display: none;">0</span>
                             </a>
                         </li>
                         @if(Auth::user()->role == 'buyer' || Auth::user()->role == 'both')

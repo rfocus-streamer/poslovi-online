@@ -40,6 +40,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'api' => [
+            'driver' => 'token',  // Možeš koristiti 'token' ili neki drugi sistem (kao 'passport', 'jwt'...)
+            'provider' => 'users',
+        ],
     ],
 
     /*

@@ -5,3 +5,421 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 
 Alpine.start();
+
+// Globalni objekat za praćenje nepročitanih poruka
+window.unreadMessages = {};
+let sentMessages = new Set(); // Set za praćenje već poslanih ID-jeva
+
+import axios from 'axios';
+
+axios.defaults.headers.common['X-CSRF-TOKEN'] = document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute('content');
+
+// Opcionalno, ako koristiš sesije, postavi i 'withCredentials'
+axios.defaults.withCredentials = true;
+
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+// Omogući globalnu upotrebu Pusher-a
+window.Pusher = Pusher;
+
+// Inicijalizuj Echo sa Pusher konfiguracijom
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true,
+    encrypted: true,
+    authorizer: (channel) => ({ // Додајте ауторизацију за приватне канале
+        authorize: (socketId, callback) => {
+                // Dodaj CSRF token u svaki axios zahtev
+            axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            axios.post('/broadcasting/auth', {
+                socket_id: socketId,
+                channel_name: channel.name
+            })
+            .then(response => callback(false, response.data))
+            .catch(error => callback(true, error));
+        }
+    })
+});
+
+window.Echo.connector.pusher.connection.bind('connected', () => {
+    console.log('✅ Повезан на Pusher! Socket ID:', window.Echo.socketId());
+});
+window.Echo.connector.pusher.connection.bind('error', (err) => {
+    console.error('❌ Грешка у конекцији:', err);
+});
+
+// Функција за слање поруке
+function handleSendMessage(event) {
+    event.preventDefault(); // Спречи подразумевано понашање формe
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    // Dodaj CSRF token u svaki axios zahtev
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // Dodaj unreadMessages u formData ako postoje
+    if (Object.keys(unreadMessages).length > 0) {
+        // Filtriraj neposlate poruke (one koje nisu u sentMessages)
+        const unreadMessagesWithTime = Object.entries(unreadMessages)
+            .filter(([id, time]) => !sentMessages.has(id))  // Filtriraj samo nove poruke
+            .map(([id, time]) => ({
+                message_id: id,
+                read_at: time
+            }));
+
+        // Ako postoji nova poruka koja nije još poslata, dodaj je u formData
+        if (unreadMessagesWithTime.length > 0) {
+            formData.append('unreadMessages', JSON.stringify(unreadMessagesWithTime));
+
+            // Dodaj ove poruke u sentMessages kako bi se označile kao poslate
+            unreadMessagesWithTime.forEach(message => {
+                sentMessages.add(message.message_id);
+            });
+        }
+    }
+
+    axios.post('/send-message', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data' // Обавезно за фајлове
+        }
+    })
+    .then(response => {
+        // Додај поруку у DOM
+        //console.log(response.data);
+        //const authUserId = document.querySelector('meta[name="user_id"]').getAttribute('content');
+        // if(authUserId != response.message.sender_id){
+        //     appendNewMessage(response.data);
+        // }
+
+        // Ресетуј форму (очисти поља)
+        form.reset();
+    })
+    .catch(error => {
+        console.error('Грешка при слању:', error);
+    });
+}
+
+// Selektuj element sa ID-jem 'content'
+const contentElement = document.getElementById('content');
+
+// Dodaj event listener na input za slanje poruke kada pritisneš Enter
+if (contentElement) {
+    contentElement.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {  // Ako je pritisnut Enter bez Shift-a
+            event.preventDefault();  // Spreči da Enter dodaje novu liniju u textarea
+
+            // Pre nego što pošaljemo poruku, označi sve nepročitane poruke kao pročitane
+            const chatHistoryElement = document.getElementById('chatHistory');
+                  chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
+
+            // Simuliraj submit događaj forme
+            const submitEvent = new Event('submit', {
+                bubbles: true,  // Omogućava da se događaj širi prema roditeljima
+                cancelable: true  // Omogućava da sprečiš podrazumevano ponašanje
+            });
+
+            document.querySelector('#messageForm').dispatchEvent(submitEvent);  // Pošaljite poruku
+        }
+    });
+}
+
+// Selektuj element sa ID-jem 'messageForm'
+const messageForm = document.querySelector('#messageForm');
+
+// Proveri da li element postoji pre nego što dodaš event listener
+if (messageForm) {
+    messageForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        handleSendMessage(event); // Pozivamo funkciju koja šalje poruku
+    });
+}
+
+// // Функција за додавање поруке у DOM
+function appendNewMessage(msg) {
+    const authUser = document.querySelector('meta[name="user_id"]').getAttribute('content')
+    const isSentByCurrentUser = msg.sender_id === currentUser.id;
+    const sender = msg.sender_id === authUser.id ? msg.sender : msg.receiver;
+    const msgBackground = msg.role === 'buyer' ? 'leftChat' : 'rightChat';
+    const msgBackgroundSender = msg.role === 'buyer' ? 'rightChat' : 'leftChat';
+
+    // Formatiraj datum i vreme
+    const formattedDate = formatDate(msg.created_at);
+    const [date, time] = formattedDate.split(' ');  // Razdvaja datum (YYYY-MM-DD) i vreme (HH:MM)
+
+    // Prikazivanje datuma samo ako se menja u odnosu na poslednji datum
+    let dateDisplay = '';
+    if (date !== lastDate) {
+        // Ako je datum nov, prikazujemo ga i ažuriramo poslednji prikazani datum
+        dateDisplay = `<div class="mb-1 justify-content-center">
+                        <div class="date-separator w-100 text-center">
+                                <span class="date-text text-secondary">${formatDate(msg.created_at).split(' ')[0]}</span>
+                            </div>
+                        </div>
+         `;
+        lastDate = date;  // Ažuriraj poslednji prikazani datum
+    }
+
+    let attach = `${msg.sender.firstname.charAt(0).toLowerCase() + msg.sender.firstname.slice(1)}_${time.replace(/:/g, '')}`;
+
+    const messageDiv = document.createElement('div');
+
+    // Ovisno o tome da li je poruka poslana ili primljena, odaberi odgovarajući raspored
+    if (isSentByCurrentUser) {
+         // Dodaj HTML za poruku
+        messageDiv.innerHTML += `
+            ${dateDisplay} <!-- Prikazivanje datuma samo ako je promenjen -->
+            <div class="conversation-list-right">
+                <div class="chat-avatar">
+                    <img src="storage/user/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
+                </div>
+
+                <div class="user-chat-content">
+                    <div class="conversation-name">
+                        <span class="me-1 text-success">
+                            <i class="bx bx-check-double bx-check"></i>
+                        </span>
+                        <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
+                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                    </div>
+                    <div class="ctext-wrap">
+                        <div class="ctext-wrap-content">
+                            <p class="mb-0 rightChat">${msg.content}</p>
+                        </div>
+                        <!-- Prilog (ako postoji) -->
+                        ${msg.attachment ? `
+                        <div class="d-flex justify-content-end mt-1">
+                            <small>
+                                <a href="/${msg.attachment}" target="_blank" class="text-decoration-none">
+                                    <i class="fa fa-download"></i> ${attach}
+                                </a>
+                            </small>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Dodaj HTML za poruku
+        messageDiv.innerHTML += `
+            ${dateDisplay} <!-- Prikazivanje datuma samo ako je promenjen -->
+            <div class="conversation-list">
+                <div class="chat-avatar">
+                    <img src="storage/user/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
+                </div>
+
+                <div class="user-chat-content">
+                    <div class="conversation-name">
+                        <span class="me-1 text-success">
+                            <i class="bx bx-check-double bx-check"></i>
+                        </span>
+                        <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
+                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                    </div>
+                    <div class="ctext-wrap">
+                        <div class="ctext-wrap-content">
+                            <p class="mb-0 leftChat">${msg.content}</p>
+                        </div>
+                        <!-- Prilog (ako postoji) -->
+                        ${msg.attachment ? `
+                        <div class="d-flex justify-content-end mt-1">
+                            <small>
+                                <a href="/${msg.attachment}" target="_blank" class="text-decoration-none">
+                                    <i class="fa fa-download"></i> ${attach}
+                                </a>
+                            </small>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Dodaj poruku u chat history
+    const chatHistoryElement = document.getElementById('chatHistory');
+    messageDiv.setAttribute('data-message-id', msg.id);
+    const serviceElement = document.getElementById('service_id').value;
+    if(msg.service_id == serviceElement){
+        chatHistoryElement.appendChild(messageDiv);
+
+        // Ako poruka NIJE poslata od strane trenutnog korisnika i NIJE pročitana
+        if (!isSentByCurrentUser && !msg.read_at) {
+
+            // Kreiramo novi Intersection Observer za detekciju kada je chat-container vidljiv
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    // Ako je element vidljiv i tab je aktivan, šaljemo whisper
+                    if (entry.isIntersecting && isPageVisible()) {
+                        //console.log('Chat container je vidljiv na ekranu!');
+                        sendWhisper(msg); // Pretpostavljamo da imate `msg` objekat
+                    }
+                });
+            }, { threshold: 0.5 }); // 50% elementa mora biti vidljivo
+
+            // Selektujemo sve chat kontejner elemente
+            const chatContainers = document.querySelectorAll('.chat-container');
+            chatContainers.forEach(container => observer.observe(container));
+
+            // Dodajemo event listener za visibilitychange, kako bismo reagovali kada tab postane aktivan
+            document.addEventListener('visibilitychange', () => {
+                if (isPageVisible() && !isSentByCurrentUser) {
+                    //console.log('Tab je sada aktivan!');
+                    // Kada tab postane aktivan, proveravamo da li je chat container vidljiv
+                    chatContainers.forEach(container => {
+                        if (container.getBoundingClientRect().top < window.innerHeight * 0.5) {
+                            // Ako je chat container već vidljiv, šaljemo whisper
+                            sendWhisper(msg);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    // Skroluj na dno chat-a
+    //chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
+    // Skroluj do te poruke
+    chatHistoryElement.scrollTo({
+        top: chatHistoryElement.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+
+// Funkcija koja proverava da li je tab aktivan
+function isPageVisible() {
+    return document.visibilityState === 'visible';
+}
+
+// Funkcija koja šalje whisper kada je poruka viđena
+window.sendWhisper = function(msg) {
+    if (isPageVisible()) {
+        // Provera da li je već poslat whisper za ovu poruku (prema ID-u poruke)
+        if (!window.unreadMessages[msg.id]) {
+            // Dodajemo ID poruke u unreadMessages objekat
+            window.unreadMessages[msg.id] = formatDate(new Date().toISOString());
+        }
+        //console.log('Tab je aktivan i chat container je vidljiv. Šaljem whisper...');
+        window.Echo.private('messages')
+            .whisper('messageSeen', {
+                message_id: msg.id,
+                receiver_id: msg.receiver_id,
+                read_at: new Date().toISOString()
+            });
+    } else {
+        //console.log('Tab nije aktivan, whisper nije poslat.');
+    }
+}
+
+// Pomocna funkcija za slanje zahteva
+window.markMessageAsRead = async function(msg) {
+    let msgID = (msg && msg.id) ? msg.id : msg;
+
+    try {
+        const response = await axios.put(`/api/messages/${msgID}/read`);
+
+        // Obrada odgovora
+        const totalUnread = response.data.unread_counts.total;
+        const perServiceUnread = response.data.unread_counts.per_service;
+
+        updateUnreadMessages(response.data.message.receiver_id, totalUnread);
+
+        // Ovde možeš ažurirati i druge delove UI-ja ako treba
+    } catch (error) {
+        console.error('Greška pri označavanju poruke kao pročitane:', error);
+    }
+};
+
+
+// Funkcija koja menja broj unutar odgovarajućeg <span> elementa
+window.updateUnreadMessages = function(contactId, newCount = null) {
+    // Selektujemo span u meniju za broj novih poruka
+    const menuBadge = document.querySelector('#messages .badge.bg-danger');
+
+    if (menuBadge) {
+        let currentCount = parseInt(menuBadge.textContent.trim()) || 0;
+
+        if (newCount === null) {
+            // Ako newCount nije prosleđen, smanji broj za 1
+            newCount = Math.max(0, currentCount - 1);
+        }
+
+        // Ažuriraj broj poruka u meniju
+        menuBadge.textContent = newCount;
+
+        // Ako je newCount veći od 0, prikazujemo broj, inače ga sakrivamo
+        menuBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
+    }
+
+    const span = document.querySelector(`[data-user-unread-messages-id="${contactId}"]`);
+
+    if (span) {
+        let currentCount = parseInt(span.textContent.trim()) || 0;
+
+        if (newCount === null) {
+            newCount = Math.max(0, currentCount - 1);
+        }
+
+        span.textContent = newCount;
+        span.style.display = newCount > 0 ? 'block' : 'none';
+    }
+};
+
+// Proveri da li meta element sa name="user_id" postoji
+const userMeta = document.querySelector('meta[name="user_id"]');
+
+if (userMeta) {
+    // Ako postoji korisnički ID, započni slušanje događaja preko Laravel Echo
+    window.Echo.private(`messages`)
+        .listen('.MessageSent', (e) => {
+            //console.log('ДОГАЂАЈ ПРИМЉЕН:', e);
+            appendNewMessage(e.message);
+        });
+}
+
+// Provera meta taga
+if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je user_id prisutan
+    window.Echo.private(`messages`)
+        .listen('MessageSent', (e) => {
+            // Ažuriraj brojač za ovog korisnika
+            const receiver_id = e.message.receiver_id;
+            updateUnreadMessages(receiver_id, e.message.totalUnreadMessages);
+            //console.log('Primljena poruka:', e.message);
+            appendNewMessage(e.message);
+        })
+
+        .listenForWhisper('messageSeen', (data) => {
+
+            // Sad šalješ whisper nazad
+            window.Echo.private(`messages`).whisper('updateUnreadMessages', {
+                receiver_id: data.receiver_id
+            });
+
+            const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
+            if (messageElement) {
+                messageElement.classList.add('read');
+                messageElement.querySelector('.read-status').innerHTML = `
+                    <i class="fas fa-check-double text-success" title="Pročitano ${formatDate(data.read_at)}"></i>
+                `;
+            }
+        })
+
+        .listenForWhisper('updateUnreadMessages', (data) => {
+            updateUnreadMessages(data.receiver_id);
+        });
+
+}else{
+     window.Echo.private(`messages`)
+        .listen('MessageSent', (e) => {
+            // Ažuriraj brojač za ovog korisnika
+            const receiver_id = e.message.receiver_id;
+            updateUnreadMessages(receiver_id, e.message.totalUnreadMessages);
+        })
+}

@@ -12,6 +12,7 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\MessageController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -97,6 +98,26 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/reviews/{project}', [ReviewController::class, 'store'])->name('reviews.store');
 
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::post('/send-message', [MessageController::class, 'send'])->name('send.message');
+    Route::post('/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.read');
+    Route::get('/get-messages', [MessageController::class, 'getMessages'])->name('get.messages');
+
+});
+
+Route::get('/attachments/{file}', function ($file) {
+    $path = storage_path('app/attachments/'.$file);
+
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->where('file', '.*')->middleware('auth'); // Zaštita pristupa
+
+
+Route::get('/check-auth', function () {
+    return auth()->check() ? "Autentifikovan" : "Nije autentifikovan";
 });
 
 // Social Login rute
