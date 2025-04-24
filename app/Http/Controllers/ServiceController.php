@@ -67,7 +67,6 @@ class ServiceController extends Controller
     */
     public function sellerServices()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $services = Service::with([
             'user',
             'category',
@@ -75,30 +74,20 @@ class ServiceController extends Controller
             'serviceImages',
             'cartItems'])->where('user_id', Auth::id())->get();
 
-        $favoriteCount = 0;
-        $cartCount = 0;
         $seller = [];
-        $projectCount = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
                 ->whereNotIn('status', ['completed', 'uncompleted'])
                 ->count();
             $seller['countPublicService'] = Service::where('user_id', Auth::id())
                 ->where('visible', 1)
                 ->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
         }
 
         return view('services.seller',
             compact(
                 'services',
-                'categories',
-                'favoriteCount',
-                'cartCount',
-                'projectCount',
                 'seller'
             )
         );
@@ -131,30 +120,20 @@ class ServiceController extends Controller
     public function create()
     {
         $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
-
-        $favoriteCount = 0;
-        $cartCount = 0;
         $seller = [];
-        $projectCount = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
                 ->whereNotIn('status', ['completed', 'uncompleted'])
                 ->count();
             $seller['countPublicService'] = Service::where('user_id', Auth::id())
                 ->where('visible', 1)
                 ->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
         }
 
         return view('services.create',
             compact(
                 'categories',
-                'favoriteCount',
-                'cartCount',
-                'projectCount',
                 'seller'
             )
         );
@@ -304,8 +283,7 @@ class ServiceController extends Controller
      */
     public function show(string $id)
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
-        // Dohvati uslugu sa svim relacijama
+         // Dohvati uslugu sa svim relacijama
         $service = Service::with([
             'user',
             'category',
@@ -333,30 +311,21 @@ class ServiceController extends Controller
         // Izračunaj broj servisa za tog korisnika
         $userServiceCount = Service::where('user_id', $userId)->count();
 
-        $favoriteCount = 0;
-        $cartCount = 0;
-
-        if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-        }
-
         $title = $service->title;
 
         return view('services.show', compact(
                     'title',
                     'service',
-                    'categories',
                     'reviews',
                     'userServiceCount',
-                    'favoriteCount',
-                    'cartCount'
                 ));
     }
 
     public function viewServices(Service $service)
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
+        // Kategorije
+        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
+
         // Dohvati uslugu sa svim relacijama
         $service = Service::with([
             'user',
@@ -376,13 +345,9 @@ class ServiceController extends Controller
         // Izračunaj broj servisa za tog korisnika
         $userServiceCount = Service::where('user_id', $userId)->count();
 
-        $favoriteCount = 0;
-        $cartCount = 0;
         $seller = [];
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
             $seller['countPublicService'] = Service::where('user_id', Auth::id())
                 ->where('visible', 1)
                 ->count();
@@ -391,13 +356,11 @@ class ServiceController extends Controller
         $title = $service->title;
 
         return view('services.edit', compact(
+                    'categories',
                     'title',
                     'service',
-                    'categories',
                     'reviews',
                     'userServiceCount',
-                    'favoriteCount',
-                    'cartCount',
                     'seller'
                 ));
     }

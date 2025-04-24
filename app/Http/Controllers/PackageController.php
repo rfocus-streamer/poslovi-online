@@ -23,16 +23,11 @@ class PackageController extends Controller
      */
     public function index()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $packages = Package::all(); // Dohvati sve
         $user = Auth::user();
-        $favoriteCount = 0;
-        $cartCount = 0;
         $totalEarnings = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
             // Dohvati trenutni mesec i godinu
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
@@ -48,7 +43,7 @@ class PackageController extends Controller
             return redirect()->back()->with('error', 'Ukoliko želiš da budeš prodavac, ažuriraj profil sa označenim prodavcem (čekiraj) !');
         }
 
-        return view('packages.index', compact('categories', 'packages', 'favoriteCount', 'cartCount', 'totalEarnings'));
+        return view('packages.index', compact('packages', 'totalEarnings'));
     }
 
     public function activatePackage(Package $package)

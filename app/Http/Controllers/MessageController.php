@@ -29,12 +29,7 @@ class MessageController extends Controller
         }
 
         $directChatService = null;
-
-        $favoriteCount = 0;
-        $cartCount = 0;
-        $projectCount = 0;
         $chats = [];
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
 
         // Poruke između ulogovanog korisnika i nekog drugog korisnika
         $messages = Message::where(function($query){
@@ -185,13 +180,18 @@ class MessageController extends Controller
         //     }
         // });
 
+        $messagesCount = 0;
+
         if (Auth::check()) { // Provera da li je korisnik ulogovan
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
             $projectCount = Project::where('buyer_id', Auth::id())->count();
+            $messagesCount = Message::where('receiver_id', Auth::id())
+                                ->where('read_at', null)
+                                ->count();
         }
 
-        return view('messages.index', compact('categories', 'contacts', 'favoriteCount', 'cartCount', 'chats', 'messages', 'user_id', 'directChatService'));
+        return view('messages.index', compact('contacts', 'chats', 'messages', 'user_id', 'directChatService', 'messagesCount'));
     }
 
     public function send(Request $request)
@@ -258,38 +258,35 @@ class MessageController extends Controller
         }
     }
 
-    public function markAsRead(Request $request, $id)
+    public function markAsRead(Request $request)
     {
-        // Pronađi poruku pre nego što je ažuriraš
-        $message = Message::where('id', $id)
-               ->where('receiver_id', auth()->id())
-               ->first(); // Dohvati ceo objekat
+        $unReadMessages = [];
 
-        if (!$message) {
-            return response()->json(['error' => 'Poruka nije pronađena:'.auth()->id()], 404);
+        if ($request->has('unreadMessages') && !empty($request->input('unreadMessages'))) {
+            $unReadMessages = json_decode($request->input('unreadMessages'), true);
         }
 
-        // Ažuriraj i osveži objekat
-        $message->read_at = \Carbon\Carbon::now('Europe/Belgrade'); // Postavljanje Beogradskog vremena
-        $message->save(); // save() će automatski osvežiti objekat
+        // Ako postoje nepročitane poruke, ažuriraj ih u bazi
+        if (!empty($unReadMessages)) {
+            foreach ($unReadMessages as $messageData) {
+                // Provera da li su podaci u pravilnom formatu
+                if (isset($messageData['message_id']) && isset($messageData['read_at'])) {
+                    // Pronađi poruku po ID-u
+                    $message = Message::find($messageData['message_id']);
+                    if ($message) {
+                        // Formatiraj read_at u ispravan timestamp format
+                        $formattedReadAt = Carbon::createFromFormat('d.m.Y. H:i:s', $messageData['read_at'])->format('Y-m-d H:i:s');
 
-        $unreadCounts = [
-            'total' => Message::where('receiver_id', auth()->id())
-                ->whereNull('read_at')
-                ->count(),
-            'per_service' => Message::where('receiver_id', auth()->id())
-                ->whereNull('read_at')
-                ->groupBy('service_id')
-                ->selectRaw('service_id, count(*) as count')
-                ->pluck('count', 'service_id')
-        ];
-
-        broadcast(new MessageSent($message))->toOthers();
+                        // Ažuriraj datum kada je poruka pročitana
+                        $message->read_at = $formattedReadAt;
+                        $message->save();
+                    }
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,
-            'unread_counts' => $unreadCounts,
-            'message' => $message->only(['id', 'sender_id', 'receiver_id', 'read_at'])
         ]);
     }
 

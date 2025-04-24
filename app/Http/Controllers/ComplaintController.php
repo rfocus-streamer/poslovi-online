@@ -18,8 +18,6 @@ class ComplaintController extends Controller
      */
     public function index(Request $request)
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
-
         $query = Project::with(['complaints', 'seller', 'service']);
 
         // Primena uslova samo ako nije pretraga
@@ -47,11 +45,11 @@ class ComplaintController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('complaints.support', compact('categories', 'complaints'))->render()
+                'html' => view('complaints.support', compact('complaints'))->render()
             ]);
         }
 
-        return view('complaints.support', compact('categories', 'complaints'));
+        return view('complaints.support', compact('complaints'));
     }
 
     /**
@@ -59,12 +57,8 @@ class ComplaintController extends Controller
      */
     public function create(Project $project)
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
-        $projects = [];
-        $favoriteCount = 0;
-        $cartCount = 0;
 
         if($user->role !== 'support')
         {
@@ -74,12 +68,7 @@ class ComplaintController extends Controller
             }
         }
 
-        if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-        }
-
-        return view('complaints.index', compact('project','categories', 'favoriteCount', 'cartCount', 'reserved_amount'));
+        return view('complaints.index', compact('project', 'reserved_amount'));
     }
 
     /**

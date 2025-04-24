@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\Favorite;
 use App\Models\CartItem;
+use App\Models\Service;
+use App\Models\Message;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,6 +32,7 @@ class CommonDataComposer
         $cartCount = 0;
         $projectCount = 0;
         $seller = [];
+        $messagesCount = 0;
 
         if (Auth::check()) {
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
@@ -38,9 +41,15 @@ class CommonDataComposer
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
                 ->whereNotIn('status', ['completed', 'uncompleted'])
                 ->count();
+            $seller['countPublicService'] = Service::where('user_id', Auth::id())
+                ->where('visible', 1)
+                ->count();
+            $messagesCount = Message::where('receiver_id', Auth::id())
+                                ->where('read_at', null)
+                                ->count();
         }
 
         // Data koja će biti dostupna svim prikazima
-        $view->with(compact('categories', 'favoriteCount', 'cartCount', 'projectCount', 'seller', 'reserved_amount'));
+        $view->with(compact('categories', 'favoriteCount', 'cartCount', 'projectCount', 'seller', 'reserved_amount', 'messagesCount'));
     }
 }

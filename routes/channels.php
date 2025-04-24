@@ -28,6 +28,6 @@ Broadcast::channel('messages', function ($user) {
 
 // Autorizacija za presence kanal (online status)
 Broadcast::channel('presence-online-status', function ($user) {
-    return ['id' => $user->id, 'name' => $user->name];
+    return ['id' => $user->id, 'is_online' => $user->is_online, 'last_seen_at' => $user->last_seen_at];
 });
 

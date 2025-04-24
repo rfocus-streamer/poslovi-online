@@ -23,14 +23,12 @@ class DepositController extends Controller
 
     public function showDepositForm()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
         $stripeKey=  config('services.stripe.public');
         $totalEarnings = 0;
 
         return view('payments.deposit', compact(
-            'categories',
             'reserved_amount',
             'stripeKey',
             'totalEarnings'

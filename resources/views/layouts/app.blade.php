@@ -56,7 +56,7 @@
                             <a class="nav-link {{ request()->routeIs('messages.index') ? 'active' : '' }}" href="{{ route('messages.index') }}">
                                 <i class="fas fa-envelope"></i> Poruke
                                 <!-- Dodajemo span za broj novih poruka -->
-                                <span class="badge bg-danger" id="unread-count" style="display: none;">0</span>
+                                <span class="badge bg-danger" id="unread-count-id-{{ Auth::user()->id }}" style="display: {{ $messagesCount > 0 ? 'inline-block' : 'none' }}">{{$messagesCount}}</span>
                             </a>
                         </li>
                         @if(Auth::user()->role == 'buyer' || Auth::user()->role == 'both')

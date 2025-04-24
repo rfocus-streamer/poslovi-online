@@ -25,17 +25,10 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $user = Auth::user();
-        $favoriteCount = 0;
-        $cartCount = 0;
-        $projectCount = 0;
         $totalEarnings = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
             // Dohvati trenutni mesec i godinu
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
@@ -46,10 +39,6 @@ class ProfileController extends Controller
         }
 
         return view('profile.edit', compact(
-            'categories',
-            'favoriteCount',
-            'cartCount',
-            'projectCount',
             'totalEarnings'
             )
         );

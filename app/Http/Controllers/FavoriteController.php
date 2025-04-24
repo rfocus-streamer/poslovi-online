@@ -17,22 +17,18 @@ class FavoriteController extends Controller
      */
     public function index()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
-        $favoriteCount = 0;
-        $cartCount = 0;
+
+
         $favoriteServices = []; // Inicijalizuj prazan niz za omiljene servise
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-
             // Dohvati omiljene servise za trenutno ulogovanog korisnika sa paginacijom
             $favoriteServices = Favorite::with('service', 'category') // Eager load relaciju sa Service
                 ->where('user_id', Auth::id())
                 ->paginate(50); // Paginacija sa 50 stavke po stranici
         }
 
-        return view('favorites.index', compact('categories', 'favoriteCount', 'cartCount', 'favoriteServices'));
+        return view('favorites.index', compact('favoriteServices'));
     }
 
     public function search(Request $request)

@@ -92,11 +92,6 @@ function handleSendMessage(event) {
     .then(response => {
         // Додај поруку у DOM
         //console.log(response.data);
-        //const authUserId = document.querySelector('meta[name="user_id"]').getAttribute('content');
-        // if(authUserId != response.message.sender_id){
-        //     appendNewMessage(response.data);
-        // }
-
         // Ресетуј форму (очисти поља)
         form.reset();
     })
@@ -318,30 +313,10 @@ window.sendWhisper = function(msg) {
     }
 }
 
-// Pomocna funkcija za slanje zahteva
-window.markMessageAsRead = async function(msg) {
-    let msgID = (msg && msg.id) ? msg.id : msg;
-
-    try {
-        const response = await axios.put(`/api/messages/${msgID}/read`);
-
-        // Obrada odgovora
-        const totalUnread = response.data.unread_counts.total;
-        const perServiceUnread = response.data.unread_counts.per_service;
-
-        updateUnreadMessages(response.data.message.receiver_id, totalUnread);
-
-        // Ovde možeš ažurirati i druge delove UI-ja ako treba
-    } catch (error) {
-        console.error('Greška pri označavanju poruke kao pročitane:', error);
-    }
-};
-
-
 // Funkcija koja menja broj unutar odgovarajućeg <span> elementa
 window.updateUnreadMessages = function(contactId, newCount = null) {
     // Selektujemo span u meniju za broj novih poruka
-    const menuBadge = document.querySelector('#messages .badge.bg-danger');
+    const menuBadge = document.querySelector(`#unread-count-id-${contactId}`);  // Pravilo: koristi backticks za interpolaciju
 
     if (menuBadge) {
         let currentCount = parseInt(menuBadge.textContent.trim()) || 0;
@@ -371,6 +346,63 @@ window.updateUnreadMessages = function(contactId, newCount = null) {
         span.style.display = newCount > 0 ? 'block' : 'none';
     }
 };
+
+
+// Korišćenje Presence kanala
+const presenceChannel = window.Echo.join('presence-online-status')
+    .here(users => {
+        //users.forEach(user => updateOnlineStatus(user, true));
+        //console.log('All users by contacts');
+    })
+    .joining(user => {
+        updateContactStatus(user.id, true, formatDate(user.last_seen_at))
+    })
+    .leaving(user => {
+        //console.log('User leaving:', user);
+        updateContactStatus(user.id, false, formatDate(user.last_seen_at))
+        // Pošaljemo nepročitane poruke pre nego što korisnik napusti chat
+        if (Object.keys(unreadMessages).length > 0) {
+            const unreadMessagesToSend = Object.entries(unreadMessages)
+                    .filter(([id, time]) => !sentMessages.has(id))  // Filtriramo one koje nismo poslali
+                    .map(([id, time]) => ({
+                            message_id: id,
+                            read_at: time
+                    }));
+
+            // Ako imamo poruka koje nisu poslati, šaljemo ih
+            if (unreadMessagesToSend.length > 0) {
+                 sendUnreadMessages(unreadMessagesToSend);
+
+                // Označavamo poruke kao poslate
+                unreadMessagesToSend.forEach(message => {
+                    sentMessages.add(message.message_id);
+                });
+            }
+        }
+    });
+
+    // Funkcija za ažuriranje statusa
+    function updateContactStatus(userId, status, lastSeenAt) {
+        const contactItem = document.querySelector(`.contact-item[data-user-id="${userId}"]`);
+
+        if (!contactItem) {
+            return;
+        }
+
+        // Ažuriraj status (online/offline)
+        const statusElement = contactItem.querySelector('.status-online, .status-offline');
+        statusElement.textContent = status ? 'Online' : 'Offline';
+        statusElement.classList.toggle('status-online', status);
+        statusElement.classList.toggle('status-offline', !status);
+
+        // Ažuriraj poslednju aktivnost
+        const lastSeenElement = contactItem.querySelector('.text-muted');
+        if (lastSeenAt) {
+            lastSeenElement.textContent = `Poslednja aktivnost: ${lastSeenAt}`;
+        } else {
+            lastSeenElement.textContent = 'Poslednja aktivnost: Nema podataka';
+        }
+    }
 
 // Proveri da li meta element sa name="user_id" postoji
 const userMeta = document.querySelector('meta[name="user_id"]');
@@ -414,7 +446,6 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
         .listenForWhisper('updateUnreadMessages', (data) => {
             updateUnreadMessages(data.receiver_id);
         });
-
 }else{
      window.Echo.private(`messages`)
         .listen('MessageSent', (e) => {
@@ -422,4 +453,77 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
             const receiver_id = e.message.receiver_id;
             updateUnreadMessages(receiver_id, e.message.totalUnreadMessages);
         })
+
+    // Detekcija izlaska sa stranice
+    // document.addEventListener('visibilitychange', function() {
+    //     if (window.location.pathname != '/messages') {
+    //         console.log('izasao:'+window.location.pathname);
+    //     }
+    // });
+
+    // Pošaljemo nepročitane poruke pre nego što korisnik napusti chat
+    if (Object.keys(unreadMessages).length > 0) {
+        const unreadMessagesToSend = Object.entries(unreadMessages)
+                .filter(([id, time]) => !sentMessages.has(id))  // Filtriramo one koje nismo poslali
+                .map(([id, time]) => ({
+                    message_id: id,
+                    read_at: time
+                }));
+
+        // Ako imamo poruka koje nisu poslati, šaljemo ih
+        if (unreadMessagesToSend.length > 0) {
+            sendUnreadMessages(unreadMessagesToSend);
+
+            // Označavamo poruke kao poslate
+            unreadMessagesToSend.forEach(message => {
+                sentMessages.add(message.message_id);
+            });
+        }
+    }
+}
+
+
+// Funkcija za slanje nepročitanih poruka na server
+function sendUnreadMessages(unreadMessages) {
+    // Kreiramo objekat sa nepročitanim porukama
+    const formData = new FormData();
+    formData.append('unreadMessages', JSON.stringify(unreadMessages));
+
+    // Dodaj CSRF token u svaki zahtev
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // Pošaljemo podatke na server
+    axios.post('/mark-as-read', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+    .then(response => {
+        console.log('Nepročitane poruke uspešno poslate:', response.data);
+    })
+    .catch(error => {
+        console.error('Greška prilikom slanja nepročitanih poruka:', error);
+    });
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+
+    // Opcije za formatiranje datuma i vremena
+    const options = {
+        timeZone: 'Europe/Belgrade', // Postavljanje vremenske zone na Beograd
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false // Koristi 24-časovni format
+    };
+
+    // Formater koji koristi vremensku zonu i daje željeni format
+    const formattedDate = new Intl.DateTimeFormat('sr-RS', options).format(date);
+
+    return formattedDate;
 }

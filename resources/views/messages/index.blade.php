@@ -184,43 +184,39 @@
                     <h6><i class="fa fa-address-book"></i> Tvoji kontakti</h6>
                     <ul class="list-group">
                         @foreach ($contacts as $contact)
-                            <li class="list-group-item contact-item" onclick="showServices('{{ $contact->id }}', {{$contact->service_titles}})">
-                              <div class="d-flex flex-column">
-                                <!-- Gornji red: Status i zvezdice -->
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                  <!-- Status -->
-                                  <div class="{{ $contact->is_online ? 'status-online' : 'status-offline' }}">
-                                    {{ $contact->is_online ? 'Online' : 'Offline' }}
-                                  </div>
-                                  <!-- Ocena -->
-                                  <div class="text-warning">
-                                    @for ($j = 1; $j <= 5; $j++)
-                                      @if ($j <= $contact->stars)
-                                        <i class="fas fa-star"></i>
-                                      @else
-                                        <i class="far fa-star"></i>
-                                      @endif
-                                    @endfor
-                                  </div>
-                                </div>
+                            <li class="list-group-item contact-item" data-user-id="{{ $contact->id }}" onclick="showServices('{{ $contact->id }}', {{$contact->service_titles}})">
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="{{ $contact->is_online ? 'status-online' : 'status-offline' }}">
+                                            {{ $contact->is_online ? 'Online' : 'Offline' }}
+                                        </div>
+                                        <div class="text-warning">
+                                            @for ($j = 1; $j <= 5; $j++)
+                                                @if ($j <= $contact->stars)
+                                                    <i class="fas fa-star"></i>
+                                                @else
+                                                    <i class="far fa-star"></i>
+                                                @endif
+                                            @endfor
+                                        </div>
+                                    </div>
 
-                                <!-- Donji red: Avatar, ime i prezime, naziv usluge -->
-                                <div class="d-flex align-items-center">
-                                  <img src="{{ Storage::url('user/'.$contact->avatar) }}" alt="{{ $contact->firstname }} {{ $contact->lastname }}" class="contact-avatar me-2">
-                                  <div>
-                                    <strong>{{ $contact->firstname }} {{ $contact->lastname }}</strong><br>
-                                    <small class="text-muted">
-                                        @if($contact->last_seen_at)
-                                            Poslednja aktivnost: {{ \Carbon\Carbon::parse($contact->last_seen_at)->format('d.m.Y H:i:s') }}
-                                        @endif
-                                    </small>
-                                  </div>
-                                    <!-- Badge za nepročitane poruke -->
-                                    <span data-user-unread-messages-id="{{ auth()->user()->id }}" class="unread-badge badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle" style="display: none;">
-                                        0
-                                    </span>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ Storage::url('user/'.$contact->avatar) }}" alt="{{ $contact->firstname }} {{ $contact->lastname }}" class="contact-avatar me-2">
+                                        <div>
+                                            <strong>{{ $contact->firstname }} {{ $contact->lastname }}</strong><br>
+                                            <small class="text-muted">
+                                                @if($contact->last_seen_at)
+                                                    Poslednja aktivnost: {{ \Carbon\Carbon::parse($contact->last_seen_at)->format('d.m.Y H:i:s') }}
+                                                @endif
+                                            </small>
+                                        </div>
+
+                                        <span data-user-unread-messages-id="{{ auth()->user()->id }}" class="unread-badge badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle" sstyle="display: {{ $messagesCount > 0 ? 'inline-block' : 'none' }}">
+                                            {{$messagesCount}}
+                                        </span>
+                                    </div>
                                 </div>
-                              </div>
                             </li>
                         @endforeach
                     </ul>
@@ -329,7 +325,7 @@
                     openChat(contactId, service.service_id);
                     if (servicesModal) {
                         servicesModal.hide();
-                        document.getElementById('topic').innerHTML = service.service_title;
+                        document.getElementById('topic').innerHTML = '<a href="/ponuda/'+service.service_id+'" class="text-decoration-none text-secondary">'+service.service_title+'</a>';
                     }
                 });
 

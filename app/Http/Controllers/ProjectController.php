@@ -26,7 +26,6 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())
                             ->where(function ($query) {
@@ -36,9 +35,6 @@ class ProjectController extends Controller
                             ->sum('reserved_funds');
 
         $projects = [];
-        $favoriteCount = 0;
-        $cartCount = 0;
-        $projectCount = 0;
 
         if ($user->role == 'buyer' or $user->role == 'both') {
             $projects = Project::where('buyer_id', $user->id)->with('service')->get();
@@ -46,23 +42,13 @@ class ProjectController extends Controller
             $projects = Project::where('seller_id', $user->id)->with('service')->get();
         }
 
-        if (Auth::check()) { // Provera da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
-        }
-
-        return view('projects.index', compact('projects','categories', 'favoriteCount', 'cartCount', 'projectCount', 'reserved_amount'));
+        return view('projects.index', compact('projects', 'reserved_amount'));
     }
 
     public function view(Project $project)
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
-        $favoriteCount = 0;
-        $cartCount = 0;
-
         $service = Service::with([
             'user',
             'category',
@@ -70,11 +56,6 @@ class ProjectController extends Controller
             'serviceImages',
             'cartItems'
         ])->findOrFail($project->service_id);
-
-        if (Auth::check()) { // Provera da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-        }
 
         $title = $project->service->title;
 
@@ -96,10 +77,7 @@ class ProjectController extends Controller
             return view('projects.view_seller', compact(
                 'title',
                 'project',
-                'categories',
                 'service',
-                'favoriteCount',
-                'cartCount',
                 'reserved_amount',
                 'userServiceCount',
                 'userStars',
@@ -110,18 +88,13 @@ class ProjectController extends Controller
             // Izračunaj broj servisa za tog sellera
             $userServiceCount = Service::where('user_id', $project->seller_id)->count();
             $userStars = $project->seller->stars;
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
 
             $countReply = Complaint::where('user_id', $project->seller_id)->count();
 
             return view('projects.view', compact(
                 'title',
                 'project',
-                'projectCount',
-                'categories',
                 'service',
-                'favoriteCount',
-                'cartCount',
                 'reserved_amount',
                 'userServiceCount',
                 'userStars',
@@ -132,12 +105,9 @@ class ProjectController extends Controller
 
     public function jobs()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
         $projects = [];
-        $favoriteCount = 0;
-        $cartCount = 0;
         $seller = [];
         $totalEarnings = 0;
 
@@ -148,8 +118,6 @@ class ProjectController extends Controller
         }
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
                 ->whereNotIn('status', ['completed', 'uncompleted'])
                 ->count();
@@ -165,9 +133,6 @@ class ProjectController extends Controller
         return view('projects.seller', compact(
             'projects',
             'seller',
-            'categories',
-            'favoriteCount',
-            'cartCount',
             'reserved_amount',
             'totalEarnings'
         ));

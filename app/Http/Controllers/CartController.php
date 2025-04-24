@@ -15,19 +15,8 @@ class CartController extends Controller
     // Prikaz korpe
     public function index()
     {
-        $categories = Category::with('subcategories')->whereNull('parent_id')->get(); // Dohvati sve
         $cartItems = Auth::user()->cartItems()->with('service', 'user')->get();
-        $favoriteCount = 0;
-        $cartCount = 0;
-        $projectCount = 0;
-
-        if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
-        }
-
-        return view('cart.index', compact('cartItems', 'categories', 'favoriteCount', 'cartCount', 'projectCount'));
+        return view('cart.index', compact('cartItems'));
     }
 
     // Dodaj servis u korpu
