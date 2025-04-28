@@ -42,7 +42,7 @@ return [
         ],
 
         'api' => [
-            'driver' => 'token',  // Možeš koristiti 'token' ili neki drugi sistem (kao 'passport', 'jwt'...)
+            'driver' => 'sanctum',  // Ovdje je preporučljivo koristiti sanctum umesto token
             'provider' => 'users',
         ],
     ],

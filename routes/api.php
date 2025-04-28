@@ -28,8 +28,9 @@ use App\Http\Controllers\MessageController;
 //     });
 // });
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
+    Route::get('/get-messages', [MessageController::class, 'getMessages'])->name('get.messages');
 });
 
 

@@ -34,11 +34,16 @@ class MessageSent implements ShouldBroadcast
 
         // Broj nepročitanih poruka po service_id
         $unreadMessagesPerService = Message::where('receiver_id', $this->message->receiver_id)
+            ->where('service_id', $this->message->service_id)
             ->whereNull('read_at')
             ->select('service_id')  // Pretpostavljam da postoji service_id u tabeli messages
             ->groupBy('service_id')
             ->selectRaw('service_id, count(*) as count')
             ->pluck('count', 'service_id');  // Vraća asocijativni niz sa service_id kao ključem i count kao vrednostima
+
+        $totalSenderUnreadMessages = Message::where('sender_id', $this->message->sender_id)
+        ->whereNull('read_at')
+        ->count();
 
         return [
             'message' => [
@@ -50,6 +55,7 @@ class MessageSent implements ShouldBroadcast
                 'created_at' => $this->message->created_at,
                 'attachment' => $this->message->attachment_path,
                 'totalUnreadMessages' => $totalUnreadMessages,
+                'totalSenderUnreadMessages' => $totalSenderUnreadMessages,
                 'unreadMessagesPerService' => $unreadMessagesPerService,
                 'sender' => $this->message->sender->only([
                     'firstname',

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;  // Uvozimo DB fasadu
 use Illuminate\Contracts\Encryption\DecryptException;
 use Carbon\Carbon;
 
@@ -23,10 +24,13 @@ class MessageController extends Controller
     {
         // Dekriptovanje service_id i user_id
         try {
-            $user_id = Crypt::decrypt($request->input('user_id', ''));
+            $user_id = Crypt::decryptString($request->query('buyer_id'));
         } catch (\Exception $e) {
             $user_id = Auth::id();
         }
+
+        $user = Auth::user();
+        $token = $user->createToken('posloviOnline')->plainTextToken;
 
         $directChatService = null;
         $chats = [];
@@ -56,18 +60,23 @@ class MessageController extends Controller
                 if ($contacts->contains('id', $contact->id)) {
                     $existingContact = $contacts->firstWhere('id', $contact->id);
 
+                    $unreadCount = Message::countUnreadForSender(Auth::id(), $contact->id, $message->service->id);
+
                     // Dodaj novu temu sa ID servisa i datumom poslednje poruke
                     $existingContact->service_titles->push([
                         'service_id' => $message->service->id,
                         'service_title' => $message->service->title ?? 'Nepoznat servis',
                         'last_message_date' => $message->created_at,
+                        'unreadCount' => $unreadCount
                     ]);
                 } else {
+                    $unreadCount = Message::countUnreadForSender(Auth::id(), $contact->id, $message->service->id);
                     // Ako kontakt nije u kolekciji, dodaj ga sa temama, servisima i poslednjom porukom
                     $contact->service_titles = collect([[
                         'service_id' => $message->service->id,
                         'service_title' => $message->service->title ?? 'Nepoznat servis',
                         'last_message_date' => $message->created_at,
+                        'unreadCount' => $unreadCount
                     ]]);
 
                     $contacts->push($contact);
@@ -101,12 +110,115 @@ class MessageController extends Controller
             }
         }
 
-
-        if($request->has('service_id'))
+        if($request->has('service_id') and $request->has('buyer_id'))
         {
+            $buyer_id = Crypt::decryptString($request->query('buyer_id'));
             $service_id = Crypt::decrypt($request->input('service_id', ''));
 
-            $service = Service::find($service_id);
+            $service = Service::select('id', 'title')->find($service_id);
+            if($service_id){
+                $directChatService = $service;
+                $directChatService->user_id = $buyer_id;
+                // Dohvatanje korisnika koji je prodavac
+                $buyer = User::where('id', $buyer_id)
+                    ->select([
+                        'id',
+                        'firstname',
+                        'lastname',
+                        'avatar',
+                        'stars',
+                        'is_online',
+                        'role',
+                        'last_seen_at'
+                    ])
+                    ->first();
+
+                // Inicijalizacija 'service_titles' kao prazne kolekcije ili niza
+                $buyer->service_titles = collect(); // Možete koristiti i običan niz umesto kolekcije
+
+                // Ako kontakt već postoji u kolekciji, dodaj novu temu i ažuriraj poslednju poruku
+                if ($contacts->contains('id', $buyer->id)) {
+                    $existingContact = $contacts->firstWhere('id', $buyer->id);
+
+                    // Ako već postoji, dodaj novu temu sa ID servisa i datumom poslednje poruke
+                    $existingContact->service_titles = $existingContact->service_titles ?? collect();
+
+                    // Dodaj novu temu sa ID servisa i datumom poslednje poruke
+                    $existingContact->service_titles->push([
+                        'sender_id' => $user_id,
+                        'service_id' => $service->id,
+                        'service_title' => $service->title ?? 'Nepoznat servis',
+                        'last_message_date' => null,
+                    ]);
+                } else {
+                    // Ako kontakt nije u kolekciji, dodaj ga sa temama, servisima i poslednjom porukom
+                    $buyer->service_titles->push([
+                        'sender_id' => $user_id,
+                        'service_id' => $service->id,
+                        'service_title' => $service->title ?? 'Nepoznat servis',
+                        'last_message_date' => null,
+                    ]);
+
+                    $contacts->push($buyer);
+                }
+            }
+
+        }elseif($request->has('service_id') and $request->has('seller_id')){
+            $seller_id = Crypt::decryptString($request->query('seller_id'));
+            $service_id = Crypt::decrypt($request->input('service_id', ''));
+
+            $service = Service::select('id', 'title')->find($service_id);
+            if($service_id){
+                $directChatService = $service;
+                $directChatService->user_id = $seller_id;
+                // Dohvatanje korisnika koji je prodavac
+                $seller = User::where('id', $seller_id)
+                    ->select([
+                        'id',
+                        'firstname',
+                        'lastname',
+                        'avatar',
+                        'stars',
+                        'is_online',
+                        'role',
+                        'last_seen_at'
+                    ])
+                    ->first();
+
+                // Inicijalizacija 'service_titles' kao prazne kolekcije ili niza
+                $seller->service_titles = collect(); // Možete koristiti i običan niz umesto kolekcije
+
+                // Ako kontakt već postoji u kolekciji, dodaj novu temu i ažuriraj poslednju poruku
+                if ($contacts->contains('id', $seller->id)) {
+                    $existingContact = $contacts->firstWhere('id', $seller->id);
+
+                    // Ako već postoji, dodaj novu temu sa ID servisa i datumom poslednje poruke
+                    $existingContact->service_titles = $existingContact->service_titles ?? collect();
+
+                    // Dodaj novu temu sa ID servisa i datumom poslednje poruke
+                    $existingContact->service_titles->push([
+                        'sender_id' => $user_id,
+                        'service_id' => $service->id,
+                        'service_title' => $service->title ?? 'Nepoznat servis',
+                        'last_message_date' => null,
+                    ]);
+                } else {
+                    // Ako kontakt nije u kolekciji, dodaj ga sa temama, servisima i poslednjom porukom
+                    $seller->service_titles->push([
+                        'sender_id' => $user_id,
+                        'service_id' => $service->id,
+                        'service_title' => $service->title ?? 'Nepoznat servis',
+                        'last_message_date' => null,
+                    ]);
+
+                    $contacts->push($seller);
+                }
+            }
+        }elseif($request->has('service_id')){
+
+            $service_id = Crypt::decrypt($request->input('service_id', ''));
+
+            $service = Service::select('id', 'title')->find($service_id);
             if($service_id){
                 $directChatService = $service;
                 // Dohvatanje korisnika koji je prodavac
@@ -173,25 +285,15 @@ class MessageController extends Controller
             return $contact;
         });
 
-        // Originalni kod sa jedinstvenošću po user_id + service_id
-        // $contacts = $contacts->unique(function ($item) {
-        //     if (property_exists($item, 'sender_id')) {
-        //         return $item['sender_id'] . '-' . $item['service_id'];
-        //     }
-        // });
-
         $messagesCount = 0;
 
         if (Auth::check()) { // Provera da li je korisnik ulogovan
-            $favoriteCount = Favorite::where('user_id', Auth::id())->count();
-            $cartCount = CartItem::where('user_id', Auth::id())->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
             $messagesCount = Message::where('receiver_id', Auth::id())
                                 ->where('read_at', null)
                                 ->count();
         }
 
-        return view('messages.index', compact('contacts', 'chats', 'messages', 'user_id', 'directChatService', 'messagesCount'));
+        return view('messages.index', compact('contacts', 'chats', 'messages', 'directChatService', 'messagesCount', 'token'));
     }
 
     public function send(Request $request)
@@ -294,6 +396,8 @@ class MessageController extends Controller
     {
         $serviceId = $request->input('service_id');
         $contactId = $request->input('contact_id');
+        $page = $request->input('page', 1);  // Novi parametar za stranicu
+
         // Proverite da li je korisnik autorizovan da vidi ove poruke
         if (!auth()->check()) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -335,8 +439,14 @@ class MessageController extends Controller
                     ]);
                 }
             ])
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(20, ['*'], 'page', $page) // Paginacija->get()
+             ->map(function($message) use ($contactId) {
+                // Dodajemo broj nepročitanih poruka kao zaseban ključ
+                $message->unReadMessages = Message::countUnreadForSender(auth()->id(), $contactId, $message->service_id);
+                return $message;
+            });
+
 
         return response()->json([
             'messages' => $messages

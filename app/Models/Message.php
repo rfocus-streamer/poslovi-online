@@ -26,6 +26,15 @@ class Message extends Model
         return $this->belongsTo(User::class, 'receiver_id');
     }
 
+    public static function countUnreadForSender($receiver_id, $sender_id, $service_id)
+    {
+        return self::where('receiver_id', $receiver_id)
+                   ->where('sender_id', $sender_id)
+                   ->where('service_id', $service_id)
+                   ->whereNull('read_at')
+                   ->count();
+    }
+
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

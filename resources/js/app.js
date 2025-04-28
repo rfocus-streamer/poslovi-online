@@ -9,6 +9,7 @@ Alpine.start();
 // Globalni objekat za praćenje nepročitanih poruka
 window.unreadMessages = {};
 let sentMessages = new Set(); // Set za praćenje već poslanih ID-jeva
+let switchContact = 0;
 
 import axios from 'axios';
 
@@ -137,6 +138,10 @@ if (messageForm) {
 
 // // Функција за додавање поруке у DOM
 function appendNewMessage(msg) {
+    if (window.location.pathname != '/messages') {
+        return true;
+    }
+
     const authUser = document.querySelector('meta[name="user_id"]').getAttribute('content')
     const isSentByCurrentUser = msg.sender_id === currentUser.id;
     const sender = msg.sender_id === authUser.id ? msg.sender : msg.receiver;
@@ -308,6 +313,27 @@ window.sendWhisper = function(msg) {
                 receiver_id: msg.receiver_id,
                 read_at: new Date().toISOString()
             });
+        updateUnreadMessages(msg.sender_id);
+        // Pronađite <ul> element (ako je u pitanju samo jedan, koristite njegov id ili klasu)
+        var contactList = document.querySelector('.list-group');
+
+        // Pronađite sve span elemente sa klasom 'unread-badge' unutar tog <ul>
+        var unreadBadges = contactList.querySelectorAll('.unread-badge');
+
+        // Inicijalizujte brojač za nepročitane poruke
+        var totalUnread = 0;
+
+        // Iterirajte kroz sve span elemente
+        unreadBadges.forEach(function(badge) {
+            // Pronađite tekst unutar span-a, koji je broj nepročitanih poruka
+            var unreadCount = parseInt(badge.textContent.trim(), 10);
+
+            // Ako broj nije NaN, dodajte ga ukupnom broju
+            if (!isNaN(unreadCount) && unreadCount > 0) {
+                totalUnread += unreadCount;
+            }
+        });
+        updateTotalUnreadMessages(switchContact, totalUnread);
     } else {
         //console.log('Tab nije aktivan, whisper nije poslat.');
     }
@@ -315,23 +341,6 @@ window.sendWhisper = function(msg) {
 
 // Funkcija koja menja broj unutar odgovarajućeg <span> elementa
 window.updateUnreadMessages = function(contactId, newCount = null) {
-    // Selektujemo span u meniju za broj novih poruka
-    const menuBadge = document.querySelector(`#unread-count-id-${contactId}`);  // Pravilo: koristi backticks za interpolaciju
-
-    if (menuBadge) {
-        let currentCount = parseInt(menuBadge.textContent.trim()) || 0;
-
-        if (newCount === null) {
-            // Ako newCount nije prosleđen, smanji broj za 1
-            newCount = Math.max(0, currentCount - 1);
-        }
-
-        // Ažuriraj broj poruka u meniju
-        menuBadge.textContent = newCount;
-
-        // Ako je newCount veći od 0, prikazujemo broj, inače ga sakrivamo
-        menuBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
-    }
 
     const span = document.querySelector(`[data-user-unread-messages-id="${contactId}"]`);
 
@@ -347,6 +356,67 @@ window.updateUnreadMessages = function(contactId, newCount = null) {
     }
 };
 
+// Funkcija koja menja broj unutar odgovarajućeg menu elementa
+window.updateTotalUnreadMessages = function(contactId, newCount = null) {
+
+    // Proveri da li meta element sa name="user_id" postoji
+    const userMeta = document.querySelector('meta[name="user_id"]');
+    if(userMeta){
+        let userId = userMeta.getAttribute('content');
+
+        // Selektujemo span u meniju za broj novih poruka
+        const menuBadge = document.querySelector(`#unread-count-id-${userId}`);  // Pravilo: koristi backticks za interpolaciju
+
+        if (menuBadge && contactId != userId) {
+            let currentCount = parseInt(menuBadge.textContent.trim()) || 0;
+
+            if (newCount === null) {
+                // Ako newCount nije prosleđen, smanji broj za 1
+                newCount = Math.max(0, currentCount - 1);
+            }
+
+            // Ažuriraj broj poruka u meniju
+            menuBadge.textContent = newCount;
+
+            // Ako je newCount veći od 0, prikazujemo broj, inače ga sakrivamo
+            menuBadge.style.display = newCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+}
+
+// Funkcija koja dodaje badge unutar service-item-a na osnovu data-service-unread-messages-id
+function addUnreadBadge(serviceId, unreadCount) {
+    // Selektujemo div sa odgovarajućim data-service-unread-messages-id
+    const serviceItem = document.querySelector(`[data-service-unread-messages-id="${serviceId}"]`);
+
+    if (serviceItem) {
+        // Kreiramo novi <span> element za badge
+        const existingBadge = serviceItem.querySelector('.unread-badge'); // Proveravamo da li već postoji badge
+
+        // Ako badge već postoji, samo ažuriramo njegov tekst
+        if (existingBadge) {
+            existingBadge.textContent = unreadCount;
+            if (unreadCount > 0) {
+                existingBadge.style.display = 'inline';  // Prikazujemo badge
+            } else {
+                existingBadge.style.display = 'none';  // Sakrivamo badge ako nema poruka
+            }
+        } else {
+            // Ako badge ne postoji, kreiramo novi
+            const badge = document.createElement('span');
+            badge.classList.add('unread-badge', 'badge', 'bg-danger', 'rounded-pill', 'position-absolute', 'top-0', 'start-100', 'translate-middle');
+            badge.textContent = unreadCount;  // Postavljamo broj nepročitanih poruka u badge
+            serviceItem.appendChild(badge);  // Dodajemo badge unutar service-item-a
+
+            // Prikazujemo ili sakrivamo badge u zavisnosti od broja poruka
+            if (unreadCount > 0) {
+                badge.style.display = 'inline';  // Prikazujemo badge
+            } else {
+                badge.style.display = 'none';  // Sakrivamo badge ako nema poruka
+            }
+        }
+    }
+}
 
 // Korišćenje Presence kanala
 const presenceChannel = window.Echo.join('presence-online-status')
@@ -358,7 +428,7 @@ const presenceChannel = window.Echo.join('presence-online-status')
         updateContactStatus(user.id, true, formatDate(user.last_seen_at))
     })
     .leaving(user => {
-        //console.log('User leaving:', user);
+        selectUnreadMessages(switchContact);
         updateContactStatus(user.id, false, formatDate(user.last_seen_at))
         // Pošaljemo nepročitane poruke pre nego što korisnik napusti chat
         if (Object.keys(unreadMessages).length > 0) {
@@ -421,10 +491,19 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
     window.Echo.private(`messages`)
         .listen('MessageSent', (e) => {
             // Ažuriraj brojač za ovog korisnika
-            const receiver_id = e.message.receiver_id;
-            updateUnreadMessages(receiver_id, e.message.totalUnreadMessages);
+            const sender_id = e.message.sender_id;
+            updateTotalUnreadMessages(sender_id, e.message.totalUnreadMessages);
+            updateUnreadMessages(sender_id, e.message.totalSenderUnreadMessages);
             //console.log('Primljena poruka:', e.message);
-            appendNewMessage(e.message);
+            // Iteriramo kroz sve servise u unreadMessagesPerService
+            Object.entries(e.message.unreadMessagesPerService).forEach(([serviceId, unreadCount]) => {
+                // Pozivamo funkciju za dodavanje badge-a za svaki servis
+                addUnreadBadge(serviceId, unreadCount);
+            });
+            let currentChat = document.querySelector(`[data-contact-id="${sender_id}"]`);
+            if(currentChat || userMeta.getAttribute('content') == sender_id){
+                appendNewMessage(e.message);
+            }
         })
 
         .listenForWhisper('messageSeen', (data) => {
@@ -444,14 +523,41 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
         })
 
         .listenForWhisper('updateUnreadMessages', (data) => {
-            updateUnreadMessages(data.receiver_id);
+            updateUnreadMessages(data.sender_id);
         });
+
+        window.addEventListener('beforeunload', function (event) {
+            if (Object.keys(unreadMessages).length > 0) {
+                // Proveri da li meta element sa name="user_id" postoji
+                const userMeta = document.querySelector('meta[name="user_id"]');
+                const unreadMessagesToSend = Object.entries(unreadMessages)
+                        .filter(([id, time]) => !sentMessages.has(id))  // Filtriramo one koje nismo poslali
+                        .map(([id, time]) => ({
+                            message_id: id,
+                            read_at: time
+                        }));
+
+                // Ako imamo poruka koje nisu poslati, šaljemo ih
+                if (unreadMessagesToSend.length > 0) {
+                    // Ovdje možemo da pokušamo da pošaljemo poruke asinhrono
+                    sendUnreadMessages(unreadMessagesToSend).then(() => {
+                        // Označavamo poruke kao poslate
+                        unreadMessagesToSend.forEach(message => {
+                            sentMessages.add(message.message_id);
+                        });
+                    }).catch(err => {
+                        console.error('Došlo je do greške prilikom slanja poruka:', err);
+                    });
+                }
+            }
+        });
+
 }else{
      window.Echo.private(`messages`)
         .listen('MessageSent', (e) => {
             // Ažuriraj brojač za ovog korisnika
-            const receiver_id = e.message.receiver_id;
-            updateUnreadMessages(receiver_id, e.message.totalUnreadMessages);
+            const sender_id = e.message.sender_id;
+            updateTotalUnreadMessages(sender_id, e.message.totalUnreadMessages);
         })
 
     // Detekcija izlaska sa stranice
@@ -473,7 +579,6 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
         // Ako imamo poruka koje nisu poslati, šaljemo ih
         if (unreadMessagesToSend.length > 0) {
             sendUnreadMessages(unreadMessagesToSend);
-
             // Označavamo poruke kao poslate
             unreadMessagesToSend.forEach(message => {
                 sentMessages.add(message.message_id);
@@ -483,6 +588,30 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
 }
 
 
+window.selectUnreadMessages = function(sender_id, unreadCount = null)
+{
+    switchContact = sender_id;
+    if (Object.keys(unreadMessages).length > 0) {
+        const unreadMessagesToSend = Object.entries(unreadMessages)
+                .filter(([id, time]) => !sentMessages.has(id))  // Filtriramo one koje nismo poslali
+                .map(([id, time]) => ({
+                    message_id: id,
+                    read_at: time
+                }));
+
+        // Ako imamo poruka koje nisu poslati, šaljemo ih
+        if (unreadMessagesToSend.length > 0) {
+            sendUnreadMessages(unreadMessagesToSend);
+
+            // Označavamo poruke kao poslate
+            unreadMessagesToSend.forEach(message => {
+                sentMessages.add(message.message_id);
+            });
+        }
+        updateUnreadMessages(sender_id);
+    }
+}
+
 // Funkcija za slanje nepročitanih poruka na server
 function sendUnreadMessages(unreadMessages) {
     // Kreiramo objekat sa nepročitanim porukama
@@ -490,20 +619,20 @@ function sendUnreadMessages(unreadMessages) {
     formData.append('unreadMessages', JSON.stringify(unreadMessages));
 
     // Dodaj CSRF token u svaki zahtev
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    formData.append('_token', csrfToken);
 
-    // Pošaljemo podatke na server
-    axios.post('/mark-as-read', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    })
-    .then(response => {
-        console.log('Nepročitane poruke uspešno poslate:', response.data);
-    })
-    .catch(error => {
-        console.error('Greška prilikom slanja nepročitanih poruka:', error);
-    });
+    // Koristimo sendBeacon za slanje podataka
+    const url = '/mark-as-read'; // URL na koji šaljemo podatke
+
+    // `sendBeacon()` omogućava slanje podataka serveru čak i kad se stranica napusti
+    const result = navigator.sendBeacon(url, formData);
+
+    if (result) {
+        console.log('Nepročitane poruke uspešno poslate preko sendBeacon.');
+    } else {
+        console.error('Neuspešno slanje podataka koristeći sendBeacon.');
+    }
 }
 
 function formatDate(dateString) {

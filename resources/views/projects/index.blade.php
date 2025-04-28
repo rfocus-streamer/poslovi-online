@@ -45,7 +45,9 @@
             <tbody>
                 @foreach($projects as $key => $project)
                     @php
+                        $encryptedServiceId = Crypt::encrypt($project->service->id);
                         $encryptedUserId = Crypt::encryptString($project->seller->id);
+                        $encryptedUserId = route('messages.index', ['service_id' => $encryptedServiceId, 'seller_id' => $encryptedUserId]);
                     @endphp
                     <tr>
                         <td>{{ $key + 1 }}</td>
@@ -237,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("modalUserImage").src = '/user/'+image;
 
             // Postavljamo šifrovani ID u kontakt dugme (umesto pravog ID-a)
-            document.getElementById("modalContactButton").setAttribute("href", projectId+'/'+encryptedUserId);
+            document.getElementById("modalContactButton").setAttribute("href", encryptedUserId);
         });
     });
 });

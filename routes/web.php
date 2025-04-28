@@ -101,8 +101,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/send-message', [MessageController::class, 'send'])->name('send.message');
     Route::post('/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.read');
-    Route::get('/get-messages', [MessageController::class, 'getMessages'])->name('get.messages');
-
 });
 
 Route::get('/attachments/{file}', function ($file) {

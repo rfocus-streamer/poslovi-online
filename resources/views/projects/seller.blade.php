@@ -44,9 +44,12 @@
             </thead>
             <tbody>
                 @foreach($projects as $key => $project)
-                @php
-                    $encryptedUserId = Crypt::encryptString($project->buyer->id);
-                @endphp
+                    @php
+                        $encryptedServiceId = Crypt::encrypt($project->service->id);
+                        $encryptedUserId = Crypt::encryptString($project->buyer->id);
+                        $encryptedUserId = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
+                    @endphp
+
                     <tr>
                         <td>{{ $key + 1 }}</td>
                         <td><a class="text-dark" href="{{ route('services.show', $project->service->id) }}">{{ $project->service->title }}</a></td>
@@ -235,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("modalUserImage").src = '/user/'+image;
 
             // Postavljamo šifrovani ID u kontakt dugme (umesto pravog ID-a)
-            document.getElementById("modalContactButton").setAttribute("href", projectId+'/'+encryptedUserId);
+            document.getElementById("modalContactButton").setAttribute("href", encryptedUserId);
         });
     });
 });

@@ -213,7 +213,12 @@
                     @auth
                         @if($project->admin_decision === null)
                             <!-- Dugme za kontakt -->
-                            <a href="#" class="btn btn-success w-100">
+                             @php
+                                $encryptedServiceId = Crypt::encrypt($project->service->id);
+                                $encryptedUserId = Crypt::encryptString($project->seller->id);
+                                $encryptedUserId = route('messages.index', ['service_id' => $encryptedServiceId, 'seller_id' => $encryptedUserId]);
+                            @endphp
+                            <a href="{{$encryptedUserId}}" class="btn btn-success w-100">
                                 <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
                             </a>
                         @endif
