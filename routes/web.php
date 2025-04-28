@@ -13,6 +13,8 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\Admin\DashboardController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -101,6 +103,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/send-message', [MessageController::class, 'send'])->name('send.message');
     Route::post('/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.read');
+
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
 
 Route::get('/attachments/{file}', function ($file) {
