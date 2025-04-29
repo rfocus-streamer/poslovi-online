@@ -174,9 +174,9 @@ input:not(:checked) + .slider .label-text.right {
                         @else
                             <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
                         @endif
+                    @else
+                        <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
                     @endif
-                @else
-                    <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
                 @endif
             @endauth
 
