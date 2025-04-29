@@ -1,6 +1,13 @@
 @extends('layouts.app')
 <title>Poslovi Online | Registracija</title>
 <link href="{{ asset('css/index.css') }}" rel="stylesheet">
+<!-- Dodajte CSS za intl-tel-input -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.min.css">
+
+<!-- Dodajte JS za intl-tel-input -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+<!-- Dodajte jQuery (ako već nije uključeno u vašem projektu) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 @section('content')
 
 <!-- Hero sekcija sa pozadinom -->
@@ -36,6 +43,12 @@
                         {{ session('success') }}
                     </div>
                 @endif
+
+                @error('captcha')
+                    <div id="register-message" class="alert alert-danger text-center">
+                        {{ $message }}
+                    </div>
+                @enderror
 
                 <form method="POST" action="{{ route('register') }}" onsubmit="return validatePasswords()">
                     @csrf
@@ -129,16 +142,19 @@
                     </div>
 
                     <!-- Telefon -->
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-3 w-100">
+                        <!-- Skriveno polje za pun broj -->
+                        <input type="hidden" name="phone" id="full_phone">
+
                         <label for="phone" class="form-label">
                             <i class="fas fa-phone me-1"></i> Telefon
-                        </label>
+                        </label><br>
+                        <!-- Dodajte input za pozivni broj sa zastavama -->
                         <input type="tel"
-                               id="phone"
-                               name="phone"
+                               id="phone_input"
+                               name="phone_input"
                                class="form-control @error('phone') is-invalid @enderror"
-                               pattern="[0-9]{9,15}"
-                               placeholder="06X/XXX-XXX"
+                               placeholder="XX/XXX-XXX"
                                value="{{ old('phone') }}"
                                required>
                         @error('phone')
@@ -146,38 +162,27 @@
                         @enderror
                     </div>
 
-                    <!-- Rola -->
-                    <div class="form-group mb-4">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           name="roles[]"
-                                           id="prodavac"
-                                           value="prodavac"
-                                           {{ in_array('prodavac', old('roles', [])) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="prodavac">
-                                        Prodavac
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           name="roles[]"
-                                           id="kupac"
-                                           value="kupac"
-                                           {{ in_array('kupac', old('roles', [])) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="kupac">
-                                        Kupac
-                                    </label>
-                                </div>
-                            </div>
+                    <!-- CAPTCHA -->
+                    <div class="form-group d-flex align-items-center w-100">
+                        <div class="d-flex align-items-center flex-grow-1">
+                            <span id="math-question" class="mb-0"></span>
+                            <input type="text" name="captcha" class="form-control form-control-sm py-0" style="width: 20% !important; margin-left: 5px;" required> &nbsp; <span class="ms-auto">nov zadatak</span>
                         </div>
-                        @error('roles')
-                            <div class="text-danger small">{{ $message }}</div>
+                        <div class="text-end">
+                            <a href="javascript:void(0);" id="refresh-captcha" class="ms-1 fa-xs text-decoration-none">
+                                <i class="fa fa-rotate-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Prihvatam uslove -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" required>
+                        <label class="form-check-label" for="terms">
+                            Prihvatam <a href="{{ route('terms') }}" target="_blank">uslove korišćenja</a>
+                        </label>
+                        @error('terms')
+                            <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -234,4 +239,62 @@
     document.getElementById('registerModal').addEventListener('show.bs.modal', function(event) {
         document.querySelector('.modal-backdrop').style.backgroundColor = 'rgba(0,0,0,0.7)';
     });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Pošaljemo GET zahtev na server za novu CAPTCHA sliku
+        fetch('{{ route('captcha') }}')
+            .then(response => response.json())
+            .then(data => {
+                // Ažuriraj pitanje na stranici
+                document.getElementById('math-question').textContent = data.question;
+            })
+            .catch(error => {
+                console.error('Greška pri osvežavanju CAPTCHA:', error);
+            });
+
+    // Kada korisnik klikne na "Osveži CAPTCHA"
+    document.getElementById('refresh-captcha').addEventListener('click', function() {
+        // Pošaljemo GET zahtev na server za novu CAPTCHA sliku
+        fetch('{{ route('captcha') }}')
+            .then(response => response.json())
+            .then(data => {
+                // Ažuriraj pitanje na stranici
+                document.getElementById('math-question').textContent = data.question;
+            })
+            .catch(error => {
+                console.error('Greška pri osvežavanju CAPTCHA:', error);
+            });
+    });
+});
+
+// Kada se stranica učita, inicijalizujte intl-tel-input
+document.addEventListener("DOMContentLoaded", function() {
+    const phoneInput = document.querySelector("#phone_input");
+    const hiddenPhone = document.querySelector("#full_phone");
+
+    const iti = window.intlTelInput(phoneInput, {
+        preferredCountries: ['rs', 'hr', 'ba', 'si', 'mk', 'gb', 'de', 'fr', 'it', 'es', 'ru'],
+        separateDialCode: true,
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+    });
+
+    // Ažuriraj hidden polje pri svakoj promeni
+    phoneInput.addEventListener('input', updateHiddenPhone);
+    phoneInput.addEventListener('countrychange', updateHiddenPhone);
+
+    // Obavezno ažuriraj pre slanja forme
+    document.querySelector('form').addEventListener('submit', function(e) {
+        updateHiddenPhone();
+        if (!iti.isValidNumber()) {
+            e.preventDefault();
+            alert('Unesite validan broj telefona!');
+        }
+    });
+
+    function updateHiddenPhone() {
+        hiddenPhone.value = iti.getNumber();
+    }
+});
 </script>

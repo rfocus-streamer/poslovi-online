@@ -34,26 +34,18 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'roles' => ['required', 'array'], // Osigurava da roles[] postoji
-        ]);
-
-        // Dohvati role iz zahteva
-        $selectedRoles = $request->input('roles', []);
-
-        // Postavi rolu
-        if (in_array('prodavac', $selectedRoles) && in_array('kupac', $selectedRoles)) {
-            $role = 'both';
-        } elseif (in_array('prodavac', $selectedRoles)) {
-            $role = 'seller';
-        } elseif (in_array('kupac', $selectedRoles)) {
-            $role = 'buyer';
-        } else {
-            $role = '';
-        }
+                'firstname' => ['required', 'string', 'max:255'],
+                'lastname' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'captcha' => ['required', 'numeric', 'in:'.session('math_captcha')],
+            ],
+            [
+                'captcha.in' => 'Netačan odgovor na matematičko pitanje. Pokušajte ponovo.',
+                'captcha.required' => 'Morate rešiti matematičku CAPTCHA-u.',
+                'captcha.numeric' => 'Odgovor mora biti broj.',
+            ]
+        );
 
        // Proveri i obradi affiliate kod PRE kreiranja korisnika
         $referredById = null;
@@ -73,13 +65,16 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
-            'role' => $role, // Ubacujemo rolu
+            'role' => 'buyer', // Ubacujemo rolu
             'avatar' => 'user.jpg',
             'affiliate_code' => $this->generateUniqueAffiliateCode(),
             'referred_by' => $referredById,
         ]);
 
         event(new Registered($user));
+
+        // Obriši CAPTCHA iz sesije nakon uspešne registracije
+        session()->forget('math_captcha');
 
         //Auth::login($user);
 

@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('password');
 
             // Affiliate polja
+            $table->boolean('affiliate_accepted')->default(false);
             $table->string('affiliate_code')->unique()->nullable();
             $table->foreignId('referred_by')->nullable()->constrained('users');
             $table->decimal('affiliate_balance', 10, 2)->default(0.00);

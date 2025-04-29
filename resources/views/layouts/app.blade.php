@@ -10,9 +10,154 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @auth
         <meta name="user_id" content="{{ auth()->user()->id }}">
+        @vite(['resources/js/app.js'])
     @endauth
-    @vite(['resources/js/app.js'])
 </head>
+<style>
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 160px;
+    height: 20px;
+    top: -8px !important;
+    cursor: pointer;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Osnovna boja pozadine */
+    transition: 0.4s;
+    border-radius: 24px;
+    background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Leva siva, desna zelena */
+    justify-content: space-between;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    left: 2px;
+    bottom: 1px;
+    background-color: white;
+    transition: 0.4s;
+}
+
+/* Stilizacija za label-text */
+.label-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+    margin-left: 27px;
+}
+
+.label-text.left {
+    left: 12px;
+}
+
+.label-text.right {
+    right: 22px;
+}
+
+/* Kada je dugme prebačeno na desnu stranu (Kupac neaktivan, Prodavac aktivan) */
+input:checked + .slider {
+    background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Leva polovina siva, desna polovina zelena */
+}
+
+input:checked + .slider:before {
+    transform: translateX(138px); /* Premesti dugme u desno */
+}
+
+/* Tekst */
+input:checked + .slider .label-text.left {
+    color: #ccc; /* Disabled tekst za Kupca */
+}
+
+input:checked + .slider .label-text.right {
+    color: #fff; /* Aktivna desna strana za Prodavca */
+}
+
+/* Kada je dugme prebačeno na levu stranu (Prodavac neaktivan, Kupac aktivan) */
+input:not(:checked) + .slider {
+    background: linear-gradient(to right, #007bff 50%, #ccc 50%); /* Leva polovina narandžasta, desna polovina siva */
+}
+
+input:not(:checked) + .slider:before {
+    transform: translateX(0px); /* Premesti dugme u levo */
+}
+
+/* Tekst */
+input:not(:checked) + .slider .label-text.left {
+    color: #fff; /* Aktivna leva strana za Kupca */
+}
+
+input:not(:checked) + .slider .label-text.right {
+    color: #ccc; /* Disabled tekst za Prodavca */
+}
+
+.add-service-title {
+    display: inline-block;
+    transform: rotate(-15deg) skew(-15deg);
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    white-space: nowrap; /* Sprečava prelazak teksta u novi red */
+    margin-left: -90px !important;
+    margin-top: 30px !important;
+    position: relative; /* Omogućava pozicioniranje pseudo-elementa */
+}
+
+.add-service-title mark {
+  background: linear-gradient(120deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  padding: 0 10px;
+  border-radius: 5px;
+}
+
+.add-service-title::after {
+  content: ''; /* Kreira liniju ispod teksta */
+  position: absolute;
+  left: 0;
+  bottom: -5px; /* Pozicija linije ispod teksta */
+  width: 100%;
+  height: 4px; /* Visina linije */
+  background-color: #4CAF50; /* Zelena boja linije */
+  animation: pulseLine 1.5s ease-in-out infinite;
+  border-radius: 2px; /* Zaokružene ivice linije */
+}
+
+@keyframes pulseLine {
+  0% {
+    transform: scaleX(0);
+    background-color: #4CAF50;
+  }
+  50% {
+    transform: scaleX(1.2); /* Linija se širi */
+    background-color: #45a049;
+  }
+  100% {
+    transform: scaleX(0);
+    background-color: #4CAF50;
+  }
+}
+
+</style>
 <body>
     <!-- Prvi navbar: Logo + opcije -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -21,6 +166,19 @@
             <a class="navbar-brand" href="/">
                 <img src="{{ asset('images/logo.png') }}" alt="Poslovi Online Logo" width="160">
             </a>
+            @auth
+                @if(Auth::user()->role == 'seller')
+                    @if(Auth::user()->package)
+                        @if($seller['countPublicService'] < Auth::user()->package->quantity)
+                           <a href="{{ route('services.create') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                        @else
+                            <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                        @endif
+                    @endif
+                @else
+                    <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                @endif
+            @endauth
 
             <!-- Toggler za mobilni prikaz -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarOptions" aria-controls="navbarOptions" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,6 +278,16 @@
                                     </form>
                                 </li>
                             </ul>
+                        </li>
+                        <!-- Switch za izbor Kupac/Prodavac -->
+                        <li class="nav-item">
+                            <label class="switch">
+                                <input type="checkbox" id="roleSwitch"
+                                    {{ Auth::user()->role == 'seller' || Auth::user()->role == 'both' ? 'checked' : '' }}>
+                                <span class="slider"></span>
+                                <span class="label-text left">Kupac</span>
+                                <span class="label-text right">Prodavac</span>
+                            </label>
                         </li>
                     @else
                         <li class="nav-item">
@@ -224,6 +392,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript">
+document.getElementById('roleSwitch').addEventListener('change', function() {
+    var newRole = this.checked ? 'seller' : 'buyer';
 
+    // Slanje AJAX zahteva za promenu uloge korisnika
+    fetch('/update-role', {
+        method: 'POST',
+        body: JSON.stringify({ role: newRole }),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())  // Parsira JSON odgovor
+    .then(data => {
+        //console.log(data);  // Ispisuje JSON odgovor u konzolu
+
+        if (data.success) {
+            console.log('Uloga uspešno promenjena!');
+            // Preusmeri korisnika na "profile.edit" rutu nakon promene uloge
+            window.location.href = "{{ route('profile.edit') }}";  // Redirektuje na profil
+        } else {
+            console.error('Došlo je do greške.');
+        }
+    })
+    .catch(error => {
+        console.error('Greška u AJAX pozivu:', error);
+    });
+});
+
+</script>
 </body>
 </html>

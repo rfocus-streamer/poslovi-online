@@ -58,7 +58,6 @@ class ProfileController extends Controller
             'lastname' => 'required|string|max:255',
             //'email' => 'required|email|unique:users,email,' . $user->id, // Proverava da email nije zauzet osim ako pripada korisniku
             'phone' => 'nullable|string|regex:/^[0-9]{9,15}$/',
-            'roles' => 'nullable|array',
         ]);
 
         // Obrada avatara ako je postavljen novi
@@ -81,23 +80,37 @@ class ProfileController extends Controller
         $user->lastname = $request->lastname;
         $user->phone = $request->phone;
 
-        // Ažuriranje role
-        if ($request->roles) {
-            if (in_array('prodavac', $request->roles) && in_array('kupac', $request->roles)) {
-                $user->role = 'both';
-            } elseif (in_array('prodavac', $request->roles)) {
-                $user->role = 'seller';
-            } elseif (in_array('kupac', $request->roles)) {
-                $user->role = 'buyer';
-            } else {
-                $user->role = null;
-            }
-        }
-
         // Čuvanje promena u bazi
         $user->save();
 
         return redirect()->back()->with('success', 'Profil uspešno ažuriran!');
+    }
+
+    public function UpdateRole(Request $request)
+    {
+        $user = Auth::user();
+
+        // Validacija podataka
+        $request->validate([
+            'role' => 'string',
+        ]);
+
+        // Ažuriranje role
+        if ($request->role != 'buyer' && $request->role != 'seller') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid role.'
+            ]);
+        }
+
+        $user->role = $request->role;
+        // Čuvanje promena u bazi
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'role' => $user->role,  // Vraćaš novu rolu kao potvrdu
+        ]);
     }
 
     public function changePassword(Request $request)

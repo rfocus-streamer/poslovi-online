@@ -99,27 +99,9 @@
                         </div>
 
                         <!-- Telefon -->
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-5">
                             <label for="phone" class="form-label"><i class="fas fa-phone me-1"></i> Telefon</label>
                             <input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{9,15}" placeholder="06X/XXX-XXX" value="{{ Auth::user()->phone }}" required>
-                        </div>
-
-                        <!-- Rola -->
-                        <div class="form-group mb-4">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="roles[]" id="prodavac" value="prodavac" {{ ('seller' === Auth::user()->role || 'both' === Auth::user()->role) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="prodavac">Prodavac</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="roles[]" id="kupac" value="kupac" {{ ('buyer' === Auth::user()->role || 'both' === Auth::user()->role) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="kupac">Kupac</label>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Submit Button -->

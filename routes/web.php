@@ -14,7 +14,8 @@ use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\Admin\DashboardController;
-
+use Mews\Captcha\Facades\Captcha;
+use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -136,6 +137,42 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.changePassword');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('update-role', [ProfileController::class, 'UpdateRole'])->name('profile.updaterole');
 });
+
+Route::get('/terms', function () {
+    // Generišemo URL za PDF fajl u storage/public/pdf
+    $fileUrl = asset('storage/pdf/USLOVI-KORIŠĆŠENJA.pdf');
+
+    // Preusmeravamo korisnika na URL (ako želite da PDF bude direktno preuzet)
+    return redirect($fileUrl);
+})->name('terms');
+
+// Generisanje matematičke CAPTCHA-e
+Route::get('/math-captcha', function () {
+    $operator = ['+', '-', '*'][rand(0, 2)]; // Nasumično biramo operator
+
+    // Generišemo brojeve na način koji sprečava negativne rezultate
+    if ($operator === '-') {
+        $num1 = rand(5, 15);      // Veći opseg za prvi broj
+        $num2 = rand(1, $num1);   // Drugi broj je uvek manji ili jednak prvom
+    } else {
+        $num1 = rand(1, 10);
+        $num2 = rand(1, 10);
+    }
+
+    // Izračunavamo rezultat
+    switch($operator) {
+        case '+': $result = $num1 + $num2; break;
+        case '-': $result = $num1 - $num2; break;
+        case '*': $result = $num1 * $num2; break;
+    }
+
+    session()->put('math_captcha', $result);
+
+    return response()->json([
+        'question' => "Izračunaj rezultat: $num1 $operator $num2 ="
+    ]);
+})->name('captcha');
 
 require __DIR__.'/auth.php';
