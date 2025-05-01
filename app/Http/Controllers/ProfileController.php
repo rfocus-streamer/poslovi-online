@@ -58,6 +58,9 @@ class ProfileController extends Controller
             'lastname' => 'required|string|max:255',
             //'email' => 'required|email|unique:users,email,' . $user->id, // Proverava da email nije zauzet osim ako pripada korisniku
             'phone' => 'nullable|string|regex:/^[0-9]{9,15}$/',
+            'street' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
         ]);
 
         // Obrada avatara ako je postavljen novi
@@ -79,6 +82,9 @@ class ProfileController extends Controller
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
         $user->phone = $request->phone;
+        $user->street = $request->street;
+        $user->city = $request->city;
+        $user->country = $request->country;
 
         // Čuvanje promena u bazi
         $user->save();

@@ -12,6 +12,7 @@ use App\Models\AdditionalCharge;
 use App\Models\Complaint;
 use App\Models\Commission;
 use App\Models\User;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -351,6 +352,31 @@ class ProjectController extends Controller
 
         // Spremanje promena na projektu
         $project->save();
+
+        // $user = Auth::user();
+        // $invoice = Invoice::create([
+        //     'number' => 'INV-' . now()->format('YmdHis').'-'.Auth::id(),
+        //     'user_id' => Auth::id(),
+        //     'issue_date' => now(),
+        //     'status' => 'plaćen',
+        //     'total' => $price,
+        //     'client_info' => [
+        //         'name' => $user->firstname.' '.$user->lastname,
+        //         'address' => $user->street,
+        //         'city' => $user->city,
+        //         'country' => $user->country
+        //     ],
+        //     'items' => [
+        //         [
+        //             'description' => $package->name,
+        //             'billing_period' => 'Mesečni plan do: '.$user->package_expires_at->format('d.m.Y H:i'),
+        //             'quantity' => 1,
+        //             'amount' => $price,
+        //             'package_id' => $package->id
+        //         ]
+        //     ],
+        //     'payment_method' => 'Deponovani iznos sa korisničkog računa'
+        // ]);
 
         return redirect()
                   ->back()

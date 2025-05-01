@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('lastname');
             $table->string('email')->unique();
             $table->string('phone')->nullable(); // Omogućite NULL vrednosti
+            $table->string('street')->nullable(); // Omogućite NULL vrednosti
+            $table->string('city')->nullable(); // Omogućite NULL vrednosti
+            $table->string('country')->nullable(); // Omogućite NULL vrednosti
             $table->string('payment_method')->nullable(); // PayPal, bankovni račun...
             $table->decimal('deposits', 10, 2)->default(0.00); // Maksimalno 10 cifara, 2 decimalna mesta
             $table->enum('role', ['buyer', 'seller', 'both', 'support', 'admin'])->default('buyer');

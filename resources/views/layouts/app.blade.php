@@ -269,6 +269,7 @@ input:not(:checked) + .slider .label-text.right {
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
                                 <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
+                                <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi (Invoices)</a></li>
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

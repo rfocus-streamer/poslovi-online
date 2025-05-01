@@ -99,9 +99,29 @@
                         </div>
 
                         <!-- Telefon -->
-                        <div class="form-group mb-5">
+                        <div class="form-group mb-1">
                             <label for="phone" class="form-label"><i class="fas fa-phone me-1"></i> Telefon</label>
                             <input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{9,15}" placeholder="06X/XXX-XXX" value="{{ Auth::user()->phone }}" required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <!-- Ulica -->
+                            <div class="col-12 col-md-4">
+                                <label for="street" class="form-label"><i class="fas fa-road me-1"></i> Ulica</label>
+                                <input type="text" id="street" name="street" class="form-control" value="{{ Auth::user()->street ?? '' }}" required>
+                            </div>
+
+                            <!-- Grad -->
+                            <div class="col-12 col-md-4">
+                                <label for="city" class="form-label"><i class="fas fa-city me-1"></i> Grad</label>
+                                <input type="text" id="city" name="city" class="form-control" value="{{ Auth::user()->city ?? '' }}" required>
+                            </div>
+
+                            <!-- Zemlja -->
+                            <div class="col-12 col-md-4">
+                                <label for="country" class="form-label"><i class="fas fa-globe me-1"></i> Zemlja</label>
+                                <input type="text" id="country" name="country" class="form-control" value="{{ Auth::user()->country ?? '' }}" required>
+                            </div>
                         </div>
 
                         <!-- Submit Button -->

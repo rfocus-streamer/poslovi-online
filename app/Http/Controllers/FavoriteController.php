@@ -17,8 +17,6 @@ class FavoriteController extends Controller
      */
     public function index()
     {
-
-
         $favoriteServices = []; // Inicijalizuj prazan niz za omiljene servise
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan

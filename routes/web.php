@@ -13,6 +13,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Admin\DashboardController;
 use Mews\Captcha\Facades\Captcha;
 use Illuminate\Support\Str;
@@ -104,6 +105,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/send-message', [MessageController::class, 'send'])->name('send.message');
     Route::post('/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.read');
+
+    Route::get('/invoices/', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoice/{id}', [InvoiceController::class, 'getPDF'])->name('invoice.download');
 
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
