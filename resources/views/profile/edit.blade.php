@@ -144,7 +144,7 @@
                             @if(Auth::user()->role === 'seller')
                                 <span class="badge bg-success px-3 py-2">Prodavac</span>
                             @elseif(Auth::user()->role === 'buyer')
-                                <span class="badge bg-primary px-3 py-2">Kupac</span>
+                                <span class="badge px-3 py-2" style="background: #9c1c2c;">Kupac</span>
                             @elseif(Auth::user()->role === 'both')
                                 <span class="badge bg-warning text-dark px-3 py-2">Prodavac & Kupac</span>
                             @else
@@ -209,37 +209,6 @@
                                 <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} <i class="fas fa-euro-sign"></i></strong>
                             </h6>
                         @endif
-
-                        <h6 class="text-secondary">
-                            <i class="fas fa-users"></i> Tvoj affiliate kod: <strong class="text-success">{{ Auth::user()->affiliate_code }} </strong>
-                            <input type="hidden" class="form-control" id="affiliateLinkInput"
-                               value="{{ url('/register') }}?affiliateCode={{ Auth::user()->affiliate_code }}"
-                               readonly>
-                        </h6>
-
-                        <h6 class="text-secondary">
-                            <i class="fas fa-money-bill-wave"></i> Tvoja affiliate zarada: <strong class="text-success">{{ number_format(Auth::user()->affiliate_balance, 2) }} <i class="fas fa-euro-sign"></i></strong>
-                        </h6>
-
-                        <div class="text-warning mb-1 modal-header">
-                            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#affiliatePayoutModal">
-                                <i class="fas fa-money-bill-wave me-1"></i> Povuci affiliate novac
-                            </button>
-                        </div>
-
-                        <div class="text-warning mb-3 modal-header">
-                            <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#affiliateStatsModal">
-                                <i class="fas fa-chart-line me-1"></i> Pregled affiliate statistike
-                            </button>
-                        </div>
-
-                        <div class="text-warning text-center">
-                            <a onclick="copyLink()" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Kopiraj link"> <i class="fas fa-link"></i>
-                            </a>
-                            <small class="text-secondary">Preporuči nas i zaradi — podeli svoj affiliate link!</small>
-                            <p class="modal-header"></p>
-                        </div>
-
 
                         <h6 class="text-secondary">
                             <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
@@ -597,17 +566,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
-</script>
-
-<script>
-    function copyLink() {
-        const affiliateLink = document.getElementById('affiliateLinkInput');
-        navigator.clipboard.writeText(affiliateLink.value).then(function() {
-            let copyToast = new bootstrap.Toast(document.getElementById('copyToast'));
-            copyToast.show();
-        }, function(err) {
-            console.error("Greška pri kopiranju: ", err);
-        });
-    }
 </script>
 @endsection

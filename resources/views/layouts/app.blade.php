@@ -94,7 +94,8 @@ input:checked + .slider .label-text.right {
 
 /* Kada je dugme prebačeno na levu stranu (Prodavac neaktivan, Kupac aktivan) */
 input:not(:checked) + .slider {
-    background: linear-gradient(to right, #007bff 50%, #ccc 50%); /* Leva polovina narandžasta, desna polovina siva */
+    /*background: linear-gradient(to right, #007bff 50%, #ccc 50%); /* Leva polovina narandžasta, desna polovina siva */
+    background: linear-gradient(to right, #9c1c2c 50%, #ccc 50%);
 }
 
 input:not(:checked) + .slider:before {
@@ -113,7 +114,7 @@ input:not(:checked) + .slider .label-text.right {
 .add-service-title {
     display: inline-block;
     transform: rotate(-15deg) skew(-15deg);
-    color: #fff;
+    color: #9c1c2c;
     font-weight: bold;
     font-size: 1rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -121,6 +122,11 @@ input:not(:checked) + .slider .label-text.right {
     margin-left: -90px !important;
     margin-top: 30px !important;
     position: relative; /* Omogućava pozicioniranje pseudo-elementa */
+}
+
+.add-service-title:hover {
+    color: #4CAF50;
+    text-decoration: none;
 }
 
 .add-service-title mark {
@@ -156,7 +162,6 @@ input:not(:checked) + .slider .label-text.right {
     background-color: #4CAF50;
   }
 }
-
 </style>
 <body>
     <!-- Prvi navbar: Logo + opcije -->
@@ -270,6 +275,7 @@ input:not(:checked) + .slider .label-text.right {
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
                                 <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
                                 <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi (Invoices)</a></li>
+                                <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Affiliate</a></li>
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -280,16 +286,18 @@ input:not(:checked) + .slider .label-text.right {
                                 </li>
                             </ul>
                         </li>
-                        <!-- Switch za izbor Kupac/Prodavac -->
-                        <li class="nav-item">
-                            <label class="switch">
-                                <input type="checkbox" id="roleSwitch"
-                                    {{ Auth::user()->role == 'seller' || Auth::user()->role == 'both' ? 'checked' : '' }}>
-                                <span class="slider"></span>
-                                <span class="label-text left">Kupac</span>
-                                <span class="label-text right">Prodavac</span>
-                            </label>
-                        </li>
+                        @if(Auth::user()->role == 'seller' or Auth::user()->role == 'buyer')
+                            <!-- Switch za izbor Kupac/Prodavac -->
+                            <li class="nav-item">
+                                <label class="switch">
+                                    <input type="checkbox" id="roleSwitch"
+                                        {{ Auth::user()->role == 'seller' || Auth::user()->role == 'both' ? 'checked' : '' }}>
+                                    <span class="slider"></span>
+                                    <span class="label-text left">Kupac</span>
+                                    <span class="label-text right">Prodavac</span>
+                                </label>
+                            </li>
+                        @endif
                     @else
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('login') ? 'active' : '' }}"" href="{{ route('login') }}">

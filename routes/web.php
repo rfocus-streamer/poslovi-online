@@ -106,8 +106,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/send-message', [MessageController::class, 'send'])->name('send.message');
     Route::post('/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.read');
 
-    Route::get('/invoices/', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/invoice/{id}', [InvoiceController::class, 'getPDF'])->name('invoice.download');
+
+    Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
+    Route::post('/affiliate/activate', [AffiliateController::class, 'activateAffiliate'])->name('affiliate-activate');
 
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
@@ -151,6 +154,14 @@ Route::get('/terms', function () {
     // Preusmeravamo korisnika na URL (ako želite da PDF bude direktno preuzet)
     return redirect($fileUrl);
 })->name('terms');
+
+Route::get('/affiliate-contract', function () {
+    // Generišemo URL za PDF fajl u storage/public/pdf
+    $fileUrl = asset('storage/pdf/Affiliate-Program.pdf');
+
+    // Preusmeravamo korisnika na URL (ako želite da PDF bude direktno preuzet)
+    return redirect($fileUrl);
+})->name('affiliate-contract');
 
 // Generisanje matematičke CAPTCHA-e
 Route::get('/math-captcha', function () {

@@ -3,12 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AffiliateController extends Controller
 {
+
+    public function index()
+    {
+        return view('affiliate.index');
+    }
+
+    public function activateAffiliate(Request $request)
+    {
+        $user = Auth::user();
+        $user->affiliate_accepted = true;
+        $user->save();
+         return redirect()->back()->with('success', 'Uspešno si aktivirao affiliate program !');
+    }
+
     public function requestPayout(Request $request)
     {
         $request->validate([

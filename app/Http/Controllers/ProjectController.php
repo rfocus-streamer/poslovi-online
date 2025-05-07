@@ -353,30 +353,30 @@ class ProjectController extends Controller
         // Spremanje promena na projektu
         $project->save();
 
-        // $user = Auth::user();
-        // $invoice = Invoice::create([
-        //     'number' => 'INV-' . now()->format('YmdHis').'-'.Auth::id(),
-        //     'user_id' => Auth::id(),
-        //     'issue_date' => now(),
-        //     'status' => 'plaćen',
-        //     'total' => $price,
-        //     'client_info' => [
-        //         'name' => $user->firstname.' '.$user->lastname,
-        //         'address' => $user->street,
-        //         'city' => $user->city,
-        //         'country' => $user->country
-        //     ],
-        //     'items' => [
-        //         [
-        //             'description' => $package->name,
-        //             'billing_period' => 'Mesečni plan do: '.$user->package_expires_at->format('d.m.Y H:i'),
-        //             'quantity' => 1,
-        //             'amount' => $price,
-        //             'package_id' => $package->id
-        //         ]
-        //     ],
-        //     'payment_method' => 'Deponovani iznos sa korisničkog računa'
-        // ]);
+        $user = Auth::user();
+        $invoice = Invoice::create([
+            'number' => $project->project_number,
+            'user_id' => $project->buyer_id,
+            'issue_date' => now(),
+            'status' => 'plaćen',
+            'total' => $packageAmount,
+            'client_info' => [
+                'name' => $user->firstname.' '.$user->lastname,
+                'address' => $user->street,
+                'city' => $user->city,
+                'country' => $user->country
+            ],
+            'items' => [
+                [
+                    'description' => $project->service->title,
+                    'billing_period' => 'Kupovina/završetak posla',
+                    'quantity' => $package->quantity,
+                    'amount' => $packageAmount,
+                    'project_id' => $project->id
+                ]
+            ],
+            'payment_method' => 'Deponovani iznos sa korisničkog računa'
+        ]);
 
         return redirect()
                   ->back()
@@ -464,6 +464,31 @@ class ProjectController extends Controller
         // Spremanje promena na projektu
         $project->save();
 
+        $user = $project->buyer;
+        $invoice = Invoice::create([
+            'number' => $project->project_number,
+            'user_id' => $project->buyer_id,
+            'issue_date' => now(),
+            'status' => 'plaćen',
+            'total' => $packageAmount,
+            'client_info' => [
+                'name' => $user->firstname.' '.$user->lastname,
+                'address' => $user->street,
+                'city' => $user->city,
+                'country' => $user->country
+            ],
+            'items' => [
+                [
+                    'description' => $project->service->title,
+                    'billing_period' => 'Kupovina/završetak posla',
+                    'quantity' => $project->quantity,
+                    'amount' => $packageAmount,
+                    'project_id' => $project->id
+                ]
+            ],
+            'payment_method' => 'Deponovani iznos sa korisničkog računa'
+        ]);
+
         return redirect()
                     ->back()
                     ->with('success', "'Vaša odluka je sačuvana. Novac je prebačen prodavcu!");
@@ -498,6 +523,31 @@ class ProjectController extends Controller
             $project->seller->increment('deposits', $sellerAmount);
             $project->buyer->increment('deposits', $buyerAmount);
         });
+
+        $user = $project->buyer;
+        $invoice = Invoice::create([
+            'number' => $project->project_number,
+            'user_id' => $project->buyer_id,
+            'issue_date' => now(),
+            'status' => 'plaćen',
+            'total' => $buyerAmount,
+            'client_info' => [
+                'name' => $user->firstname.' '.$user->lastname,
+                'address' => $user->street,
+                'city' => $user->city,
+                'country' => $user->country
+            ],
+            'items' => [
+                [
+                    'description' => $project->service->title,
+                    'billing_period' => 'Delimično završetak posla na osnovu procene podrške',
+                    'quantity' => $project->quantity,
+                    'amount' => $buyerAmount,
+                    'project_id' => $project->id
+                ]
+            ],
+            'payment_method' => 'Deponovani iznos sa korisničkog računa'
+        ]);
 
         return redirect()
             ->back()
