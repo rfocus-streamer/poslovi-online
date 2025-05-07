@@ -28,6 +28,14 @@
                                      height="50">
             </div>
             <span class="hero-subtitle text-center text-dark fw-bold">Prijavite se na Vaš nalog</span>
+
+             <!-- Prikaz poruka -->
+            @if(session('error'))
+                <div id="login-message-danger" class="alert alert-danger text-center">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="modal-body p-5">
                 <!-- Session Status -->
                 <x-auth-session-status class="mb-1" :status="session('status')" />
@@ -94,6 +102,23 @@
 
 
 <script>
+     // Automatsko sakrivanje poruke prilikom brisanja
+    const messageElementDanger = document.getElementById('login-message-danger');
+    if (messageElementDanger) {
+        // Dodajemo klasu za tranziciju
+        messageElementDanger.classList.add('fade-out');
+
+        // Sakrijemo poruku nakon 5 sekundi
+        setTimeout(() => {
+            messageElementDanger.classList.add('hide');
+
+            // Uklonimo element iz DOM-a nakon što animacija završi
+            setTimeout(() => {
+                messageElementDanger.remove();
+            }, 1000); // Vreme trajanja animacije (1s)
+        }, 5000); // Poruka će početi da nestaje nakon 5s
+    }
+
     // Automatski prikaz modalnog prozora kada se stranica učita
     window.onload = function() {
         const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
