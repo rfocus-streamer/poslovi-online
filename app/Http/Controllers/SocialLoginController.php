@@ -47,6 +47,8 @@ class SocialLoginController extends Controller
             return redirect()->intended('/');
 
         } catch (\Exception $e) {
+            print_r($e);
+            die();
             return redirect()->route('login')->withErrors('Došlo je do greške pri Google prijavi.');
         }
     }
