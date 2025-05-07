@@ -17,6 +17,9 @@ class SocialLoginController extends Controller
 
     public function handleGoogleCallback()
     {
+        $socialUser = Socialite::driver('google')->user();
+        print_r($socialUser);
+        die();
         try {
             $socialUser = Socialite::driver('google')->user();
 
@@ -30,7 +33,7 @@ class SocialLoginController extends Controller
                 'provider_refresh_token' => $socialUser->refreshToken,
             ]);
 
-            //Auth::login($user);
+            Auth::login($user);
             return redirect()->intended('/');
 
         } catch (\Exception $e) {
