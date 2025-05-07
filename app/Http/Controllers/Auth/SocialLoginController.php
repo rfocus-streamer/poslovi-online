@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\User;
 
 class SocialLoginController extends Controller
@@ -20,15 +22,28 @@ class SocialLoginController extends Controller
         try {
             $socialUser = Socialite::driver('google')->user();
 
-            $user = User::updateOrCreate([
-                'provider_id' => $socialUser->id,
-                'provider' => 'google'
-            ], [
-                'name' => $socialUser->name,
-                'email' => $socialUser->email,
-                'provider_token' => $socialUser->token,
-                'provider_refresh_token' => $socialUser->refreshToken,
-            ]);
+            // Parsiranje imena i prezimena
+            $fullName = explode(' ', $socialUser->name, 2);
+            $firstname = $fullName[0];
+            $lastname = $fullName[1] ?? '';
+
+            // Provera da li korisnik već postoji na osnovu email adrese
+            $user = User::where('email', $socialUser->email)->first();
+
+            if (!$user) {
+                // Novi korisnik - registracija
+                $user = User::create([
+                    'firstname' => $firstname,
+                    'lastname' => $lastname,
+                    'email' => $socialUser->email,
+                    'role' => 'buyer', // podrazumevana vrednost
+                    'password' => Hash::make(Str::random(16)), // generišemo nasumičnu lozinku
+                    'email_verified_at' => now(),
+                    'is_verified' => true,
+                    'avatar' => 'user.png',
+                    'affiliate_code' => Str::random(10),
+                ]);
+            }
 
             Auth::login($user);
             return redirect()->intended('/');
