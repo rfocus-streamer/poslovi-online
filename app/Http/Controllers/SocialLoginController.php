@@ -30,7 +30,7 @@ class SocialLoginController extends Controller
                 'provider_refresh_token' => $socialUser->refreshToken,
             ]);
 
-            Auth::login($user);
+            //Auth::login($user);
             return redirect()->intended('/');
 
         } catch (\Exception $e) {
