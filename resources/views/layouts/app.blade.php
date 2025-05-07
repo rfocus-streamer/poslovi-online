@@ -360,11 +360,21 @@ input:not(:checked) + .slider .label-text.right {
         <div class="container py-5">
             <div class="row justify-content-center"> <!-- Centrira sve kolone -->
                 <!-- O nama -->
-                <div class="col-md-4 col-10 mb-4 text-center text-md-start">
+                <!-- <div class="col-md-4 col-10 mb-4 text-center text-md-start">
                     <h5>Poslovi Online</h5>
                     <p class="text-light">
                         Platforma za pružanje i pronalaženje usluga bez fizičkog kontakta.
                     </p>
+                </div> -->
+
+                 <!-- Pravne informacije -->
+                <div class="col-md-4 text-center">
+                    <h5>Pravne informacije</h5>
+                    <ul class="list-unstyled d-flex justify-content-center gap-3">
+                        <li><a class="text-white" href="{{ route('terms') }}"><i class="fas fa-file-alt me-2"></i>Uslovi korišćenja</a></li>
+                        <li><a class="text-white" href="{{ route('privacy-policy') }}"><i class="fas fa-shield-alt me-2"></i>Privatnost</a></li>
+                        <li><a class="text-white" href="{{ route('cookies') }}"><i class="fas fa-cookie-bite me-2"></i>Kolačići</a></li>
+                    </ul>
                 </div>
 
                 <!-- Kontakt -->
@@ -386,6 +396,10 @@ input:not(:checked) + .slider .label-text.right {
                     </div>
                 </div>
             </div>
+
+            <p class="text-light text-center">
+                        Platforma za pružanje i pronalaženje usluga bez fizičkog kontakta.
+                    </p>
 
             <!-- Copyright -->
             <div class="border-top pt-4">
