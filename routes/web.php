@@ -156,26 +156,20 @@ Route::get('/terms', function () {
 })->name('terms');
 
 Route::get('/privacy-policy', function () {
-    // Generišemo URL za PDF fajl u storage/public/pdf
     $fileUrl = asset('storage/pdf/POLITIKA-PRIVATNOSTI.pdf');
 
-    // Preusmeravamo korisnika na URL (ako želite da PDF bude direktno preuzet)
     return redirect($fileUrl);
 })->name('privacy-policy');
 
 Route::get('/cookies', function () {
-    // Generišemo URL za PDF fajl u storage/public/pdf
-    $fileUrl = asset('storage/pdf/POLITIKA-PRIVATNOSTI.pdf');
+    $fileUrl = asset('storage/pdf/POLITIKA-KOLAČIĆA.pdf');
 
-    // Preusmeravamo korisnika na URL (ako želite da PDF bude direktno preuzet)
     return redirect($fileUrl);
 })->name('cookies');
 
 Route::get('/affiliate-contract', function () {
-    // Generišemo URL za PDF fajl u storage/public/pdf
     $fileUrl = asset('storage/pdf/Affiliate-Program.pdf');
 
-    // Preusmeravamo korisnika na URL (ako želite da PDF bude direktno preuzet)
     return redirect($fileUrl);
 })->name('affiliate-contract');
 

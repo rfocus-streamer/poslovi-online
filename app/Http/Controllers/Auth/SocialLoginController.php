@@ -41,7 +41,7 @@ class SocialLoginController extends Controller
     // Facebook Login
     public function redirectToFacebook()
     {
-       return Socialite::driver('facebook')->redirect();
+       // return Socialite::driver('facebook')->redirect();
     }
 
     public function handleFacebookCallback()
