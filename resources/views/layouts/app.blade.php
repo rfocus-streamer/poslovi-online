@@ -276,6 +276,7 @@ input:not(:checked) + .slider .label-text.right {
                                 <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
                                 <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi (Invoices)</a></li>
                                 <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Affiliate</a></li>
+                                <li><a class="dropdown-item" href="{{ route('tickets.index') }}">Tiketi</a></li>
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -386,7 +387,7 @@ input:not(:checked) + .slider .label-text.right {
                 <div class="col-md-3 col-10 mb-4 text-center text-md-start">
                     <h5>Kontakt</h5>
                     <ul class="list-unstyled">
-                        <li><a class="text-white" href="#"><i class="fas fa-envelope me-2"></i>Kontaktirajte nas</a></li>
+                        <li><a class="text-white" href="{{ route('tickets.create') }}"><i class="fas fa-envelope me-2"></i>Kontaktirajte nas</a></li>
                     </ul>
                 </div>
 

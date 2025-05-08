@@ -14,6 +14,7 @@ use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\Admin\DashboardController;
 use Mews\Captcha\Facades\Captcha;
 use Illuminate\Support\Str;
@@ -111,6 +112,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
     Route::post('/affiliate/activate', [AffiliateController::class, 'activateAffiliate'])->name('affiliate-activate');
+
+    Route::resource('tickets', TicketController::class)->only(['index', 'create', 'store', 'show']);
 
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });

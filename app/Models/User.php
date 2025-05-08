@@ -130,4 +130,9 @@ class User extends Authenticatable
         $this->save();
         Cache::put('user-is-online-'.$this->id, true, now()->addMinutes(5));
     }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
 }
