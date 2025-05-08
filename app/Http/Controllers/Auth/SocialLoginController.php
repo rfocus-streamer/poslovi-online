@@ -40,7 +40,7 @@ class SocialLoginController extends Controller
                     'password' => Hash::make(Str::random(16)), // generišemo nasumičnu lozinku
                     'email_verified_at' => now(),
                     'is_verified' => true,
-                    'avatar' => 'user.png',
+                    'avatar' => 'user.jpg',
                     'affiliate_code' => Str::random(10),
                 ]);
             }
@@ -56,22 +56,36 @@ class SocialLoginController extends Controller
     // Facebook Login
     public function redirectToFacebook()
     {
-       // return Socialite::driver('facebook')->redirect();
+       return Socialite::driver('facebook')->redirect();
     }
 
     public function handleFacebookCallback()
     {
         try {
-            $socialUser = Socialite::driver('facebook')->user();
+            $socialUser = Socialite::driver('google')->user();
 
-            $user = User::updateOrCreate([
-                'provider_id' => $socialUser->id,
-                'provider' => 'facebook'
-            ], [
-                'name' => $socialUser->name,
-                'email' => $socialUser->email,
-                'provider_token' => $socialUser->token,
-            ]);
+            // Parsiranje imena i prezimena
+            $fullName = explode(' ', $socialUser->name, 2);
+            $firstname = $fullName[0];
+            $lastname = $fullName[1] ?? '';
+
+            // Provera da li korisnik već postoji na osnovu email adrese
+            $user = User::where('email', $socialUser->email)->first();
+
+            if (!$user) {
+                // Novi korisnik - registracija
+                $user = User::create([
+                    'firstname' => $firstname,
+                    'lastname' => $lastname,
+                    'email' => $socialUser->email,
+                    'role' => 'buyer', // podrazumevana vrednost
+                    'password' => Hash::make(Str::random(16)), // generišemo nasumičnu lozinku
+                    'email_verified_at' => now(),
+                    'is_verified' => true,
+                    'avatar' => 'user.jpg',
+                    'affiliate_code' => Str::random(10),
+                ]);
+            }
 
             Auth::login($user);
             return redirect()->intended('/');
