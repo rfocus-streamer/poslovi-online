@@ -17,7 +17,7 @@ class ServiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $topServices = Service::with([
             'user',
@@ -55,6 +55,51 @@ class ServiceController extends Controller
                 ? round($service->reviews->avg('rating'), 1)
                 : 5;
         });
+
+        if ($request->has('search')) {
+            $searchTerm = $request->input('search');
+
+            $services = Service::with([
+                    'user',
+                    'category',
+                    'subcategory',
+                    'serviceImages',
+                    'reviews',
+                    'cartItems'
+                ])
+                ->where(function($query) use ($searchTerm) {
+                    $query->where('title', 'like', "%{$searchTerm}%")
+                          ->orWhere('description', 'like', "%{$searchTerm}%")
+                          ->orWhereHas('category', function($q) use ($searchTerm) {
+                              $q->where('name', 'like', "%{$searchTerm}%");
+                          })
+                          ->orWhereHas('subcategory', function($q) use ($searchTerm) {
+                              $q->where('name', 'like', "%{$searchTerm}%");
+                          });
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(6);
+
+            $services->each(function ($service) {
+                $service->average_rating = $service->reviews->count() > 0
+                    ? round($service->reviews->avg('rating'), 1)
+                    : 5;
+            });
+
+            $searchCategory = '';
+
+            if ($request->has('category')) {
+                $searchCategory = $request->input('category');
+            }
+
+            return view('index', [
+                'services' => $services,
+                'searchTerm' => $searchTerm,
+                'topServices' => $topServices,
+                'lastServices' => $lastServices,
+                'searchCategory' => $searchCategory
+            ]);
+        }
 
         return view('index', compact(
                     'topServices',

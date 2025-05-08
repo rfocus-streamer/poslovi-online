@@ -340,7 +340,12 @@ input:not(:checked) + .slider .label-text.right {
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ $category->id }}">
                                 @foreach ($category->subcategories as $subcategory)
-                                    <li><a class="dropdown-item" href="#">{{ $subcategory->name }}</a></li>
+                                    <li>
+                                        <a class="dropdown-item"
+                               href="{{ route('home', ['search' => $subcategory->name, 'category' => $category->name]) }}">
+                                {{ $subcategory->name }}
+                            </a>
+                                    </li>
                                 @endforeach
                             </ul>
                         </li>

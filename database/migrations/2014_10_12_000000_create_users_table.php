@@ -29,6 +29,7 @@ return new class extends Migration
             $table->integer('seller_level')->default(0); // 0 = Novi, 1 = Level 1...
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('registration_method', ['form', 'google', 'facebook'])->default('form');
 
             // Affiliate polja
             $table->boolean('affiliate_accepted')->default(false);

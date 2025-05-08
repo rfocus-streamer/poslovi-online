@@ -42,6 +42,7 @@ class SocialLoginController extends Controller
                     'is_verified' => true,
                     'avatar' => 'user.jpg',
                     'affiliate_code' => Str::random(10),
+                    'registration_method' => 'google'
                 ]);
             }
 
@@ -84,6 +85,7 @@ class SocialLoginController extends Controller
                     'is_verified' => true,
                     'avatar' => 'user.jpg',
                     'affiliate_code' => Str::random(10),
+                    'registration_method' => 'facebook'
                 ]);
             }
 
