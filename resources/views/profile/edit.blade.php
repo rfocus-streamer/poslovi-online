@@ -169,8 +169,11 @@
                             @if(Auth::user()->package)
                                 <div class="package">
                                     <h6 class="text-secondary">
-                                        <i class="fas fa-calendar-alt text-secondary"></i> Mesečni plan:
-
+                                        @if(Auth::user()->package->duration  === 'yearly')
+                                            <i class="fas fa-calendar-alt text-secondary"></i> Godišnji plan:
+                                        @else
+                                            <i class="fas fa-calendar-alt text-secondary"></i> Mesečni plan:
+                                        @endif
 
                                     @if(Auth::user()->package->slug === 'start')
                                         <i class="fas fa-box text-primary"></i>

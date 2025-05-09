@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();  // opis
             $table->decimal('price', 12, 2);
             $table->integer('quantity')->default(1); // Količina (podrazumevano 1)
+            $table->enum('duration', ['monthly', 'yearly']);  // Tip paketa (mesečno ili godišnje)
             $table->timestamps();
         });
     }

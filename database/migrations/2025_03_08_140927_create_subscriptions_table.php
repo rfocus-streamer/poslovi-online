@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->enum('package', ['basic', 'standard', 'premium']); // 1, 5, 10 usluga
+            // Nova veza ka packages tabeli
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 12, 2);
             $table->date('expires_at');
             $table->timestamps();

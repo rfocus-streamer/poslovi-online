@@ -8,5 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Subscription extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'package', 'amount', 'expires_at'];
+    protected $fillable = ['user_id', 'package_id', 'amount', 'expires_at'];
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
 }

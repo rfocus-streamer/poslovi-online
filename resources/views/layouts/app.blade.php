@@ -112,16 +112,11 @@ input:not(:checked) + .slider .label-text.right {
 }
 
 .add-service-title {
-    display: inline-block;
-    transform: rotate(-15deg) skew(-15deg);
     color: #9c1c2c;
     font-weight: bold;
-    font-size: 1rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    white-space: nowrap; /* Sprečava prelazak teksta u novi red */
-    margin-left: -90px !important;
-    margin-top: 30px !important;
     position: relative; /* Omogućava pozicioniranje pseudo-elementa */
+    top: 7px;
+    font-size: 0.81rem;
 }
 
 .add-service-title:hover {
@@ -135,33 +130,6 @@ input:not(:checked) + .slider .label-text.right {
   padding: 0 10px;
   border-radius: 5px;
 }
-
-.add-service-title::after {
-  content: ''; /* Kreira liniju ispod teksta */
-  position: absolute;
-  left: 0;
-  bottom: -5px; /* Pozicija linije ispod teksta */
-  width: 100%;
-  height: 4px; /* Visina linije */
-  background-color: #4CAF50; /* Zelena boja linije */
-  animation: pulseLine 1.5s ease-in-out infinite;
-  border-radius: 2px; /* Zaokružene ivice linije */
-}
-
-@keyframes pulseLine {
-  0% {
-    transform: scaleX(0);
-    background-color: #4CAF50;
-  }
-  50% {
-    transform: scaleX(1.2); /* Linija se širi */
-    background-color: #45a049;
-  }
-  100% {
-    transform: scaleX(0);
-    background-color: #4CAF50;
-  }
-}
 </style>
 <body>
     <!-- Prvi navbar: Logo + opcije -->
@@ -171,19 +139,6 @@ input:not(:checked) + .slider .label-text.right {
             <a class="navbar-brand" href="/">
                 <img src="{{ asset('images/logo.png') }}" alt="Poslovi Online Logo" width="160">
             </a>
-            @auth
-                @if(Auth::user()->role == 'seller')
-                    @if(Auth::user()->package)
-                        @if($seller['countPublicService'] < Auth::user()->package->quantity)
-                           <a href="{{ route('services.create') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
-                        @else
-                            <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
-                        @endif
-                    @else
-                        <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
-                    @endif
-                @endif
-            @endauth
 
             <!-- Toggler za mobilni prikaz -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarOptions" aria-controls="navbarOptions" aria-expanded="false" aria-label="Toggle navigation">
@@ -195,6 +150,18 @@ input:not(:checked) + .slider .label-text.right {
             <div class="collapse navbar-collapse justify-content-end" id="navbarOptions">
                 <ul class="navbar-nav">
                     @auth
+                        <li class="nav-item">
+                            @if(Auth::user()->package)
+                                @if($seller['countPublicService'] < Auth::user()->package->quantity)
+                                    <a href="{{ route('services.create') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                                @else
+                                    <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                                @endif
+                            @else
+                                    <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                            @endif
+                        </li>
+
                         @if(Auth::user()->role == 'support' || Auth::user()->role == 'admin')
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('complaints.index') ? 'active' : '' }}" href="{{ route('complaints.index') }}">
@@ -274,8 +241,8 @@ input:not(:checked) + .slider .label-text.right {
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
                                 <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
-                                <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi (Invoices)</a></li>
-                                <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Affiliate</a></li>
+                                <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi</a></li>
+                                <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Preporuči</a></li>
                                 <li><a class="dropdown-item" href="{{ route('tickets.index') }}">Tiketi</a></li>
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
@@ -422,6 +389,63 @@ input:not(:checked) + .slider .label-text.right {
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript">
+document.querySelector('.add-service-title').addEventListener('click', function(event) {
+    event.preventDefault(); // Sprečava default akciju (navigaciju)
+
+    // Proveri koja je trenutna uloga
+    var currentRole = '{{ Auth::user()->role }}'; // PHP variabla za trenutnu ulogu
+
+    if (currentRole === 'buyer') {
+        // Ako je trenutna uloga 'buyer', promeni je u 'seller'
+
+        // Slanje AJAX zahteva za promenu uloge korisnika
+        fetch('/update-role', {
+            method: 'POST',
+            body: JSON.stringify({ role: 'seller' }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())  // Parsira JSON odgovor
+        .then(data => {
+            if (data.success) {
+                console.log('Uloga uspešno promenjena!');
+
+                // Ažuriraj switcher da prikazuje 'seller' stanje
+                var roleSwitch = document.getElementById('roleSwitch');
+                var leftLabel = document.querySelector('.label-text.left');
+                var rightLabel = document.querySelector('.label-text.right');
+
+                // Postavi 'checked' za 'seller' (desna strana)
+                roleSwitch.checked = true;
+
+                // Ažuriraj tekst na switcher-u
+                leftLabel.textContent = 'Kupac';
+                rightLabel.textContent = 'Prodavac';
+
+                // Nakon uspešne promene uloge, nastavi sa navigacijom
+                var link = event.target.closest('a'); // Selektuj 'a' tag
+                if (link && link.href) {
+                    window.location.href = link.href;  // Redirektuje na originalni link
+                }
+            } else {
+                console.error('Došlo je do greške.');
+            }
+        })
+        .catch(error => {
+            console.error('Greška u AJAX pozivu:', error);
+        });
+    } else {
+        // Ako je trenutna uloga 'seller' ili neka druga, samo nastavi sa navigacijom
+        var link = event.target.closest('a'); // Selektuj 'a' tag
+        if (link && link.href) {
+            window.location.href = link.href;  // Redirektuje na originalni link
+        }
+    }
+});
+
+
 document.getElementById('roleSwitch').addEventListener('change', function() {
     var newRole = this.checked ? 'seller' : 'buyer';
 

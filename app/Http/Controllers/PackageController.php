@@ -39,12 +39,17 @@ class PackageController extends Controller
 
         }
 
+        $subscriptions = Subscription::with('package')
+            ->where('user_id', auth()->id())  // Filtrira po user_id
+            ->paginate(10);  // Paginacija sa 10 stavki po stranici
+
+
         if($user->role === 'buyer')
         {
-            return redirect()->back()->with('error', 'Ukoliko želiš da budeš prodavac, ažuriraj profil sa označenim prodavcem (čekiraj) !');
+            return redirect()->back()->with('error', 'Ukoliko želiš da budeš prodavac, ažuriraj profil sa označenim prodavcem !');
         }
 
-        return view('packages.index', compact('packages', 'totalEarnings'));
+        return view('packages.index', compact('packages', 'totalEarnings', 'subscriptions'));
     }
 
     public function activatePackage(Package $package)
@@ -52,7 +57,7 @@ class PackageController extends Controller
         $user = Auth::user();
         $price = 0;
 
-        if($user->package){
+        if ($user->package) {
 
             // Datum isteka aktivnog paketa
             $expiresAt = Carbon::parse($user->package_expires_at);
@@ -68,12 +73,12 @@ class PackageController extends Controller
             $daily_price = $monthly_price / 30; // Pretpostavljamo 30 dana u mesecu
             $remaining_amount = max(0, $daysRemaining * $daily_price); // Ako je isteklo, vraća 0
             $price = ($package->price - number_format($remaining_amount, 2, '.', ''));
-        }else{
+        } else {
             $price = $package->price;
         }
 
-        if($user->deposits < $price)
-        {
+        // Provera da li korisnik ima dovoljno sredstava
+        if ($user->deposits < $price) {
             return redirect()->route('deposit.form')->with('error', 'Nema dovoljno sredstava na računu, deponuj !');
         }
 
@@ -94,7 +99,7 @@ class PackageController extends Controller
                         // Kreiraj istoriju transakcije
                         Affiliate::create([
                             'affiliate_id' => $affiliate->id,
-                            'referral_id' => $user->id, // promenjeno
+                            'referral_id' => $user->id,
                             'package_id' => $package->id,
                             'amount' => $commission,
                             'percentage' => 70,
@@ -108,29 +113,35 @@ class PackageController extends Controller
             }
         }
 
+        $plan = 'Mesečni';
+
         // Dodela paketa korisniku
         $user->package_id = $package->id; // Start paket
-        $user->package_expires_at = now()->addMonth();
+        if ($package->duration == 'monthly') {
+            $user->package_expires_at = now()->addMonth(); // Ako je mesečni paket, dodaj 1 mesec
+            $plan = 'Mesečni';
+        } else {
+            $user->package_expires_at = now()->addYear(); // Ako je godišnji paket, dodaj 1 godinu
+            $plan = 'Godišnji';
+        }
         $user->deposits -= $price;
         $user->save();
 
         // Sada kreiramo podatke o uplatama paketa
         $subscription = Subscription::create([
-                'user_id' => Auth::id(),
-                'package' => $package->id,
-                'amount' => $price,
-                'expires_at' => now()->addMonth()
+            'user_id' => Auth::id(),
+            'package_id' => $package->id,
+            'amount' => $price,
+            'expires_at' => $user->package_expires_at // Datum isteka se već postavlja prema paketu
         ]);
 
-        // Dohvatanje svih korisnika određenog paketa
-        //$users = Package::find(1)->users;
-
-        $this->invoicePdf($package, $price);
+        $this->invoicePdf($package, $price, $plan);
 
         return redirect()->back()->with('success', 'Uspešno ste aktivirali '.$package->name.'!');
     }
 
-    private function invoicePdf($package, $price)
+
+    private function invoicePdf($package, $price, $plan = null)
     {
         $user = Auth::user();
         $invoice = Invoice::create([
@@ -148,7 +159,7 @@ class PackageController extends Controller
             'items' => [
                 [
                     'description' => $package->name,
-                    'billing_period' => 'Mesečni plan do: '.$user->package_expires_at->format('d.m.Y H:i'),
+                    'billing_period' => $plan.' plan do: '.$user->package_expires_at->format('d.m.Y H:i'),
                     'quantity' => 1,
                     'amount' => $price,
                     'package_id' => $package->id
