@@ -115,6 +115,16 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('tickets', TicketController::class)->only(['index', 'create', 'store', 'show']);
 
+    // routes/web.php
+    Route::post('/tickets/{ticket}/redirect', [TicketController::class, 'redirectToTeam'])
+         ->name('tickets.redirect');
+
+    Route::post('/tickets/{ticket}/responses', [TicketController::class, 'storeResponse'])
+         ->name('tickets.responses.store');
+
+    Route::post('/tickets/{ticket}/status', [TicketController::class, 'updateStatus'])
+     ->name('tickets.update-status');
+
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
 

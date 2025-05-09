@@ -392,8 +392,15 @@ input:not(:checked) + .slider .label-text.right {
 document.querySelector('.add-service-title').addEventListener('click', function(event) {
     event.preventDefault(); // Sprečava default akciju (navigaciju)
 
-    // Proveri koja je trenutna uloga
-    var currentRole = '{{ Auth::user()->role }}'; // PHP variabla za trenutnu ulogu
+    // Proveri da li je korisnik ulogovan
+    @auth
+        var currentRole = '{{ Auth::user()->role }}'; // PHP varijabla za trenutnu ulogu
+    @endauth
+
+    // Proveri da li korisnik nije ulogovan
+    @guest
+        var currentRole = ''; // Prazna varijabla ako korisnik nije ulogovan
+    @endguest
 
     if (currentRole === 'buyer') {
         // Ako je trenutna uloga 'buyer', promeni je u 'seller'

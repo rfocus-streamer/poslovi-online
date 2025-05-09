@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tickets', function (Blueprint $table) {
+        Schema::create('ticket_responses', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('description');
+            $table->text('content');
             $table->string('attachment')->nullable();
+            $table->foreignId('ticket_id')->constrained();
             $table->foreignId('user_id')->constrained();
-            $table->string('status')->default('open');
-            $table->string('assigned_team')->default('support');
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('ticket_responses');
     }
 };

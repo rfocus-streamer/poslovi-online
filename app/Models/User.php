@@ -135,4 +135,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Ticket::class);
     }
+
+    // Dodajte relaciju za odgovore
+    public function ticketResponses()
+    {
+        return $this->hasMany(TicketResponse::class);
+    }
 }
