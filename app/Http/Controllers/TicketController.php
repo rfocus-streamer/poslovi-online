@@ -12,7 +12,7 @@ class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = auth()->user()->tickets()->latest()->get();
+        $tickets = auth()->user()->tickets()->latest()->paginate(10);  // Paginacija sa 10 stavki po stranici;
         return view('tickets.index', compact('tickets'));
     }
 

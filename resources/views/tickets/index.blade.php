@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+<link href="{{ asset('css/default.css') }}" rel="stylesheet">
 @section('content')
 
 <div class="container">
@@ -64,8 +64,15 @@
 
             </tbody>
         </table>
+        <!-- Paginacija -->
+        <div class="d-flex justify-content-center pagination-buttons" id="pagination-links">
+            {{ $tickets->links() }}
+        </div>
 </div>
 <script type="text/javascript">
+    // Poziv funkcije za prevođenje teksta paginacije
+    translatePaginationText();
+
     // Automatsko sakrivanje poruka
     const messageElement = document.getElementById('ticket-message');
     if (messageElement) {
@@ -79,6 +86,22 @@
         setTimeout(() => {
             messageElementDanger.remove();
         }, 5000);
+    }
+
+    // Funkcija za prevođenje teksta paginacije
+    function translatePaginationText() {
+        const textElement = document.querySelector("p.text-sm.text-gray-700"); // Selektujemo element koji sadrži tekst
+        if (textElement) {
+            let text = textElement.textContent.trim();
+
+            // Regex za hvatanje brojeva u stringu
+            let matches = text.match(/\d+/g);
+
+            if (matches && matches.length === 3) {
+                let translatedText = `Prikazuje od ${matches[0]} do ${matches[1]} od ukupno ${matches[2]} rezultata`;
+                textElement.textContent = translatedText;
+            }
+        }
     }
 </script>
 @endsection
