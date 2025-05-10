@@ -141,4 +141,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(TicketResponse::class);
     }
+
+    public function unreadTicketResponsesCount()
+    {
+        return TicketResponse::whereHas('ticket', function($query) {
+            $query->where('user_id', $this->id)
+                  ->orWhere('assigned_team', $this->role);
+        })
+        ->where('user_id', '!=', $this->id)
+        ->unread()
+        ->count();
+    }
 }

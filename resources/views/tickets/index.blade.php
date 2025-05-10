@@ -17,17 +17,24 @@
     @endif
 
     <div class="d-flex justify-content-between align-items-center">
-        <h4><i class="fas fa-ticket"></i> Tvoje tiketi</h4>
 
-        <div class="text-warning mb-2">
-            <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
-                </a>
-        </div>
+        @if(!in_array(Auth::user()->role, ['support', 'admin']))
+            <h4><i class="fas fa-ticket"></i> Tvoje tiketi</h4>
+            <div class="text-warning mb-2">
+                <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
+                    </a>
+            </div>
+        @else
+            <h4><i class="fas fa-ticket"></i> Lista otvorenih tiketa</h4>
+        @endif
     </div>
          <table class="table">
             <thead>
                 <tr>
                     <th>#</th>
+                    @if(in_array(Auth::user()->role, ['support', 'admin']))
+                        <th>Korisnik</th>
+                    @endif
                     <th>Naslov</th>
                     <th>Kreiran</th>
                     <th>Poslednji odgovor</th>
@@ -38,6 +45,9 @@
                 @foreach($tickets as $key => $ticket)
                     <tr>
                         <td>{{ $key + 1 }}</td>
+                        @if(in_array(Auth::user()->role, ['support', 'admin']))
+                            <td>{{$ticket->user->firstname.' '.$ticket->user->lastname}}</td>
+                        @endif
                         <td>{{ $ticket->title }}</td>
                         <td>{{ ucfirst($ticket->created_at->locale('sr')->diffForHumans()) }}</td>
                         <td>
@@ -56,7 +66,25 @@
                                 @endif
                             </span>
                         </td>
-                        <td class="text-center"> <a href="{{ route('tickets.show', $ticket) }}"><button type="button" class="btn btn-sm btn-warning">Pogledaj <i class="fas fas fa-eye"></i></button></a></td>
+                       <td class="text-center">
+                            <a href="{{ route('tickets.show', $ticket) }}">
+                                <button type="button" class="btn btn-sm btn-warning position-relative">
+                                    Pogledaj
+                                    @php
+                                        $unReadAnsw = $ticket->responses->whereNull('read_at')->where('user_id', '!=', auth()->id())->count();
+                                        $countResponse = $ticket->responses->count();
+                                        $isSupportOrAdmin = in_array(Auth::user()->role, ['support', 'admin']);
+                                        $unReadAnsw = ($unReadAnsw === 0 && $countResponse === 0 && $isSupportOrAdmin) ? 1 : $unReadAnsw;
+                                    @endphp
+                                    <i class="fas fa-eye"></i>
+                                    @if($unReadAnsw > 0)
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{ $unReadAnsw }}
+                                        </span>
+                                    @endif
+                                </button>
+                            </a>
+                        </td>
                     </tr>
                 @endforeach
             </thead>

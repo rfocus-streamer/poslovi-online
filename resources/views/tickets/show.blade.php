@@ -63,18 +63,19 @@
 
                     <!-- Lista odgovora -->
                     @foreach($ticket->responses as $response)
-                    <div class="card mb-3">
+                    <div class="card mb-3 ticket-response"
+                    data-response-id="{{ $response->id }}"
+                    data-is-unread="{{ $response->isUnread() && $response->user_id !== auth()->id() ? 'true' : 'false' }}">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
                                 @if($response->user->avatar)
-                                <img src="{{ Storage::url('user/' . Auth::user()->avatar) }}"
+                                <img src="{{ Storage::url('user/' . $response->user->avatar) }}"
                                      class="rounded-circle me-2"
                                      alt="Avatar"
                                      width="40"
                                      height="40">
                                 @endif
                                 <div>
-                                    <h6 class="mb-0">{{ $response->user->name }}</h6>
                                     <small class="text-muted">
                                         @if($response->user->role === 'support')
                                             {{ $response->created_at->format('d.m.Y H:i') }}
@@ -83,8 +84,14 @@
                                             {{ $response->created_at->format('d.m.Y H:i') }}
                                             <span class="badge bg-info">Administrator</span>
                                         @else
-                                            {{Auth::user()->firstname.' '.Auth::user()->lastname}}<br>
+                                            {{$response->user->firstname.' '.$response->user->lastname}}<br>
                                             {{ $response->created_at->format('d.m.Y H:i') }}
+                                        @endif
+
+                                        @if($response->isUnread() && $response->user_id === auth()->id())
+                                           <i class="fas fa-check-double text-secondary" title="Nepročitano"></i>
+                                        @elseif(!$response->isUnread() && $response->user_id === auth()->id())
+                                            <i class="fas fa-check-double text-success" title="Pročitano {{ \Carbon\Carbon::parse($response->read_at)->format('d.m.Y H:i') }}"></i>
                                         @endif
                                     </small>
                                 </div>
@@ -227,5 +234,37 @@
             messageElementDanger.remove();
         }, 5000);
     }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const responseElements = document.querySelectorAll('.ticket-response[data-is-unread="true"]');
+
+    if (responseElements.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && document.visibilityState === 'visible') {
+                    const responseId = entry.target.dataset.responseId;
+
+                    fetch(`/tickets/responses/${responseId}/mark-as-read`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    });
+                }
+            });
+        }, {
+            threshold: 0.5, // 50% vidljivosti
+            rootMargin: '0px 0px -50px 0px' // Malo pomera granicu
+        });
+
+        responseElements.forEach(el => observer.observe(el));
+    }
+});
 </script>
 @endsection

@@ -151,14 +151,16 @@ input:not(:checked) + .slider .label-text.right {
                 <ul class="navbar-nav">
                     @auth
                         <li class="nav-item">
-                            @if(Auth::user()->package)
-                                @if($seller['countPublicService'] < Auth::user()->package->quantity)
-                                    <a href="{{ route('services.create') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                            @if(!in_array(Auth::user()->role, ['support', 'admin']))
+                                @if(Auth::user()->package)
+                                    @if($seller['countPublicService'] < Auth::user()->package->quantity)
+                                        <a href="{{ route('services.create') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                                    @else
+                                        <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                                    @endif
                                 @else
-                                    <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
+                                        <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
                                 @endif
-                            @else
-                                    <a href="{{ route('packages.index') }}" class="add-service-title">Dodaj <mark>ponudu</mark></a>
                             @endif
                         </li>
 
@@ -170,6 +172,12 @@ input:not(:checked) + .slider .label-text.right {
                                     @else
                                         <i class="fas fa-balance-scale {{ request()->routeIs('complaints.index') ? 'text-danger' : '' }}"></i> Arbitraža
                                     @endif
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('tickets.index') ? 'active' : '' }}" href="{{ route('tickets.index') }}">
+                                    <i class="fas fa-ticket {{ request()->routeIs('tickets.index') ? 'text-danger' : '' }}"></i> Ticketi
                                 </a>
                             </li>
                         @endif
@@ -240,10 +248,12 @@ input:not(:checked) + .slider .label-text.right {
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
-                                <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
-                                <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi</a></li>
-                                <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Preporuči</a></li>
-                                <li><a class="dropdown-item" href="{{ route('tickets.index') }}">Tiketi</a></li>
+                                @if(!in_array(Auth::user()->role, ['support', 'admin']))
+                                    <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Preporuči</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('tickets.index') }}">Tiketi</a></li>
+                                @endif
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

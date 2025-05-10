@@ -113,17 +113,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
     Route::post('/affiliate/activate', [AffiliateController::class, 'activateAffiliate'])->name('affiliate-activate');
 
+    //Tickets
     Route::resource('tickets', TicketController::class)->only(['index', 'create', 'store', 'show']);
-
-    // routes/web.php
     Route::post('/tickets/{ticket}/redirect', [TicketController::class, 'redirectToTeam'])
          ->name('tickets.redirect');
 
     Route::post('/tickets/{ticket}/responses', [TicketController::class, 'storeResponse'])
          ->name('tickets.responses.store');
-
     Route::post('/tickets/{ticket}/status', [TicketController::class, 'updateStatus'])
      ->name('tickets.update-status');
+    Route::post('/tickets/responses/{response}/mark-as-read', [TicketController::class, 'markAsRead'])
+    ->name('tickets.responses.mark-as-read');
 
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });

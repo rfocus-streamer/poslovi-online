@@ -3,16 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\TicketResponse;
+use App\Mail\ContactMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Mail\ContactMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = auth()->user()->tickets()->latest()->paginate(10);  // Paginacija sa 10 stavki po stranici;
+        $user = auth()->user();
+
+        if (in_array($user->role, ['support', 'admin'])) {
+            // Ako je support ili admin — prikaz svih tiketa sa statusom 'open' ili 'in_progress'
+            $tickets = \App\Models\Ticket::whereIn('status', ['open', 'in_progress'])->where('assigned_team', $user->role)->latest()->paginate(10);
+        } else {
+            // Običan korisnik vidi samo svoje tikete
+            $tickets = $user->tickets()->latest()->paginate(10);
+        }
         return view('tickets.index', compact('tickets'));
     }
 
@@ -79,6 +89,11 @@ class TicketController extends Controller
             'user_id' => auth()->id()
         ]);
 
+        if (auth()->user()->role === 'admin') {
+            $ticket->assigned_team = 'support';
+            $ticket->save();
+        }
+
         $this->sendEmail($ticket);
 
         return back()->with('success', 'Odgovor uspešno dodat!');
@@ -91,6 +106,22 @@ class TicketController extends Controller
         $ticket->update(['status' => $request->status]);
 
         return back()->with('success', 'Status uspešno ažuriran!');
+    }
+
+    public function markAsRead(TicketResponse $response)
+    {
+        $ticketResponse = TicketResponse::were('id', $response->id)->first();
+
+        if (auth()->id() !== $response->user_id && $ticketResponse) {
+            $ticketResponse->read_at = now();
+            $ticketResponse->save();
+            return response()->json([
+                'success' => true,
+                'unread_count' => auth()->user()->unreadTicketResponsesCount()
+            ]);
+        }
+
+        return response()->json(['success' => false]);
     }
 
     public function sendEmail($ticket)

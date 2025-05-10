@@ -17,8 +17,8 @@ return new class extends Migration
             $table->text('description');
             $table->string('attachment')->nullable();
             $table->foreignId('user_id')->constrained();
-            $table->string('status')->default('open');
-            $table->string('assigned_team')->default('support');
+            $table->enum('status', ['open', 'in_progress', 'closed'])->default('open');
+            $table->enum('assigned_team', ['support', 'admin'])->default('support');
             $table->timestamps();
         });
     }

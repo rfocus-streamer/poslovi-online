@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('attachment')->nullable();
             $table->foreignId('ticket_id')->constrained();
             $table->foreignId('user_id')->constrained();
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }
