@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ContactMail;
+use Illuminate\Support\Facades\Mail;
 
 class TicketController extends Controller
 {
@@ -77,6 +79,8 @@ class TicketController extends Controller
             'user_id' => auth()->id()
         ]);
 
+        $this->sendEmail($ticket);
+
         return back()->with('success', 'Odgovor uspešno dodat!');
     }
 
@@ -87,5 +91,33 @@ class TicketController extends Controller
         $ticket->update(['status' => $request->status]);
 
         return back()->with('success', 'Status uspešno ažuriran!');
+    }
+
+    public function sendEmail($ticket)
+    {
+        // Dobijamo korisnika povezanog sa tiketom
+        $user = $ticket->user;
+
+        // Proverimo ako korisnik ne postoji
+        if (!$user || $user->email == auth()->user()->email) {
+            return;
+        }
+
+        // Pravimo asocijativni niz sa samo potrebnim podacima
+        $details = [
+            'first_name' => $user->firstname,
+            'last_name' => $user->lastname,
+            'email' => $user->email,
+            'message' => 'Telo poruke iz kontrolera', // Možete dodati dinamicki tekst
+            'template' => 'emails.tickets', // Predloženi Blade šablon,
+            'subject' => 'Obaveštenje o odgovoru na tiket: '.$ticket->title,
+            'from_email' => 'gligorijesaric@gmail.com',
+            'from' => 'Poslovi Online Podrška',
+            'ticket_id' => $ticket->id
+        ];
+
+        Mail::to($user->email)->send(new ContactMail($details));
+
+        return back()->with('success', 'Email je uspešno poslat!');
     }
 }

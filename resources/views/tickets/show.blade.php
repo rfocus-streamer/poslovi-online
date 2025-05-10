@@ -3,39 +3,56 @@
 @section('content')
 <div class="container">
     <div class="row">
+        <!-- Prikaz poruka -->
+        @if(session('success'))
+            <div id="ticket-message" class="alert alert-success text-center">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div id="ticket-message-danger" class="alert alert-danger text-center">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="ml-1 mt-1 mb-1">
+            <h4 class="mb-0"><i class="fas fa-ticket"></i> {{ $ticket->title }}</h4>
+                <small class="text-muted">
+                    Kreiran {{ $ticket->user->name }} |
+                    {{ $ticket->created_at->format('d.m.Y H:i') }}
+                </small>
+        </div>
+
         <!-- Leva kolona sa detaljima ticketa -->
         <div class="col-md-8 mb-3 g-0">
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex align-items-center mb-4">
-                        @if($ticket->user->avatar)
-                        <img src="{{ Storage::url('user/' . Auth::user()->avatar) }}"
-                             class="rounded-circle me-3"
-                             alt="Avatar"
-                             width="60"
-                             height="60">
-                        @endif
-                        <strong>{{Auth::user()->firstname.' '.Auth::user()->lastname}}</strong>
-                    </div>
 
-                     <div class="mt-1">
-                            <h4 class="mb-0">{{ $ticket->title }}</h4>
-                            <small class="text-muted">
-                                Otvoren: {{ $ticket->user->name }} |
-                                {{ $ticket->created_at->format('d.m.Y H:i') }}
-                            </small>
-                    </div>
-
-                    <div class="card mb-4">
+                    <div class="card mb-3">
                         <div class="card-body">
-                            <p>{{ $ticket->description }}</p>
+                            <div class="d-flex align-items-center mb-3">
+                                @if($ticket->user->avatar)
+                                <img src="{{ Storage::url('user/' . $ticket->user->avatar) }}"
+                                     class="rounded-circle me-2"
+                                     alt="Avatar"
+                                     width="60"
+                                     height="60">
+                                @endif
+                                <div>
+                                    <strong>{{ $ticket->user->firstname.' '. $ticket->user->lasttname}}</strong><br>
+                                    <small class="text-muted">{{ $ticket->created_at->format('d.m.Y H:i') }}</small>
+                                </div>
+                            </div>
+
+                            <p class="mb-2">{{ $ticket->description }}</p>
 
                             @if($ticket->attachment)
-                            <div class="mt-3">
+                            <div class="mt-2">
                                 <a href="{{ Storage::url($ticket->attachment) }}"
                                    target="_blank"
-                                   class="btn btn-outline-primary">
-                                    <i class="fas fa-download"></i> Preuzmi originalni prilog
+                                   class="btn btn-sm btn-link">
+                                    <i class="fas fa-paperclip"></i> Preuzmi originalni prilog
                                 </a>
                             </div>
                             @endif
@@ -195,4 +212,20 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    // Automatsko sakrivanje poruka
+    const messageElement = document.getElementById('ticket-message');
+    if (messageElement) {
+        setTimeout(() => {
+            messageElement.remove();
+        }, 5000);
+    }
+
+    const messageElementDanger = document.getElementById('ticket-message-danger');
+    if (messageElementDanger) {
+        setTimeout(() => {
+            messageElementDanger.remove();
+        }, 5000);
+    }
+</script>
 @endsection
