@@ -31,14 +31,14 @@ return new class extends Migration
             $table->text('basic_inclusions');
 
             // Standard paket
-            $table->decimal('standard_price', 10, 2);
-            $table->integer('standard_delivery_days');
-            $table->text('standard_inclusions');
+            $table->decimal('standard_price', 10, 2)->nullable();
+            $table->integer('standard_delivery_days')->nullable();
+            $table->text('standard_inclusions')->nullable();
 
             // Premium paket
-            $table->decimal('premium_price', 10, 2);
-            $table->integer('premium_delivery_days');
-            $table->text('premium_inclusions');
+            $table->decimal('premium_price', 10, 2)->nullable();
+            $table->integer('premium_delivery_days')->nullable();
+            $table->text('premium_inclusions')->nullable();
 
             $table->boolean('visible')->nullable();
             $table->timestamp('visible_expires_at')->nullable();

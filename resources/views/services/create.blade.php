@@ -5,6 +5,30 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 @section('content')
+<style>
+    .package-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        border: 1px solid #eee;
+    }
+
+    .package-category {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    #add-package {
+        margin-bottom: 15px;
+    }
+
+    .remove-package {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+    }
+</style>
+
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
         <h4><i class="fas fa-file-signature"></i> Dodaj ponudu</h4>
@@ -77,32 +101,38 @@
         </div>
 
         <!-- Cene i dani isporuke -->
-        <div class="row">
-            @foreach (['start', 'standard', 'premium'] as $type)
-                <div class="col-md-4">
+        <div class="row" id="packages-container">
+            <!-- Osnovni paket (uvek prisutan) -->
+            <div class="col-md-4 package-item" data-package-type="basic">
+                <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="package-category text-left">
-                        <i class="fas
-                            @if($type == 'basic') fa-box text-primary
-                            @elseif($type == 'standard') fa-gift text-success
-                            @elseif($type == 'premium') fa-gem text-warning
-                            @endif">
-                        </i>
-                        {{ ucfirst($type) }} paket
+                        <i class="fas fa-box text-primary"></i> Start paket
                     </h5>
-                    <div class="mb-3">
-                        <label for="{{ $type }}_price" class="form-label"><i class="fas fa-credit-card text-secondary"></i> Cena</label>
-                        <input type="number" name="{{ $type }}_price" id="{{ $type }}_price" class="form-control" step="0.01" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ $type }}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
-                        <input type="number" name="{{ $type }}_delivery_days" id="{{ $type }}_delivery_days" class="form-control"  required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ $type }}_inclusions" class="form-label"><i class="fa fa-info-circle"></i> Šta je uključeno</label>
-                        <textarea name="{{ $type }}_inclusions" id="{{ $type }}_inclusions" class="form-control" rows="2" required></textarea>
-                    </div>
+                    <button type="button" class="btn btn-sm btn-danger remove-package d-none">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-            @endforeach
+                <div class="mb-3">
+                    <label for="basic_price" class="form-label"><i class="fas fa-credit-card text-secondary"></i> Cena</label>
+                    <input type="number" name="basic_price" id="basic_price" class="form-control" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label for="basic_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
+                    <input type="number" name="basic_delivery_days" id="basic_delivery_days" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="basic_inclusions" class="form-label"><i class="fa fa-info-circle"></i> Šta je uključeno</label>
+                    <textarea name="basic_inclusions" id="basic_inclusions" class="form-control" rows="2" required></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dugme za dodavanje novog paketa -->
+        <div class="text-center">
+            <small class="text-muted ms-2">Maksimalno 3 paketa</small><br>
+            <button type="button" id="add-package" class="btn btn-poslovi btn-sm">
+                <i class="fas fa-plus"></i> Dodaj paket
+            </button>
         </div>
 
         <!-- Upload slika -->
@@ -125,6 +155,98 @@
     </form>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const packagesContainer = document.getElementById('packages-container');
+    const addPackageBtn = document.getElementById('add-package');
+    let packageCount = 1; // Početni broj paketa (osnovni je uvek prisutan)
+
+    // Mapa za tipove paketa
+    const packageTypes = {
+        basic: { icon: 'fa-box', color: 'text-primary', name: 'Start' },
+        standard: { icon: 'fa-gift', color: 'text-success', name: 'Standard' },
+        premium: { icon: 'fa-gem', color: 'text-warning', name: 'Premium' }
+    };
+
+    // Dodavanje novog paketa
+    addPackageBtn.addEventListener('click', function() {
+        if (packageCount >= 3) {
+            alert('Možete dodati maksimalno 3 paketa.');
+            return;
+        }
+
+        packageCount++;
+
+        // Odrediti sledeći tip paketa
+        let packageType;
+        let packageKey;
+
+        if (!document.querySelector('[data-package-type="standard"]')) {
+            packageKey = 'standard';
+        } else if (!document.querySelector('[data-package-type="premium"]')) {
+            packageKey = 'premium';
+        } else {
+            return;
+        }
+
+        packageType = packageTypes[packageKey];
+
+        // Kreiranje HTML-a za novi paket
+        const packageHtml = `
+            <div class="col-md-4 package-item" data-package-type="${packageKey}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="package-category text-left">
+                        <i class="fas ${packageType.icon} ${packageType.color}"></i> ${packageType.name} paket
+                    </h5>
+                    <button type="button" class="btn btn-sm btn-danger remove-package">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-3">
+                    <label for="${packageKey}_price" class="form-label"><i class="fas fa-credit-card text-secondary"></i> Cena</label>
+                    <input type="number" name="${packageKey}_price" id="${packageKey}_price" class="form-control" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label for="${packageKey}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
+                    <input type="number" name="${packageKey}_delivery_days" id="${packageKey}_delivery_days" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="${packageKey}_inclusions" class="form-label"><i class="fa fa-info-circle"></i> Šta je uključeno</label>
+                    <textarea name="${packageKey}_inclusions" id="${packageKey}_inclusions" class="form-control" rows="2" required></textarea>
+                </div>
+            </div>
+        `;
+
+        // Dodavanje novog paketa u kontejner
+        packagesContainer.insertAdjacentHTML('beforeend', packageHtml);
+
+        // Ažuriranje dugmeta za dodavanje ako smo dostigli maksimum
+        if (packageCount >= 3) {
+            addPackageBtn.disabled = true;
+        }
+    });
+
+    // Brisanje paketa (delegirano događaje)
+    packagesContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-package')) {
+            const packageItem = e.target.closest('.package-item');
+            const packageType = packageItem.dataset.packageType;
+
+            // Ne dozvoljavamo brisanje osnovnog paketa
+            if (packageType === 'basic') {
+                return;
+            }
+
+            packageItem.remove();
+            packageCount--;
+
+            // Omogućiti ponovo dugme za dodavanje
+            addPackageBtn.disabled = false;
+        }
+    });
+});
+</script>
 
 <script>
 document.getElementById('serviceForm').addEventListener('submit', async function(e) {

@@ -54,14 +54,6 @@
                     <i class="fab fa-whatsapp"></i>
                 </a>
 
-                <!-- Instagram (otvara profil ili stranicu) -->
-                <a href="https://www.instagram.com/your_profile_name"
-                   target="_blank"
-                   class="btn btn-outline-danger btn-sm rounded-circle"
-                   title="Pogledaj na Instagramu">
-                    <i class="fab fa-instagram"></i>
-                </a>
-
                 <!-- Copy Link -->
                 <button onclick="copyLink()"
                         class="btn btn-outline-secondary btn-sm rounded-circle"
@@ -227,7 +219,7 @@
                         <div class="col-md-4">
                             <div class="card h-100">
                                 <div class="card-body card-text">
-                                    <h6 class="card-title text-center package-category"><i class="fas fa-box text-primary"></i> Basic</h6>
+                                    <h6 class="card-title text-center package-category"><i class="fas fa-box text-primary"></i> Start</h6>
                                     <!-- Prikazivanje skraćenog teksta i ikone -->
                                     <p class="text-center d-flex align-items-center">
                                         {{ Str::limit($service->basic_inclusions, 15) }}
@@ -257,69 +249,73 @@
                         </div>
 
                         <!-- Standard paket -->
-                        <div class="col-md-4">
-                            <div class="card h-100">
-                                <div class="card-body card-text">
-                                    <h6 class="card-title text-center package-category"><i class="fas fa-gift text-success"></i> Standard</h6>
-                                    <!-- Prikazivanje skraćenog teksta i ikone -->
-                                    <p class="text-center d-flex align-items-center">
-                                        {{ Str::limit($service->standard_inclusions, 15) }}
-                                        <i class="fa fa-info-circle ml-2 text-primary mt-1" data-toggle="modal" data-target="#standardInclusionsModal" style="cursor: pointer;"></i>
-                                    </p>
-                                    <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->standard_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
-                                    <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->standard_delivery_days }} dana</p>
+                        @if (!is_null($service->standard_price))
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body card-text">
+                                        <h6 class="card-title text-center package-category"><i class="fas fa-gift text-success"></i> Standard</h6>
+                                        <!-- Prikazivanje skraćenog teksta i ikone -->
+                                        <p class="text-center d-flex align-items-center">
+                                            {{ Str::limit($service->standard_inclusions, 15) }}
+                                            <i class="fa fa-info-circle ml-2 text-primary mt-1" data-toggle="modal" data-target="#standardInclusionsModal" style="cursor: pointer;"></i>
+                                        </p>
+                                        <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->standard_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
+                                        <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->standard_delivery_days }} dana</p>
 
-                                    @auth
-                                      @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
-                                        @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Standard'))
-                                            <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Standard')->first()->id ?? 0) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Ukloni iz korpe"><i class="fas fa-trash"></i> Ukloni iz <i class="fas fa-shopping-cart"></i></button>
-                                            </form>
-                                        @elseif($cartItemCount == 0)
-                                            <form action="{{ route('cart.store', ['service' => $service, 'package' => 'Standard']) }}" method="POST">
-                                                @csrf
-                                                <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
-                                            </form>
-                                        @endif
-                                      @endif
-                                    @endauth
+                                        @auth
+                                          @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
+                                            @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Standard'))
+                                                <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Standard')->first()->id ?? 0) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Ukloni iz korpe"><i class="fas fa-trash"></i> Ukloni iz <i class="fas fa-shopping-cart"></i></button>
+                                                </form>
+                                            @elseif($cartItemCount == 0)
+                                                <form action="{{ route('cart.store', ['service' => $service, 'package' => 'Standard']) }}" method="POST">
+                                                    @csrf
+                                                    <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
+                                                </form>
+                                            @endif
+                                          @endif
+                                        @endauth
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endif
 
                         <!-- Premium paket -->
-                        <div class="col-md-4">
-                            <div class="card h-100">
-                                <div class="card-body card-text">
-                                    <h6 class="card-title text-center package-category"><i class="fas fa-gem text-warning"></i> Premium</h6>
-                                    <!-- Prikazivanje skraćenog teksta i ikone -->
-                                    <p class="text-center d-flex align-items-center">
-                                        {{ Str::limit($service->premium_inclusions, 15) }}
-                                        <i class="fa fa-info-circle ml-2 mt-1 text-primary" data-toggle="modal" data-target="#premiumInclusionsModal" style="cursor: pointer;"></i>
-                                    </p>
-                                    <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->premium_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
-                                    <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->premium_delivery_days }} dana</p>
-                                    @auth
-                                      @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
-                                        @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Premium'))
-                                            <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Premium')->first()->id ?? 0) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Ukloni iz korpe"><i class="fas fa-trash"></i> Ukloni iz <i class="fas fa-shopping-cart"></i></button>
-                                            </form>
-                                        @elseif($cartItemCount == 0)
-                                            <form action="{{ route('cart.store', ['service' => $service, 'package' => 'Premium']) }}" method="POST">
-                                                @csrf
-                                                <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
-                                            </form>
-                                        @endif
-                                      @endif
-                                    @endauth
+                        @if (!is_null($service->premium_price))
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body card-text">
+                                        <h6 class="card-title text-center package-category"><i class="fas fa-gem text-warning"></i> Premium</h6>
+                                        <!-- Prikazivanje skraćenog teksta i ikone -->
+                                        <p class="text-center d-flex align-items-center">
+                                            {{ Str::limit($service->premium_inclusions, 15) }}
+                                            <i class="fa fa-info-circle ml-2 mt-1 text-primary" data-toggle="modal" data-target="#premiumInclusionsModal" style="cursor: pointer;"></i>
+                                        </p>
+                                        <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->premium_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
+                                        <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->premium_delivery_days }} dana</p>
+                                        @auth
+                                          @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
+                                            @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Premium'))
+                                                <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Premium')->first()->id ?? 0) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Ukloni iz korpe"><i class="fas fa-trash"></i> Ukloni iz <i class="fas fa-shopping-cart"></i></button>
+                                                </form>
+                                            @elseif($cartItemCount == 0)
+                                                <form action="{{ route('cart.store', ['service' => $service, 'package' => 'Premium']) }}" method="POST">
+                                                    @csrf
+                                                    <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
+                                                </form>
+                                            @endif
+                                          @endif
+                                        @endauth
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

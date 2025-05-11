@@ -196,48 +196,79 @@ class ServiceController extends Controller
         ini_set('max_execution_time', '300');
         ini_set('max_input_time', '300');
 
-        // Validacija podataka
+        // Osnovna validacija koja je uvek potrebna
         $validated = $request->validate([
             'category' => 'required|exists:categories,id',
-            'subcategory' => 'required|numeric', // Promenjeno jer možda nemate subcategories tabelu
+            'subcategory' => 'required|numeric',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'start_price' => 'required|numeric|min:0',
-            'standard_price' => 'required|numeric|min:0',
-            'premium_price' => 'required|numeric|min:0',
-            'start_delivery_days' => 'required|integer|min:1',
-            'standard_delivery_days' => 'required|integer|min:1',
-            'premium_delivery_days' => 'required|integer|min:1',
-            'start_inclusions' => 'required|string',
-            'standard_inclusions' => 'required|string',
-            'premium_inclusions' => 'required|string',
             'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
+        // Dinamička validacija za pakete
+        $packageRules = [];
+        $packageFields = ['price', 'delivery_days', 'inclusions'];
+        $availablePackages = ['basic', 'standard', 'premium'];
+
+        // Proveravamo koje pakete je korisnik poslao
+        $submittedPackages = [];
+        foreach ($availablePackages as $package) {
+            if ($request->has($package.'_price')) {
+                $submittedPackages[] = $package;
+
+                // Dodajemo pravila validacije za svaki prisutan paket
+                $packageRules[$package.'_price'] = 'required|numeric|min:0';
+                $packageRules[$package.'_delivery_days'] = 'required|integer|min:1';
+                $packageRules[$package.'_inclusions'] = 'required|string';
+            }
+        }
+
+        // Proveravamo da li je poslat barem jedan paket
+        if (empty($submittedPackages)) {
+            return back()->withErrors(['error' => 'Moraš dodati barem jedan paket.'])->withInput();
+        }
+
+        // Spajamo osnovnu i dinamičku validaciju
+        $validated = $request->validate(array_merge([
+            'category' => 'required|exists:categories,id',
+            'subcategory' => 'required|numeric',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], $packageRules));
+
         $visible = $request->has('visible') ? 1 : 0;
+
         try {
-            // Ažuriranje osnovnih podataka servisa
-            $service = Service::create([
+            // Priprema podataka za čuvanje
+            $serviceData = [
                 'user_id' => Auth::id(),
                 'category_id' => $validated['category'],
-                'subcategory_id' => $validated['subcategory'], // Čuvamo ID bez provere relacije
+                'subcategory_id' => $validated['subcategory'],
                 'title' => $validated['title'],
                 'description' => $validated['description'],
-                'basic_price' => $validated['start_price'],
-                'standard_price' => $validated['standard_price'],
-                'premium_price' => $validated['premium_price'],
-                'basic_delivery_days' => $validated['start_delivery_days'],
-                'standard_delivery_days' => $validated['standard_delivery_days'],
-                'premium_delivery_days' => $validated['premium_delivery_days'],
-                'basic_inclusions' => $validated['start_inclusions'],
-                'standard_inclusions' => $validated['standard_inclusions'],
-                'premium_inclusions' => $validated['premium_inclusions'],
-                'visible' =>  ($visible === 0) ? null : $visible,
+                'visible' => ($visible === 0) ? null : $visible,
                 'visible_expires_at' => ($visible === 0) ? null : now()->addMonth()
-            ]);
+            ];
 
+            // Dodajemo podatke za svaki paket koji je poslat
+            foreach ($submittedPackages as $package) {
+                $serviceData[$package.'_price'] = $validated[$package.'_price'];
+                $serviceData[$package.'_delivery_days'] = $validated[$package.'_delivery_days'];
+                $serviceData[$package.'_inclusions'] = $validated[$package.'_inclusions'];
 
-            // Dodavanje novih slika
+                // Za pakete koji nisu poslati, postavljamo null vrednosti
+                if (!in_array($package, $submittedPackages)) {
+                    $serviceData[$package.'_price'] = null;
+                    $serviceData[$package.'_delivery_days'] = null;
+                    $serviceData[$package.'_inclusions'] = null;
+                }
+            }
+
+            // Kreiranje servisa
+            $service = Service::create($serviceData);
+
+            // Dodavanje slika (ostaje isto kao u originalnom kodu)
             if ($request->hasFile('serviceImages')) {
                 $remainingSlots = 10 - $service->serviceImages()->count();
 
@@ -255,30 +286,25 @@ class ServiceController extends Controller
                     $uploadSuccess = true;
                     $errorMessage = '';
 
-                    // Proveri i kreiraj direktorijum ako ne postoji
                     $directory = 'public/services';
                     if (!Storage::exists($directory)) {
                         Storage::makeDirectory($directory, 0755, true);
                     }
 
                     foreach ($images as $image) {
-                        // Provera veličine slike
-                        if ($image->getSize() > 2 * 1024 * 1024) { // 2MB u bajtovima
-                            continue; // Preskoči sliku koja prelazi limit
+                        if ($image->getSize() > 2 * 1024 * 1024) {
+                            continue;
                         }
 
                         $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
 
-                        // Čuvanje slike u storage
                         try {
                             $image->storeAs($directory, $filename);
 
-                            // Provera da li je slika zaista sačuvana
                             if (!Storage::exists($directory.'/'.$filename)) {
                                 throw new \Exception("Slika nije sačuvana na disku");
                             }
 
-                            // Čuvanje podataka u bazu
                             $service->serviceImages()->create([
                                 'service_id' => $service->id,
                                 'image_path' => $filename
@@ -288,7 +314,7 @@ class ServiceController extends Controller
                             $uploadSuccess = false;
                             $errorMessage = 'Došlo je do greške pri čuvanju slika: ' . $e->getMessage();
                             \Log::error('Image upload failed: ' . $e->getMessage());
-                            break; // Prekidamo petlju pri prvoj grešci
+                            break;
                         }
                     }
 
@@ -302,10 +328,8 @@ class ServiceController extends Controller
                 }
             }
 
-            // Umesto redirect-a vraćamo JSON odgovor
             if ($request->ajax()) {
                 $successMessage = 'Ponuda '.$validated['title'].' je uspešno dodata.';
-                // Postavljanje flash poruke u sesiju
                 $request->session()->flash('success', $successMessage);
 
                 return response()->json([
@@ -313,11 +337,11 @@ class ServiceController extends Controller
                 ]);
             }
 
-
             return redirect()->route('services.index', $service)
                 ->with('success', 'Ponuda je uspešno dodata.');
+
         } catch (\Exception $e) {
-            // U slučaju greške, vraćamo korisniku odgovarajući odgovor
+            \Log::error('Service creation error: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Došlo je do greške prilikom kreiranja servisa. Pokušajte ponovo.'])
                          ->withInput();
         }
@@ -429,123 +453,153 @@ class ServiceController extends Controller
         ini_set('max_execution_time', '300');
         ini_set('max_input_time', '300');
 
-        // Validacija podataka
+        // Osnovna validacija koja je uvek potrebna
         $validated = $request->validate([
             'category' => 'required|exists:categories,id',
-            'subcategory' => 'required|numeric', // Promenjeno jer možda nemate subcategories tabelu
+            'subcategory' => 'required|numeric',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'start_price' => 'required|numeric|min:0',
-            'standard_price' => 'required|numeric|min:0',
-            'premium_price' => 'required|numeric|min:0',
-            'start_delivery_days' => 'required|integer|min:1',
-            'standard_delivery_days' => 'required|integer|min:1',
-            'premium_delivery_days' => 'required|integer|min:1',
-            'start_inclusions' => 'required|string',
-            'standard_inclusions' => 'required|string',
-            'premium_inclusions' => 'required|string',
             'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
+        // Dinamička validacija za pakete
+        $packageRules = [];
+        $availablePackages = ['basic', 'standard', 'premium'];
+
+        // Proveravamo koje pakete je korisnik poslao
+        $submittedPackages = [];
+        foreach ($availablePackages as $package) {
+            if ($request->has($package.'_price')) {
+                $submittedPackages[] = $package;
+
+                // Dodajemo pravila validacije za svaki prisutan paket
+                $packageRules[$package.'_price'] = 'required|numeric|min:0';
+                $packageRules[$package.'_delivery_days'] = 'required|integer|min:1';
+                $packageRules[$package.'_inclusions'] = 'required|string';
+            }
+        }
+
+        // Proveravamo da li je poslat barem jedan paket
+        if (empty($submittedPackages)) {
+            return back()->withErrors(['error' => 'Morate imati barem jedan paket.'])->withInput();
+        }
+
+        // Spajamo osnovnu i dinamičku validaciju
+        $validated = $request->validate(array_merge([
+            'category' => 'required|exists:categories,id',
+            'subcategory' => 'required|numeric',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], $packageRules));
+
         $visible = $request->has('visible') ? 1 : 0;
-        // Ažuriranje osnovnih podataka servisa
-        $service->update([
-            'category_id' => $validated['category'],
-            'subcategory_id' => $validated['subcategory'], // Čuvamo ID bez provere relacije
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'basic_price' => $validated['start_price'],
-            'standard_price' => $validated['standard_price'],
-            'premium_price' => $validated['premium_price'],
-            'basic_delivery_days' => $validated['start_delivery_days'],
-            'standard_delivery_days' => $validated['standard_delivery_days'],
-            'premium_delivery_days' => $validated['premium_delivery_days'],
-            'basic_inclusions' => $validated['start_inclusions'],
-            'standard_inclusions' => $validated['standard_inclusions'],
-            'premium_inclusions' => $validated['premium_inclusions'],
-            'visible' => ($visible === 0 && $service->visible === null) ? null : $visible,
-            'visible_expires_at' => ($visible === 0 && $service->visible === null) ? null : now()->addMonth()
-        ]);
 
+        try {
+            // Priprema podataka za ažuriranje
+            $serviceData = [
+                'category_id' => $validated['category'],
+                'subcategory_id' => $validated['subcategory'],
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'visible' => ($visible === 0 && $service->visible === null) ? null : $visible,
+                'visible_expires_at' => ($visible === 0 && $service->visible === null) ? null : now()->addMonth()
+            ];
 
-        // Dodavanje novih slika
-        if ($request->hasFile('serviceImages')) {
-            $remainingSlots = 10 - $service->serviceImages()->count();
+            // Ažuriramo podatke za svaki paket koji je poslat
+            foreach ($availablePackages as $package) {
+                if (in_array($package, $submittedPackages)) {
+                    $serviceData[$package.'_price'] = $validated[$package.'_price'];
+                    $serviceData[$package.'_delivery_days'] = $validated[$package.'_delivery_days'];
+                    $serviceData[$package.'_inclusions'] = $validated[$package.'_inclusions'];
+                } else {
+                    // Ako paket nije poslat, postavljamo null vrednosti
+                    $serviceData[$package.'_price'] = null;
+                    $serviceData[$package.'_delivery_days'] = null;
+                    $serviceData[$package.'_inclusions'] = null;
+                }
+            }
 
-            if ($request->ajax() and $remainingSlots === 0) {
+            // Ažuriranje servisa
+            $service->update($serviceData);
+
+            // Dodavanje novih slika (ostaje isto kao u originalnom kodu)
+            if ($request->hasFile('serviceImages')) {
+                $remainingSlots = 10 - $service->serviceImages()->count();
+
+                if ($request->ajax() and $remainingSlots === 0) {
+                    return response()->json([
+                        'error' => 'Dostigli ste maksimalan broj slika (10) za ovaj servis !'
+                    ]);
+                }
+
+                $maxSize = ini_get('upload_max_filesize');
+
+                if ($remainingSlots > 0) {
+                    $images = $request->file('serviceImages');
+                    $images = array_slice($images, 0, $remainingSlots);
+                    $uploadSuccess = true;
+                    $errorMessage = '';
+
+                    $directory = 'public/services';
+                    if (!Storage::exists($directory)) {
+                        Storage::makeDirectory($directory, 0755, true);
+                    }
+
+                    foreach ($images as $image) {
+                        if ($image->getSize() > 2 * 1024 * 1024) {
+                            continue;
+                        }
+
+                        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                        try {
+                            $image->storeAs($directory, $filename);
+
+                            if (!Storage::exists($directory.'/'.$filename)) {
+                                throw new \Exception("Slika nije sačuvana na disku");
+                            }
+
+                            $service->serviceImages()->create([
+                                'service_id' => $service->id,
+                                'image_path' => $filename
+                            ]);
+
+                        } catch (\Exception $e) {
+                            $uploadSuccess = false;
+                            $errorMessage = 'Došlo je do greške pri čuvanju slika: ' . $e->getMessage();
+                            \Log::error('Image upload failed: ' . $e->getMessage());
+                            break;
+                        }
+                    }
+
+                    if (!$uploadSuccess) {
+                        return redirect()->route('services.index', $service)
+                            ->with('error', $errorMessage);
+                    }
+                } else {
+                    return redirect()->route('services.index', $service)
+                        ->with('error', 'Dostigli ste maksimalan broj slika (10) za ovaj servis.');
+                }
+            }
+
+            if ($request->ajax()) {
+                $successMessage = 'Ponuda '.$validated['title'].' je uspešno ažurirana.';
+                $request->session()->flash('success', $successMessage);
+
                 return response()->json([
-                    'error' => 'Dostigli ste maksimalan broj slika (10) za ovaj servis !'
+                    'redirect' => route('services.index', $service)
                 ]);
             }
 
-            $maxSize = ini_get('upload_max_filesize');
+            return redirect()->route('services.index', $service)
+                ->with('success', 'Ponuda je uspešno ažurirana.');
 
-            if ($remainingSlots > 0) {
-                $images = $request->file('serviceImages');
-                $images = array_slice($images, 0, $remainingSlots);
-                $uploadSuccess = true;
-                $errorMessage = '';
-
-                // Proveri i kreiraj direktorijum ako ne postoji
-                $directory = 'public/services';
-                if (!Storage::exists($directory)) {
-                    Storage::makeDirectory($directory, 0755, true);
-                }
-
-                foreach ($images as $image) {
-                    // Provera veličine slike
-                    if ($image->getSize() > 2 * 1024 * 1024) { // 2MB u bajtovima
-                        continue; // Preskoči sliku koja prelazi limit
-                    }
-
-                    $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-
-                    // Čuvanje slike u storage
-                    try {
-                        $image->storeAs($directory, $filename);
-
-                        // Provera da li je slika zaista sačuvana
-                        if (!Storage::exists($directory.'/'.$filename)) {
-                            throw new \Exception("Slika nije sačuvana na disku");
-                        }
-
-                        // Čuvanje podataka u bazu
-                        $service->serviceImages()->create([
-                            'service_id' => $service->id,
-                            'image_path' => $filename
-                        ]);
-
-                    } catch (\Exception $e) {
-                        $uploadSuccess = false;
-                        $errorMessage = 'Došlo je do greške pri čuvanju slika: ' . $e->getMessage();
-                        \Log::error('Image upload failed: ' . $e->getMessage());
-                        break; // Prekidamo petlju pri prvoj grešci
-                    }
-                }
-
-                if (!$uploadSuccess) {
-                    return redirect()->route('services.index', $service)
-                        ->with('error', $errorMessage);
-                }
-            } else {
-                return redirect()->route('services.index', $service)
-                    ->with('error', 'Dostigli ste maksimalan broj slika (10) za ovaj servis.');
-            }
+        } catch (\Exception $e) {
+            \Log::error('Service update error: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Došlo je do greške prilikom ažuriranja servisa. Pokušajte ponovo.'])
+                         ->withInput();
         }
-
-        // Umesto redirect-a vraćamo JSON odgovor
-        if ($request->ajax()) {
-            $successMessage = 'Ponuda '.$validated['title'].' je uspešno ažurirana.';
-            // Postavljanje flash poruke u sesiju
-            $request->session()->flash('success', $successMessage);
-
-            return response()->json([
-                'redirect' => route('services.index', $service)
-            ]);
-        }
-
-        return redirect()->route('services.index', $service)
-            ->with('success', 'Ponuda je uspešno ažurirana.');
     }
 
     /**
