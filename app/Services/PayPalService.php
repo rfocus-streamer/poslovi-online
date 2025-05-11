@@ -16,9 +16,9 @@ class PayPalService
     {
         $clientId = config('services.paypal.client_id');
         $clientSecret = config('services.paypal.secret');
-        $mode = config('services.paypal.mode', 'sandbox');
+        $mode = config('services.paypal.settings.mode');
 
-        $environment = $mode === 'production'
+        $environment = $mode === 'live'
             ? new ProductionEnvironment($clientId, $clientSecret)
             : new SandboxEnvironment($clientId, $clientSecret);
 
