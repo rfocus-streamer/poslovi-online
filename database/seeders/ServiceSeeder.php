@@ -13,7 +13,7 @@ class ServiceSeeder extends Seeder
             [
                 'user_id' => 2, // Prodavac 1
                 'category_id' => 2, // PROGRAMIRANJE
-                'subcategory_id' => 1, // Izrada WordPress web-sajtova
+                'subcategory_id' => 30, // Izrada WordPress web-sajtova
                 'title' => 'Izrada WordPress sajta',
                 'description' => 'Profesionalni WordPress sajtovi po vašim željama.',
                 'basic_price' => 500,
@@ -24,12 +24,13 @@ class ServiceSeeder extends Seeder
                 'standard_inclusions' => '5 stranica, SEO optimizacija',
                 'premium_price' => 1500,
                 'premium_delivery_days' => 10,
-                'premium_inclusions' => '10 stranica, SEO, hosting'
+                'premium_inclusions' => '10 stranica, SEO, hosting',
+                'visible' => true
             ],
             [
                 'user_id' => 2, // Prodavac 1
                 'category_id' => 4, // FOTO I VIDEO
-                'subcategory_id' => 4, // Premiere Pro
+                'subcategory_id' => 58, // Video montaža
                 'title' => 'Video montaža za YouTube',
                 'description' => 'Profesionalna montaža video sadržaja za YouTube kanale.',
                 'basic_price' => 800,
@@ -40,12 +41,13 @@ class ServiceSeeder extends Seeder
                 'standard_inclusions' => 'Montaža do 10 minuta sa efektima',
                 'premium_price' => 2500,
                 'premium_delivery_days' => 7,
-                'premium_inclusions' => 'Montaža do 30 minuta sa kompletnim postprodukcijom'
+                'premium_inclusions' => 'Montaža do 30 minuta sa kompletnim postprodukcijom',
+                'visible' => true
             ],
             [
                 'user_id' => 3, // Prodavac 2
                 'category_id' => 1, // Graphic Design
-                'subcategory_id' => 1, // Logo Design
+                'subcategory_id' => 9, // Logo Design
                 'title' => 'Dizajn logoa',
                 'description' => 'Kreiranje unikatnih logoa za vaš brend.',
                 'basic_price' => 300,
@@ -56,12 +58,13 @@ class ServiceSeeder extends Seeder
                 'standard_inclusions' => '2 koncepta, 4 revizije',
                 'premium_price' => 1000,
                 'premium_delivery_days' => 7,
-                'premium_inclusions' => '3 koncepta, neograničene revizije'
+                'premium_inclusions' => '3 koncepta, neograničene revizije',
+                'visible' => true
             ],
             [
                 'user_id' => 4, // Prodavac 3
-                'category_id' => 1, // Web Development
-                'subcategory_id' => 2, // JavaScript
+                'category_id' => 2, // PROGRAMIRANJE
+                'subcategory_id' => 38, // Izrada web-aplikacija
                 'title' => 'Single Page Aplikacija',
                 'description' => 'Razvoj modernih SPA aplikacija u Reactu.',
                 'basic_price' => 1500,
@@ -72,12 +75,13 @@ class ServiceSeeder extends Seeder
                 'standard_inclusions' => 'Autentifikacija i API integracija',
                 'premium_price' => 5000,
                 'premium_delivery_days' => 25,
-                'premium_inclusions' => 'Full-stack aplikacija sa admin panelom'
+                'premium_inclusions' => 'Full-stack aplikacija sa admin panelom',
+                'visible' => true
             ],
             [
                 'user_id' => 3, // Prodavac 2
-                'category_id' => 4, // Marketing
-                'subcategory_id' => 9, // Social Media
+                'category_id' => 3, // Digitalni Marketing
+                'subcategory_id' => 42, // Vođenje društvenih mreža
                 'title' => 'Social Media Marketing',
                 'description' => 'Upravljanje društvenim mrežama za vaš biznis.',
                 'basic_price' => 2000,
@@ -88,7 +92,8 @@ class ServiceSeeder extends Seeder
                 'standard_inclusions' => '5 postova nedeljno + analitika',
                 'premium_price' => 5000,
                 'premium_delivery_days' => 7,
-                'premium_inclusions' => '10 postova nedeljno + paid ads'
+                'premium_inclusions' => '10 postova nedeljno + paid ads',
+                'visible' => true
             ]
         ];
 

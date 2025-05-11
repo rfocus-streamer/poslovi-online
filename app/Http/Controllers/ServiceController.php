@@ -19,7 +19,7 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $topServices = Service::with([
+        $topServices = Service::where('visible', true)->with([
             'user',
             'category',
             'subcategory',
@@ -36,7 +36,7 @@ class ServiceController extends Controller
 
         $selectedCategoryIds = $topServices->pluck('id')->toArray(); // ID-jevi kategorija iz prvog upita
 
-        $lastServices = Service::with([
+        $lastServices = Service::where('visible', true)->with([
             'user',
             'category',
             'subcategory',
@@ -59,7 +59,7 @@ class ServiceController extends Controller
         if ($request->has('search')) {
             $searchTerm = $request->input('search');
 
-            $services = Service::with([
+            $services = Service::where('visible', true)->with([
                     'user',
                     'category',
                     'subcategory',
