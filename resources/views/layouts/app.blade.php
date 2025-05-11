@@ -226,7 +226,7 @@ input:not(:checked) + .slider .label-text.right {
 
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('projects.jobs') ? 'active' : '' }}" href="{{ route('projects.jobs') }}">
-                                    <i class="fas fa-handshake {{ request()->routeIs('projects.jobs') ? 'text-danger' : '' }}"></i> Poslovi
+                                    <i class="fas fa-handshake {{ request()->routeIs('projects.jobs') ? 'text-danger' : '' }}"></i> Projekti
                                     @if(isset($seller['countProjects']))
                                         <span class="badge bg-danger">{{ $seller['countProjects'] }}</span>
                                     @endif
@@ -251,7 +251,7 @@ input:not(:checked) + .slider .label-text.right {
                                 @if(!in_array(Auth::user()->role, ['support', 'admin']))
                                     <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
                                     <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Preporuči</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Preporuči i Zaradi</a></li>
                                     <li><a class="dropdown-item" href="{{ route('tickets.index') }}">Tiketi</a></li>
                                 @endif
                                 <li><a class="dropdown-item" href="#">Podešavanja</a></li>
@@ -351,22 +351,22 @@ input:not(:checked) + .slider .label-text.right {
                 </div> -->
 
                  <!-- Pravne informacije -->
-                <div class="col-md-4 text-center">
+                <div class="col-md-6 text-center">
                     <h5>Pravne informacije</h5>
                     <ul class="list-unstyled d-flex justify-content-center gap-3">
                         <li><a class="text-white" href="{{ route('terms') }}"><i class="fas fa-file-alt me-2"></i>Uslovi korišćenja</a></li>
-                        <li><a class="text-white" href="{{ route('privacy-policy') }}"><i class="fas fa-shield-alt me-2"></i>Privatnost</a></li>
-                        <li><a class="text-white" href="{{ route('cookies') }}"><i class="fas fa-cookie-bite me-2"></i>Kolačići</a></li>
+                        <li><a class="text-white" href="{{ route('privacy-policy') }}"><i class="fas fa-shield-alt me-2"></i>Politika privatnosti</a></li>
+                        <li><a class="text-white" href="{{ route('cookies') }}"><i class="fas fa-cookie-bite me-2"></i>Politika kolačića</a></li>
                     </ul>
                 </div>
 
                 <!-- Kontakt -->
-                <div class="col-md-3 col-10 mb-4 text-center text-md-start">
+               <!--  <div class="col-md-3 col-10 mb-4 text-center text-md-start">
                     <h5>Kontakt</h5>
                     <ul class="list-unstyled">
                         <li><a class="text-white" href="{{ route('tickets.create') }}"><i class="fas fa-envelope me-2"></i>Kontaktirajte nas</a></li>
                     </ul>
-                </div>
+                </div> -->
 
                 <!-- Socijalne mreže -->
                 <div class="col-md-3 col-10 mb-4 text-center">
@@ -380,9 +380,9 @@ input:not(:checked) + .slider .label-text.right {
                 </div>
             </div>
 
-            <p class="text-light text-center">
+           <!--  <p class="text-light text-center">
                         Platforma za pružanje i pronalaženje usluga bez fizičkog kontakta.
-                    </p>
+                    </p> -->
 
             <!-- Copyright -->
             <div class="border-top pt-4">

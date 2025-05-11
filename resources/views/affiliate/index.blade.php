@@ -31,7 +31,7 @@
             @endif
 
             <div class="card">
-                <div class="card-header text-center card-header text-white" style="background-color: #198754"><i class="fas fa-euro-sign"></i> Preporuči – Zaradi! </div>
+                <div class="card-header text-center card-header btn-poslovi text-white"><i class="fas fa-euro-sign"></i> Preporuči – Zaradi! </div>
 
                 <div class="card-body">
                     <h5 class="text-center">Preporuči prodavca i na poklon dobijaš 70% od njegove prve članarine!</h5>
@@ -45,7 +45,7 @@
                             <div class="form-check mb-3 mt-5">
                                 <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" required>
                                 <label class="form-check-label" for="terms">
-                                    Saglasan sam na <a href="{{ route('affiliate-contract') }}" target="_blank">ugovorne uslove</a>
+                                    Prihvatam uslove <a href="{{ route('affiliate-contract') }}" target="_blank">affiliate programa</a>
                                 </label>
                                 @error('terms')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -92,6 +92,13 @@
                                 <i class="fas fa-money-bill-wave me-1"></i> Povuci affiliate novac
                             </button>
                         </div>
+
+                        <div class="text-warning mb-3 modal-header">
+                            <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#affiliateRequestsStatsModal">
+                                <i class="fas fa-money-bill-wave me-1"></i> Tvoje affiliate isplate
+                            </button>
+                        </div>
+
 
                         <div class="text-warning mb-3 modal-header">
                             <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#affiliateStatsModal">
@@ -217,6 +224,91 @@
             </div>
         </div>
 
+
+        <!-- Affiliate Payout Requests Stats Modal -->
+        <div class="modal fade" id="affiliateRequestsStatsModal" tabindex="-1" aria-labelledby="affiliateRequestsStatsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="w-100 text-center">
+                            <h5 class="modal-title" id="affiliateStatsModalLabel">
+                                <i class="fas fa-money-bill-wave"></i> Tvoje affiliate isplate
+                            </h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="affiliatePayouts-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Podnet</th>
+                                        <th>Isplaćen</th>
+                                        <th>Iznos €</th>
+                                        <th>Način plaćanja</th>
+                                        <th>Uplata na</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   @forelse($payouts as $key => $payout)
+                                        <tr>
+                                            <td>{{$key+1}}</td>
+                                            <td>{{ $payout->request_date->format('d.m.Y.') }}</td>
+                                            <td>
+                                                @if ($payout->payed_date)
+                                                    {{ \Carbon\Carbon::parse($payout->payed_date)->format('d.m.Y.') }}
+                                                @endif
+                                            </td>
+                                            <td class="fw-bold">{{ number_format($payout->amount, 2) }}</td>
+                                            <td>
+                                                @switch($payout->payment_method)
+                                                    @case('paypal')
+                                                        <i class="fab fa-paypal me-2"></i>PayPal
+                                                        @break
+                                                    @case('credit_card')
+                                                        <i class="fas fa-credit-card me-2"></i>Kartica
+                                                        @break
+                                                    @case('bank_account')
+                                                        <i class="fas fa-university me-2"></i>Bankovni transfer
+                                                        @break
+                                                @endswitch
+                                            </td>
+                                            <td>{{$payout->payment_details}}</td>
+                                            <td>
+                                                @switch($payout->status)
+                                                    @case('requested')
+                                                        <span class="badge bg-warning">Na čekanju</span>
+                                                        @break
+                                                    @case('completed')
+                                                        <span class="badge bg-success">Završeno</span>
+                                                        @break
+                                                    @case('rejected')
+                                                        <span class="badge bg-danger">Odbijeno</span>
+                                                        @break
+                                                @endswitch
+                                            </td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">Nema još zahteva za isplatu</td>
+                                        </tr>
+                                        @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-center pagination-buttons" id="pagination-links">
+                                {{ $payouts->links() }}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Payout Affiliate Modal -->
         <div class="modal fade" id="affiliatePayoutModal" tabindex="-1" aria-labelledby="affiliatePayoutModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -237,9 +329,10 @@
                                 </h6>
                             </div>
 
+                            <!-- Inside your modal form -->
                             <div class="mb-3">
                                 <label for="payoutAmount" class="form-label">Iznos za isplatu (€)</label>
-                                <input type="number" step="1" min="100" max="1000"
+                                <input type="number" step="1" min="100" max="{{ auth()->user()->affiliate_balance }}"
                                        class="form-control" id="payoutAmount" name="amount" required
                                        placeholder="Minimalno 100€">
                             </div>
@@ -247,10 +340,10 @@
                             <div class="mb-3">
                                 <label for="paymentMethod" class="form-label">Način isplate</label>
                                 <select class="form-select" id="paymentMethod" name="payment_method" required>
-                                    <option value="">Izaberite način isplate</option>
+                                    <option value="">Izaberi način isplate</option>
                                     <option value="paypal">PayPal</option>
-                                   <!--  <option value="bank">Bankovni transfer</option>
-                                    <option value="crypto">Kriptovaluta</option> -->
+                                   <!--  <option value="bank_account">Bankovni transfer</option>
+                                    <option value="credit_card">Kreditna kartica</option> -->
                                 </select>
                             </div>
 
@@ -261,10 +354,12 @@
 
                             <div class="mb-3" id="bankDetailsField" style="display: none;">
                                 <label for="bankAccount" class="form-label">Broj bankovnog računa</label>
-                                <input type="text" class="form-control" id="bankAccount" name="bank_account">
+                                <input type="text" class="form-control" id="bankAccount" name="bank_account" placeholder="IBAN broj">
                             </div>
 
-                            <div id="payoutError" class="alert alert-danger d-none"></div>
+                            <div id="payoutError" class="alert alert-danger d-none text-center"></div>
+
+                            <div id="payoutSuccess" class="alert alert-success d-none text-center"></div>
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-success">
@@ -283,6 +378,16 @@
                 <div class="d-flex">
                     <div class="toast-body">
                          ✅ Link je uspešno kopiran!
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <!-- Payout Success Toast -->
+            <div id="payoutSuccessToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-check-circle me-2"></i> Uspešno ste poslali zahtev za isplatu!
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
@@ -317,5 +422,135 @@
             console.error("Greška pri kopiranju: ", err);
         });
     }
+</script>
+
+<script>
+    // Handle payout form submission with AJAX
+    document.getElementById('payoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+        const errorDiv = document.getElementById('payoutError');
+        const successDiv = document.getElementById('payoutSuccess');
+
+        // Reset UI state
+        errorDiv.classList.add('d-none');
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesiram...';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const successToast = new bootstrap.Toast(document.getElementById('payoutSuccessToast'));
+                successToast.show();
+
+                successDiv.textContent = data.message;
+                console.log(data);
+                successDiv.classList.remove('d-none');
+                // Sakrij error poruku ako je prikazana
+                errorDiv.classList.add('d-none');
+
+                // Reload the page after 5 seconds to show flash message
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
+            }
+        })
+        .catch(error => {
+            //errorDiv.textContent = 'Došlo je do greške prilikom obrade zahteva';
+            //errorDiv.classList.remove('d-none');
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Pošalji zahtev';
+        });
+    });
+
+    // Show/hide payment method fields based on selection
+    document.getElementById('paymentMethod').addEventListener('change', function() {
+        const paypalField = document.getElementById('paypalEmailField');
+        const bankField = document.getElementById('bankDetailsField');
+
+        paypalField.style.display = 'none';
+        bankField.style.display = 'none';
+
+        if (this.value === 'paypal') {
+            paypalField.style.display = 'block';
+        } else if (this.value === 'bank') {
+            bankField.style.display = 'block';
+        }
+    });
+</script>
+<script type="text/javascript">
+   document.addEventListener("DOMContentLoaded", function () {
+    // Osnovni URL za AJAX pozive
+    const baseUrl = "{{ route('affiliate.index') }}";
+
+    // Poziv funkcije za prevođenje teksta paginacije
+    translatePaginationText();
+
+    // Kada korisnik klikne na link paginacije
+    $('#pagination-links').on('click', 'a', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');  // Preuzmi URL sa linka za paginaciju
+
+        // Napravi AJAX poziv
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (response) {
+                // Ažuriraj sadržaj tabele i paginacije
+                $('#affiliatePayouts-table').html($(response).find('#affiliatePayouts-table').html());
+                $('#pagination-links').html($(response).find('#pagination-links').html());
+                // Poziv funkcije za prevođenje teksta paginacije
+                translatePaginationText();
+
+                // Ažuriraj URL u browseru bez osvežavanja stranice
+                history.pushState(null, null, url);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data: ", error);
+            }
+        });
+    });
+
+    // Omogući povratak/napred kroz istoriju sa AJAX sadržajem
+    window.addEventListener('popstate', function() {
+        $.ajax({
+            url: location.href,
+            type: 'GET',
+            success: function(response) {
+                $('#affiliatePayouts-table').html($(response).find('#affiliatePayouts-table').html());
+                $('#pagination-links').html($(response).find('#pagination-links').html());
+                translatePaginationText();
+            }
+        });
+    });
+});
+
+// Funkcija za prevođenje teksta paginacije
+function translatePaginationText() {
+    const textElement = document.querySelector("p.text-sm.text-gray-700");
+    if (textElement) {
+        let text = textElement.textContent.trim();
+        let matches = text.match(/\d+/g);
+
+        if (matches && matches.length === 3) {
+            let translatedText = `Prikazuje od ${matches[0]} do ${matches[1]} od ukupno ${matches[2]} rezultata`;
+            textElement.textContent = translatedText;
+        }
+    }
+}
 </script>
 @endsection

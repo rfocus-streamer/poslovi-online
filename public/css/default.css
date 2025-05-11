@@ -383,3 +383,14 @@ a[rel="prev"]::before {
 .rating-input label i {
     transition: all 0.2s ease;
 }
+
+.avatar-img {
+    object-fit: cover;
+}
+
+.btn-poslovi
+{
+    color: #fff !important;
+    background-color: #9c1c2c !important;
+    border-color: #9c1c2c !important;
+}

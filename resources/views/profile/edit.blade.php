@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-<link href="{{ asset('css/index.css') }}" rel="stylesheet">
+<link href="{{ asset('css/default.css') }}" rel="stylesheet">
 
 @section('content')
 <style>
@@ -72,7 +72,7 @@
                         <div class="form-group mb-3 text-center">
                             <label for="avatar" class="form-label d-block">
                                 <img src="{{ Storage::url('user/' . Auth::user()->avatar) }}"
-                                     alt="Avatar" class="rounded-circle" width="100" height="100">
+                                     alt="Avatar" class="rounded-circle avatar-img" width="100" height="100">
                             </label>
                             <input type="file" id="avatar" name="avatar" class="form-control @error('avatar') is-invalid @enderror">
                             @error('avatar')
@@ -198,7 +198,7 @@
                                 </div>
 
                                 <div class="text-warning mb-2">
-                                    <a href="{{ route('packages.index') }}" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> <i class="fas fa-calendar-alt"></i>
+                                    <a href="{{ route('packages.index') }}" class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> <i class="fas fa-calendar-alt"></i>
                                     </a>
                                     <p class="text-center text-secondary">Odaberi paket</p>
                                 </div>
@@ -219,7 +219,7 @@
 
                         @if(Auth::user()->role === 'seller' or Auth::user()->role === 'both')
                             <div class="text-warning mb-2">
-                                <button type="button" class="btn btn-info w-100 mb-2" data-bs-toggle="modal" data-bs-target="#fiatPayoutModal">
+                                <button type="button" class="btn btn-poslovi w-100 mb-2" data-bs-toggle="modal" data-bs-target="#fiatPayoutModal">
                                     <i class="fas fa-money-bill-wave me-1"></i> Povuci novac
                                 </button>
                                 <a href="{{ route('deposit.form') }}" class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"> <i class="fas fa-credit-card"></i>

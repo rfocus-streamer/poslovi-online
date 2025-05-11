@@ -109,6 +109,11 @@ class User extends Authenticatable
         return $this->hasMany(Affiliate::class, 'referral_id');
     }
 
+    public function affiliatePayouts()
+    {
+        return $this->hasMany(AffiliatePayout::class);
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

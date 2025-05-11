@@ -120,6 +120,7 @@ class RegisteredUserController extends Controller
 
         // Obeleži kao verifikovan
         $user->is_verified = true;
+        $user->email_verified_at = now();
         $user->save();
 
         return redirect('/login')->with('success', 'Uspešno si verifikovao svoj email.Možeš se sada prijaviti.');
