@@ -86,6 +86,7 @@ class MessageController extends Controller
             if ($message->receiver_id != Auth::id()) {
                 // Pronađi kontakt (sender)
                 $contact = $message->receiver;
+                $unreadCount = Message::countUnreadForSender(Auth::id(), $contact->id, $message->service->id);
 
                 // Ako kontakt već postoji u kolekciji, dodaj novu temu i ažuriraj poslednju poruku
                 if ($contacts->contains('id', $contact->id)) {
@@ -96,6 +97,7 @@ class MessageController extends Controller
                         'service_id' => $message->service->id,
                         'service_title' => $message->service->title ?? 'Nepoznat servis',
                         'last_message_date' => $message->created_at,
+                        'unreadCount' => $unreadCount
                     ]);
                 } else {
                     // Ako kontakt nije u kolekciji, dodaj ga sa temama, servisima i poslednjom porukom
@@ -103,6 +105,7 @@ class MessageController extends Controller
                         'service_id' => $message->service->id,
                         'service_title' => $message->service->title ?? 'Nepoznat servis',
                         'last_message_date' => $message->created_at,
+                        'unreadCount' => $unreadCount
                     ]]);
 
                     $contacts->push($contact);
@@ -218,21 +221,23 @@ class MessageController extends Controller
 
             $service_id = Crypt::decrypt($request->input('service_id', ''));
 
-            $service = Service::select('id', 'title')->find($service_id);
+            $service = Service::with(['user' => function($query) {
+                            $query->select( 'id',
+                                            'firstname',
+                                            'lastname',
+                                            'avatar',
+                                            'stars',
+                                            'is_online',
+                                            'role',
+                                            'last_seen_at'
+                            ); // Izaberite kolone koje želite od usera
+                        }])
+                        ->select('id', 'title', 'user_id') // Obavezno uključite user_id
+                        ->find($service_id);
             if($service_id){
                 $directChatService = $service;
                 // Dohvatanje korisnika koji je prodavac
-                $seller = (object) $service->user->only([
-                    'id',
-                    'user_id',
-                    'firstname',
-                    'lastname',
-                    'avatar',
-                    'stars',
-                    'is_online',
-                    'role',
-                    'last_seen_at'
-                ]);
+                $seller = (object) $service->user;
 
                 // Inicijalizacija 'service_titles' kao prazne kolekcije ili niza
                 $seller->service_titles = collect(); // Možete koristiti i običan niz umesto kolekcije
