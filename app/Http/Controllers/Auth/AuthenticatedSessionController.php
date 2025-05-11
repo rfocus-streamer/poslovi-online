@@ -31,6 +31,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if (! Auth::user()->is_verified) {
+            Auth::logout();
+
+            return back()->with('error', 'Pre prijave potrebno je da verifikuješ email adresu putem linka koji ti je poslat.');
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

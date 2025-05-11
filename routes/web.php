@@ -16,6 +16,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Mews\Captcha\Facades\Captcha;
 use Illuminate\Support\Str;
 /*
@@ -31,6 +32,8 @@ use Illuminate\Support\Str;
 
 Route::get('/', [ServiceController::class, 'index'])->name('home');
 Route::get('/ponuda/{id}', [ServiceController::class, 'show'])->name('services.show');
+Route::get('/verify/{id}/{hash}', [RegisteredUserController::class, 'verify'])
+    ->name('verification.email');
 
 // Rute za logovane korisnike
 Route::middleware('auth')->group(function () {
@@ -142,6 +145,7 @@ Route::get('/attachments/{file}', function ($file) {
 Route::get('/check-auth', function () {
     return auth()->check() ? "Autentifikovan" : "Nije autentifikovan";
 });
+
 
 // Social Login rute
 Route::prefix('login')->group(function () {

@@ -13,7 +13,7 @@
 <!-- Hero sekcija sa pozadinom -->
 <div class="hero-section">
     <div class="hero-content text-center text-white">
-        <span class="hero-subtitle">Kreirajte novi nalog</span>
+        <span class="hero-subtitle">Kreiraj novi nalog</span>
         <h1 class="hero-title text-center">Poslovi<mark>online</mark></h1>
     </div>
 </div>
@@ -38,17 +38,17 @@
             <div class="modal-body p-5">
 
                 <!-- Prikaz poruke sa anchor ID -->
-                @if(session('success'))
-                    <div id="register-message" class="alert alert-success text-center">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
                 @error('captcha')
                     <div id="register-message" class="alert alert-danger text-center">
                         {{ $message }}
                     </div>
                 @enderror
+
+                @if(session('success'))
+                    <div id="register-message" class="alert alert-success text-center">
+                        {{ session('success') }}
+                    </div>
+                @else
 
                 <form method="POST" action="{{ route('register') }}" onsubmit="return validatePasswords()">
                     @csrf
@@ -101,6 +101,7 @@
                                id="email"
                                name="email"
                                class="form-control @error('email') is-invalid @enderror"
+                               value="{{ old('email') }}"
                                required>
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -141,26 +142,59 @@
                         </div>
                     </div>
 
-                    <!-- Telefon -->
-                    <div class="form-group mb-3 w-100">
-                        <!-- Skriveno polje za pun broj -->
-                        <input type="hidden" name="phone" id="full_phone">
+                    <div class="row mb-3">
+                        <!-- Telefon -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <input type="hidden" name="phone" id="full_phone">
+                                <label for="phone_input" class="form-label">
+                                    <i class="fas fa-phone me-1"></i> Telefon
+                                </label>
+                                <input type="tel"
+                                       id="phone_input"
+                                       name="phone_input"
+                                       class="form-control @error('phone') is-invalid @enderror"
+                                       placeholder="XX/XXX-XXX"
+                                       value="{{ old('phone') }}"
+                                       required>
+                                @error('phone')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
 
-                        <label for="phone" class="form-label">
-                            <i class="fas fa-phone me-1"></i> Telefon
-                        </label><br>
-                        <!-- Dodajte input za pozivni broj sa zastavama -->
-                        <input type="tel"
-                               id="phone_input"
-                               name="phone_input"
-                               class="form-control @error('phone') is-invalid @enderror"
-                               placeholder="XX/XXX-XXX"
-                               value="{{ old('phone') }}"
-                               required>
-                        @error('phone')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                         <!-- Ulica -->
+                        <div class="col-12 col-md-6">
+                            <label for="street" class="form-label"><i class="fas fa-road me-1"></i> Ulica i broj</label>
+                            <input type="text" id="street" name="street" class="form-control" value="{{ old('street') }}" required>
+                        </div>
+
+
                     </div>
+
+                    <div class="row mb-3">
+                         <!-- Grad -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="city" class="form-label">
+                                    <i class="fas fa-city me-1"></i> Grad
+                                </label>
+                                <input type="text"
+                                       id="city"
+                                       name="city"
+                                       class="form-control"
+                                       value="{{ old('city') }}"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Zemlja -->
+                        <div class="col-12 col-md-6">
+                            <label for="country" class="form-label"><i class="fas fa-globe me-1"></i> Zemlja</label>
+                            <input type="text" id="country" name="country" class="form-control" value="{{ old('country') }}" required>
+                        </div>
+                    </div>
+
 
                     <!-- CAPTCHA -->
                     <div class="form-group d-flex align-items-center w-100">
@@ -177,7 +211,7 @@
 
                     <!-- Prihvatam uslove -->
                     <div class="form-check mb-3">
-                        <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" required>
+                        <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" oninvalid="this.setCustomValidity('Prihvati uslove korišćenja.')" oninput="this.setCustomValidity('')" required>
                         <label class="form-check-label" for="terms">
                             Prihvatam <a href="{{ route('terms') }}" target="_blank">uslove korišćenja</a>
                         </label>
@@ -193,11 +227,12 @@
 
                     <!-- Već imate nalog? -->
                     <div class="text-center">
-                        <p>Već imate nalog?
-                            <a href="{{ route('login') }}" class="text-decoration-none">Prijavite se ovde</a>
+                        <p>Već imaš nalog?
+                            <a href="{{ route('login') }}" class="text-decoration-none">Prijavi se ovde</a>
                         </p>
                     </div>
                 </form>
+                @endif
             </div>
         </div>
     </div>

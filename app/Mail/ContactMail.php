@@ -38,6 +38,12 @@ class ContactMail extends Mailable
             $mail->with(['ticket_id' => $this->details['ticket_id']]);
         }
 
+        // Proveravamo da li postoji verificationUrl
+        if (isset($this->details['verificationUrl'])) {
+            $mail->with(['verificationUrl' => $this->details['verificationUrl']]);
+        }
+
+
         return $mail;
     }
 }
