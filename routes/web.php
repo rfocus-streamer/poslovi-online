@@ -83,6 +83,10 @@ Route::middleware('auth')->group(function () {
         ->name('additional_charges.store');
     Route::get('/projects/{project}/additional-charges', [AdditionalChargeController::class, 'index'])
         ->name('additional_charges.index');
+    Route::post('/projects/{charge}/accept-charge', [AdditionalChargeController::class, 'accept'])
+        ->name('additional_charges.accept');
+    Route::post('/projects/{charge}/reject-charge', [AdditionalChargeController::class, 'reject'])
+        ->name('additional_charges.reject');
 
     // Rute za prigovore
     Route::get('/complaints/', [ComplaintController::class, 'index'])

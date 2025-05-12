@@ -11,6 +11,7 @@ use App\Models\Affiliate;
 use App\Models\Subscription;
 use App\Models\Commission;
 use App\Models\Invoice;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,11 @@ class PackageController extends Controller
      */
     public function index()
     {
+        if(Auth::user()->role !== 'seller')
+        {
+            return redirect()->intended(RouteServiceProvider::HOME);
+        }
+
         $packages = Package::all(); // Dohvati sve
         $user = Auth::user();
         $totalEarnings = 0;

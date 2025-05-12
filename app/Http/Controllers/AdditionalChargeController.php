@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdditionalCharge;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdditionalChargeController extends Controller
 {
@@ -45,8 +46,8 @@ class AdditionalChargeController extends Controller
             'reason' => $request->input('reason')
         ]);
 
-        // Redirekcija na rutu services.show sa service_id
-        return redirect()->route('services.show', $project->service->id)
+        // Redirekcija na rutu projects.view
+        return redirect()->route('projects.view', $project->id)
                     ->with('success', 'Zahtev za dodatnom naplatom je uspešno poslat.');
     }
 
@@ -57,5 +58,39 @@ class AdditionalChargeController extends Controller
     {
         $additionalCharges = $project->additionalCharges;
         return view('projects.additional_charges', compact('project', 'additionalCharges'));
+    }
+
+    public function accept(Request $request, AdditionalCharge $charge)
+    {
+        $project = Project::where('id', $charge->project_id)->first();
+        // Dohvati trenutno prijavljenog korisnika
+        $user = Auth::user();
+
+        if($project)
+        {
+            $amount = $charge->amount;
+            $project->reserved_funds += $amount;
+            $project->save();
+
+            $user->deposits -= $amount;
+            $user->save();
+
+            $charge->status = 'completed';
+            $charge->save();
+
+            return redirect()->route('projects.view', $project->id)
+                    ->with('success', 'Prihvatio si dodatnu naplatu. Odgovarajući iznos je skinut sa tvog depozita i prebačen u rezervisana sredstva ovog projekta.');
+        }
+
+        return redirect()->route('projects.view', $project->id)
+                    ->with('error', 'Došlo je do greške prilikom prebacivanja za dodatnu naplatu !');
+    }
+
+    public function reject(Request $request, AdditionalCharge $charge)
+    {
+        $charge->status = 'rejected';
+        $charge->save();
+        return redirect()->route('projects.view', $charge->project->id)
+                    ->with('success', 'Odbio si dodatnu naplatu. Iznos ostaje na tvom depozitu i neće biti prebačen u rezervisana sredstva.');
     }
 }

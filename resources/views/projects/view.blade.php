@@ -246,20 +246,113 @@
                     <ul class="list-unstyled">
                         <li><i class="fas fa-calendar-alt text-info"></i> <strong>Datum početka:</strong> {{ $project->start_date ?? 'N/A' }}</li>
                         <li><i class="fas fa-calendar-check text-success"></i> <strong>Datum završetka:</strong> {{ $project->end_date ?? 'N/A' }}</li>
-                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} <i class="fas fa-euro-sign"></i></li>
+                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} €</i></li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-2 g-0">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="card-title mb-4 text-success"><i class="fas fa-wallet text-dark"></i> Dodatna naplata</h6>
-                    <p>Trenutno nema zahteva od izvršioca</p>
+        @if($project->additionalCharges->count() > 0)
+            @php
+                $hasWaitingConfirmation = false; // Proverava da li postoji bar jedan zahtev sa statusom 'waiting_confirmation'
+            @endphp
+
+            @foreach($project->additionalCharges as $charge)
+                @if($charge->status == 'waiting_confirmation')
+                    @php
+                        $hasWaitingConfirmation = true; // Ako postoji zahtev sa statusom 'waiting_confirmation'
+                    @endphp
+                    <div class="col-md-4 mb-2 g-0">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title mb-4 text-success"><i class="fas fa-wallet text-dark"></i> Prodavac zahteva dodatnu naplatu</h6>
+                                <div class="ml-2">
+                                    <div class="text-muted small text-end">
+                                        {{ $charge->created_at->format('d.m.Y H:i') }}
+                                    </div>
+                                    <strong>Iznos:</strong> {{ number_format($charge->amount, 2) }} €<br>
+                                    <strong>Razlog:</strong> {{ $charge->reason }}
+
+                                    <div class="mt-3">
+                                        <div class="d-flex gap-2 justify-content-center w-100">
+                                            @if(Auth::user()->deposits < $charge->amount)
+                                                <!-- Ako korisnik nema dovoljno novca, prikazujemo dugme za deponovanje novca -->
+                                                <a href="{{ route('deposit.form') }}" data-bs-toggle="tooltip" title="Deponuj novac"> <button class="btn btn-warning ms-auto w-100 btn-sm" data-bs-toggle="tooltip" title="Deponuj novac">Dopuni <i class="fas fa-credit-card"></i></button>
+                                                </a>
+                                            @else
+                                                <form action="{{ route('additional_charges.accept', $charge) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success">Odobri <i class="fas fa-check-circle"></i></button>
+                                                </form>
+                                            @endif
+
+                                            <form action="{{ route('additional_charges.reject', $charge) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger">Odbij <i class="fas fa-times-circle"></i></button>
+                                            </form>
+                                        </div>
+
+                                        <!-- small tag is now placed below the buttons and centered -->
+                                       <!--  <div class="text-center" style="margin-top: -15px !important">
+                                            <small>Odobri ili odbij zahtev</small>
+                                        </div> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endforeach
+
+            <!-- Ako nema zahteva sa statusom 'waiting_confirmation', prikazi poruku -->
+            @if(!$hasWaitingConfirmation)
+                <div class="col-md-4 mb-2 g-0">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title mb-4 text-success"><i class="fas fa-wallet text-dark"></i> Dodatna naplata</h6>
+                            <p>Trenutno nema zahteva od izvršioca</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @else
+            <div class="col-md-4 mb-2 g-0">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-4 text-success"><i class="fas fa-wallet text-dark"></i> Dodatna naplata</h6>
+                        <p>Trenutno nema zahteva od izvršioca</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
+
+        @if($project->additionalCharges->count() > 0)
+            <div class="col-md-8 mb-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-4 text-success"><i class="fas fa-wallet text-dark"></i> Lista odobrenih zahteva za dodatnu naplatu</h6>
+                        <ul class="list-unstyled">
+                            @foreach($project->additionalCharges as $charge)
+                                @if($charge->status == 'completed')
+                                    <li class="mb-1 card">
+                                        <div class="ml-2">
+                                            <strong>Iznos:</strong> {{ number_format($charge->amount, 2) }} €<br>
+                                            @if($charge->status == 'completed')
+                                                <strong>Status: </strong> <i class="fas fas fa-check-circle text-success"></i> Odobrio si zahtev, zahtevan iznos je dodat u rezervisana sredstva <br>
+                                            @endif
+                                            <strong>Razlog:</strong> {{ $charge->reason }}
+                                                <div class="text-muted small text-end">
+                                                    {{ $charge->created_at->format('d.m.Y H:i') }}
+                                                </div>
+                                        </div>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="col-md-8 mb-2 g-0">
             <div class="card">

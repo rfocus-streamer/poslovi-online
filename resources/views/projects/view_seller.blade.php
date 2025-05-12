@@ -277,34 +277,36 @@
                     <ul class="list-unstyled">
                         <li><i class="fas fa-calendar-alt text-info"></i> <strong>Datum početka:</strong> {{ $project->start_date ?? 'N/A' }}</li>
                         <li><i class="fas fa-calendar-check text-success"></i> <strong>Datum završetka:</strong> {{ $project->end_date ?? 'N/A' }}</li>
-                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} <i class="fas fa-euro-sign"></i></li>
+                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} €</li>
                     </ul>
                 </div>
             </div>
         </div>
 
         @if($project->admin_decision === null and $project->status !== 'inactive' and $project->seller_uncomplete_decision !== 'accepted')
-            <div class="col-md-4 mb-2 g-0">
-                <div class="card">
-                    <div class="card-body mb-4">
-                        @if(auth()->id() === $project->seller_id)
-                            <div class="text-center">
-                                @if($hasPendingRequest)
-                                    <button type="button" class="btn btn-secondary w-100" disabled>
-                                        <i class="fas fa-wallet"></i> &nbsp;Zahtev već poslat
-                                    </button>
-                                    <small class="d-block mt-1 text-muted">Sačekajte odobrenje pre slanja novog zahteva</small>
-                                @else
-                                    <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#additionalChargeModal">
-                                            <i class="fas fa-wallet"></i> &nbsp;Zatraži dodatnu naplatu
-                                    </button>
-                                    <small class="d-block mt-1 text-muted">Dodatna naplata zavisi od odobrenja kupca</small>
-                                @endif
-                            </div>
-                        @endif
+            @if($project->status !== 'completed' and $project->status !== 'uncompleted')
+                <div class="col-md-4 mb-2 g-0">
+                    <div class="card">
+                        <div class="card-body mb-4">
+                            @if(auth()->id() === $project->seller_id)
+                                <div class="text-center">
+                                    @if($hasPendingRequest)
+                                        <button type="button" class="btn btn-secondary w-100" disabled>
+                                            <i class="fas fa-wallet"></i> &nbsp;Zahtev već poslat
+                                        </button>
+                                        <small class="d-block mt-1 text-muted">Sačekaj odobrenje pre slanja novog zahteva</small>
+                                    @else
+                                        <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#additionalChargeModal">
+                                                <i class="fas fa-wallet"></i> &nbsp;Zatraži dodatnu naplatu
+                                        </button>
+                                        <small class="d-block mt-1 text-muted">Dodatna naplata zavisi od odobrenja kupca</small>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
         @endif
 
         @if($project->additionalCharges->count() > 0)
@@ -316,7 +318,7 @@
                             @foreach($project->additionalCharges as $charge)
                                 <li class="mb-1 card">
                                     <div class="ml-2">
-                                        <strong>Iznos:</strong> {{ number_format($charge->amount, 2) }} <i class="fas fa-euro-sign"></i><br>
+                                        <strong>Iznos:</strong> {{ number_format($charge->amount, 2) }} €<br>
                                         @if($charge->status == 'waiting_confirmation')
                                             <strong>Status: </strong> <i class="fas fa-hourglass-half text-warning"></i> Čeka se odobrenje kupca za naplatu<br>
                                         @elseif($charge->status == 'rejected')

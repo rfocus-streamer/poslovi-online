@@ -13,6 +13,7 @@ use App\Models\Complaint;
 use App\Models\Commission;
 use App\Models\User;
 use App\Models\Invoice;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -69,7 +70,7 @@ class ProjectController extends Controller
 
             $userStars = $project->buyer->stars;
 
-            $hasPendingRequest = (AdditionalCharge::where('seller_id', Auth::id())
+            $hasPendingRequest = (AdditionalCharge::where('seller_id', Auth::id())->where('project_id', $project->id)
                 ->where('status', 'waiting_confirmation')
                 ->count() > 0) ? true : false;
 
@@ -92,6 +93,10 @@ class ProjectController extends Controller
 
             $countReply = Complaint::where('user_id', $project->seller_id)->count();
 
+            $hasPendingRequest = (AdditionalCharge::where('seller_id', $project->seller_id)->where('project_id', $project->id)
+                ->where('status', 'waiting_confirmation')
+                ->count() > 0) ? true : false;
+
             return view('projects.view', compact(
                 'title',
                 'project',
@@ -106,6 +111,11 @@ class ProjectController extends Controller
 
     public function jobs()
     {
+        if(Auth::user()->role !== 'seller')
+        {
+            return redirect()->intended(RouteServiceProvider::HOME);
+        }
+
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
         $projects = [];
@@ -198,7 +208,7 @@ class ProjectController extends Controller
             return Storage::disk('public')->download($file->file_path, $file->original_name);
         }
 
-        abort(403, 'Nemate pravo pristupa ovom fajlu.');
+        abort(403, 'Nemaš pravo pristupa ovom fajlu.');
     }
 
     /**
@@ -264,7 +274,7 @@ class ProjectController extends Controller
             $cart->delete();
             return redirect()
                     ->back()
-                    ->with('success', "Uspešno ste pokrenuli projekat")
+                    ->with('success', "Uspešno je pokrenut projekat")
                     ->withFragment('cart-message'); // Skrolujte do elementa sa ID "cart-message"
         }else{
             return redirect(RouteServiceProvider::HOME);
@@ -285,7 +295,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Uspešno ste prihvatili zahtev")
+                    ->with('success', "Uspešno je prihvaćen zahtev")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -311,7 +321,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Odbili ste ovaj projekat, rezervisana sredstva vracaju se kupcu !")
+                    ->with('success', "Odbio si ovaj projekat, rezervisana sredstva vracaju se kupcu !")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -370,7 +380,7 @@ class ProjectController extends Controller
                 [
                     'description' => $project->service->title,
                     'billing_period' => 'Kupovina/završetak posla',
-                    'quantity' => $package->quantity,
+                    'quantity' => $project->quantity,
                     'amount' => $packageAmount,
                     'project_id' => $project->id
                 ]
@@ -391,7 +401,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Uspešno ste poslali zahtev za odobrenje završetka posla (projekta) !")
+                    ->with('success', "Uspešno si poslao zahtev za odobrenje završetka posla (projekta) !")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -419,7 +429,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "'Vaša odluka je sačuvana. Srećno u budućim poslovima!")
+                    ->with('success', "'Tvoja odluka je sačuvana. Srećno u budućim poslovima!")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -438,7 +448,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "'Vaša odluka je sačuvana. Novac je prebačen kupcu!");
+                    ->with('success', "'Tvoja odluka je sačuvana. Novac je prebačen kupcu!");
     }
 
     public function completeConfirmationSupport(Project $project)
@@ -491,7 +501,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "'Vaša odluka je sačuvana. Novac je prebačen prodavcu!");
+                    ->with('success', "'Tvoja odluka je sačuvana. Novac je prebačen prodavcu!");
     }
 
     public function partiallyCompletedSupport(Request $request, Project $project)
@@ -551,7 +561,7 @@ class ProjectController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'Vaša odluka je sačuvana. Novac je raspodeljen između prodavca i kupca.');
+            ->with('success', 'Tvoja odluka je sačuvana. Novac je raspodeljen između prodavca i kupca.');
     }
 
     public function uncompleteConfirmationBuyer(Project $project)
@@ -562,7 +572,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Vaša odluka je sačuvana da projekat nije završen!")
+                    ->with('success', "Tvoja odluka je sačuvana da projekat nije završen!")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -573,7 +583,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Vaša odluka je sačuvana da projektu treba korekcije!")
+                    ->with('success', "Tvoja odluka je sačuvana da projektu treba korekcije!")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 

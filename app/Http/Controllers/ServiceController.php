@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\CartItem;
 use App\Models\Project;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -112,6 +113,11 @@ class ServiceController extends Controller
     */
     public function sellerServices()
     {
+        if(Auth::user()->role !== 'seller')
+        {
+            return redirect()->intended(RouteServiceProvider::HOME);
+        }
+
         $services = Service::with([
             'user',
             'category',
@@ -352,7 +358,7 @@ class ServiceController extends Controller
      */
     public function show(string $id)
     {
-         // Dohvati uslugu sa svim relacijama
+        // Dohvati uslugu sa svim relacijama
         $service = Service::with([
             'user',
             'category',
@@ -392,6 +398,11 @@ class ServiceController extends Controller
 
     public function viewServices(Service $service)
     {
+        if(Auth::user()->role !== 'seller')
+        {
+            return redirect()->intended(RouteServiceProvider::HOME);
+        }
+
         // Kategorije
         $categories = Category::with('subcategories')->whereNull('parent_id')->get();
 
