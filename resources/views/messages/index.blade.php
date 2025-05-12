@@ -1,7 +1,13 @@
 @extends('layouts.app')
 <title>Poslovi Online | Poruke</title>
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <!-- Ostali meta tagovi i linkovi -->
+<!-- Toastify CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+<!-- Toastify JS -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 @section('content')
   <style>
@@ -176,7 +182,88 @@
     .selected-contact {
         border: 1px solid rgba(255, 0, 0, 0.5) !important;
     }
-  </style>
+
+    .switchBlock {
+        position: relative;
+        display: inline-block;
+        width: 175px;
+        height: 20px;
+        top: -8px !important;
+        cursor: pointer;
+    }
+
+    .switchBlock input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .sliderBlock {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc; /* Osnovna boja pozadine - siva kad je odblokiran */
+        transition: 0.4s;
+        border-radius: 24px;
+        background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Leva siva, desna zelena */
+    }
+
+    /* Stil za "lopticu" koja se pomera unutar slider-a */
+    .sliderBlock:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        left: 2px;
+        bottom: 1px;
+        background-color: white;
+        transition: 0.4s;
+    }
+
+    /* Stilizacija za label-text */
+    .label-textBlock {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: #fff;
+        margin-left: 12px;
+    }
+
+    .label-textBlock.leftBlock {
+        left: 12px;
+    }
+
+    .label-textBlock.rightBlock {
+        right: 22px;
+    }
+
+    /* Kad je checkbox označen (blokiran) */
+    .switchBlock input:checked + .sliderBlock {
+        background: linear-gradient(to right, #9c1c2c 50%, #ccc 50%); /* Pozadina crvena (blokiran) */
+    }
+
+    /* Kad je checkbox označen, loptica je na levoj strani (blokiran) */
+    .switchBlock input:checked + .sliderBlock:before {
+        transform: translateX(0); /* Loptica pomerena na levo */
+    }
+
+    /* Kad nije označen (odblokiran), pozadina je zelena */
+    .switchBlock input:not(:checked) + .sliderBlock {
+        background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Pozadina zelena (odblokiran) */
+    }
+
+    /* Kad nije označen, loptica pomera desno (odblokiran) */
+    .switchBlock input:not(:checked) + .sliderBlock:before {
+        transform: translateX(153px); /* Loptica pomerena na desno */
+    }
+
+</style>
 
 <div class="container py-5">
     <div class="row">
@@ -225,6 +312,17 @@
                                             {{ $unreadCount }}
                                         </span>
                                     </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="switchBlock" onclick="event.stopPropagation()">
+                                        <input type="checkbox" id="blockSwitch_{{ $contact->id }}"
+                                               {{ $contact->blocked ? 'checked' : '' }}
+                                               data-contact-id="{{ $contact->id }}"
+                                               onchange="toggleBlockStatus(this)">
+                                        <span class="sliderBlock"></span>
+                                        <span class="label-textBlock leftBlock">Blokiran</span>
+                                        <span class="label-textBlock rightBlock">Odblokiran</span>
+                                    </label>
                                 </div>
                             </li>
                         @endforeach
@@ -386,6 +484,7 @@
         }
 
         const data = await response.json();
+
         // Sortiranje poruka po 'created_at' u opadajućem redosledu
         data.messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
@@ -514,6 +613,49 @@
                             </div>
                         </div>
                     `;
+                }
+
+                // Proveravamo blokadu s obe strane
+                if (data.blockedByHim) {
+                    // Ako je korisnik blokirao vas
+                    const chatArea = document.getElementById('chatArea');
+                    const messageForm = document.getElementById('messageForm');
+
+                    // Sakrij formular za slanje poruka
+                    chatArea.style.display = 'none';
+
+                    // Prikazivanje obavestenja da vas je korisnik blokirao
+                    const blockMessage = document.createElement('div');
+                    blockMessage.classList.add('alert', 'alert-warning', 'text-center', 'mt-3');
+                    blockMessage.textContent = 'Ovaj korisnik te blokirao i ne možeš slati poruke.';
+
+                    // Dodajte obaveštenje ispod forme (ako je forma još uvek u DOM-u)
+                    messageForm.parentNode.insertBefore(blockMessage, messageForm.nextSibling);
+                } else if (data.blockedByYou) {
+                    // Ako ste vi blokirali korisnika
+                    const chatArea = document.getElementById('chatArea');
+                    const messageForm = document.getElementById('messageForm');
+
+                    // Sakrij formular za slanje poruka
+                    chatArea.style.display = 'none';
+
+                    // Prikazivanje obavestenja da ste vi blokirali korisnika
+                    const blockMessage = document.createElement('div');
+                    blockMessage.classList.add('alert', 'alert-warning', 'text-center', 'mt-3');
+                    blockMessage.textContent = 'Ti si blokirao ovog korisnika i ne možeš slati poruke.';
+
+                    // Dodajte obaveštenje ispod forme (ako je forma još uvek u DOM-u)
+                    messageForm.parentNode.insertBefore(blockMessage, messageForm.nextSibling);
+                } else {
+                    // Ako nijedna blokada nije postavljena, prikazujemo formular za slanje poruka
+                    const chatArea = document.getElementById('chatArea');
+                    chatArea.style.display = 'block';
+
+                    // Uklonite obaveštenje o blokadi (ako postoji)
+                    const existingBlockMessage = document.querySelector('.alert-warning');
+                    if (existingBlockMessage) {
+                        existingBlockMessage.remove();
+                    }
                 }
 
                 // Dodaj poruku u chat history
@@ -755,6 +897,96 @@ function formatDate(dateString) {
 
     return formattedDate;
 }
+</script>
+
+<script type="text/javascript">
+async function toggleBlockStatus(checkbox) {
+    const contactId = checkbox.getAttribute('data-contact-id');
+    const isBlocked = checkbox.checked;  // true ako je označen, false ako nije
+
+    // Dobijanje CSRF tokena iz meta taga
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // URL na osnovu da li blokiramo ili odblokiramo korisnika
+    const apiUrl = isBlocked
+        ? `/api/messages/block/${contactId}`  // Za blokiranje
+        : `/api/messages/unblock/${contactId}`;  // Za odblokiranje
+
+     const apiToken = "{{ $token }}";
+
+    // Pozovite backend API da blokirate ili odblokirate korisnika
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiToken}`,  // Dodajte Bearer token
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken  // Dodajte CSRF token
+        },
+        body: JSON.stringify({ user_id: contactId }),
+    });
+
+    // Provera odgovora
+    if (!response.ok) {
+        throw new Error('Greška prilikom promene statusa blokiranja');
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+        Toastify({
+                text: isBlocked ? "Korisnik je blokiran." : "Korisnik je odblokiran.",
+                duration: 3000,  // Dužina prikaza toasta u milisekundama
+                gravity: "top",  // Prikaz na vrhu stranice
+                position: "right",  // Pozicija desno
+                backgroundColor: isBlocked ? "linear-gradient(to right, #ff5f6d, #ffc3a0)" : "linear-gradient(to right, #4CAF50, #8BC34A)",
+                stopOnFocus: true,  // Pauza na toastu kad korisnik pređe mišem
+            }).showToast();
+
+        // Ako je ID kontakta isti kao data-receiver-id, menjaćemo status
+        const chatHistoryDiv = document.getElementById('chatHistory');
+        const receiverId = chatHistoryDiv.dataset.contactId; // ili .getAttribute('data-contact-id')
+
+        // Ako odgovara, pozivamo funkciju za prikazivanje obaveštenja
+        if (receiverId == contactId) {
+            if (data.blockedByHim) {
+                // Ako vas je korisnik blokirao
+                showBlockMessage('Ovaj korisnik te blokirao i ne možeš slati poruke.', 'none');
+            } else if (data.blockedByYou) {
+                // Ako ste vi blokirali korisnika
+                showBlockMessage('Ti si blokirao ovog korisnika i ne možeš slati poruke.', 'none');
+            } else {
+                // Ako nijedna blokada nije postavljena, omogućavamo slanje poruka
+                showBlockMessage('', 'block');
+            }
+        }
+    }
+}
+
+// Funkcija koja prikazuje ili sakriva formular i obaveštenje
+function showBlockMessage(message, displayType) {
+    const chatArea = document.getElementById('chatArea');
+    const messageForm = document.getElementById('messageForm');
+
+    // Sakrij formular za slanje poruka
+    chatArea.style.display = displayType;
+
+    // Ako postoji obaveštenje, uklonite ga
+    const existingBlockMessage = document.querySelector('.alert-warning');
+    if (existingBlockMessage) {
+        existingBlockMessage.remove();
+    }
+
+    if (message) {
+        // Kreiramo novo obaveštenje o blokadi
+        const blockMessage = document.createElement('div');
+        blockMessage.classList.add('alert', 'alert-warning', 'text-center', 'mt-3');
+        blockMessage.textContent = message;
+
+        // Dodajemo obaveštenje ispod forme
+        messageForm.parentNode.insertBefore(blockMessage, messageForm.nextSibling);
+    }
+}
+
 </script>
 
 @endsection

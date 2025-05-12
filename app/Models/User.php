@@ -157,4 +157,14 @@ class User extends Authenticatable
         ->unread()
         ->count();
     }
+
+    public function blockedUsers()
+    {
+        return $this->hasMany(BlockedUser::class);
+    }
+
+    public function block($userId)
+    {
+        return $this->blockedUsers()->create(['blocked_user_id' => $userId]);
+    }
 }

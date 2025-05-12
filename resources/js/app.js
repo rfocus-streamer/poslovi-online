@@ -47,9 +47,9 @@ window.Echo = new Echo({
     })
 });
 
-window.Echo.connector.pusher.connection.bind('connected', () => {
-    console.log('✅ Повезан на Pusher! Socket ID:', window.Echo.socketId());
-});
+// window.Echo.connector.pusher.connection.bind('connected', () => {
+//     console.log('✅ Повезан на Pusher! Socket ID:', window.Echo.socketId());
+// });
 window.Echo.connector.pusher.connection.bind('error', (err) => {
     console.error('❌ Грешка у конекцији:', err);
 });
@@ -97,7 +97,10 @@ function handleSendMessage(event) {
         form.reset();
     })
     .catch(error => {
-        console.error('Грешка при слању:', error);
+        if(error.response.status === 403){
+            showBlockMessage(error.response.data.message, 'none');
+        }
+        console.error('Грешка при слању:', error.response);
     });
 }
 

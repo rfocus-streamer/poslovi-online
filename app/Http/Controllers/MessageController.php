@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Favorite;
 use App\Models\CartItem;
 use App\Models\Service;
+use App\Models\BlockedUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -272,6 +273,9 @@ class MessageController extends Controller
 
         // Na kraju, uklanjamo duplikate tema i servis ID-ova i ažuriramo poslednje poruke
         $contacts->transform(function($contact) {
+            $contact->blocked = BlockedUser::where('user_id', auth()->id())
+                           ->where('blocked_user_id', $contact->id)
+                           ->exists();
             // Uklanjanje duplikata servisa unutar service_titles
             $contact->service_titles = $contact->service_titles->unique(function ($item) {
                 return $item['service_id']; // Unique po ID servisa
@@ -315,6 +319,29 @@ class MessageController extends Controller
             ]);
 
             $user = Auth::user();
+
+            // Provera blokiranja
+            $blockedByYou = BlockedUser::where('user_id', auth()->id())
+                           ->where('blocked_user_id', $request->input('user_id'))
+                           ->exists();
+
+            $blockedByHim = BlockedUser::where('user_id', $request->input('user_id'))
+                           ->where('blocked_user_id', auth()->id())
+                           ->exists();
+
+            if ($blockedByYou) {
+                // Bar jedan je ispunjen
+                return response()->json([
+                    'message' => 'Ti si blokirao ovog korisnika i ne možeš slati poruke.',
+                ], 403);
+            }
+
+            if ($blockedByHim) {
+                // Bar jedan je ispunjen
+                return response()->json([
+                    'message' => 'Ovaj korisnik te blokirao i ne možeš slati poruke.',
+                ], 403);
+            }
 
             $unReadMessages = [];
 
@@ -403,6 +430,15 @@ class MessageController extends Controller
         $contactId = $request->input('contact_id');
         $page = $request->input('page', 1);  // Novi parametar za stranicu
 
+        // Provera blokiranja
+        $blockedByYou = BlockedUser::where('user_id', auth()->id())
+                           ->where('blocked_user_id', $contactId)
+                           ->exists();
+
+        $blockedByHim = BlockedUser::where('user_id', $contactId)
+                           ->where('blocked_user_id', auth()->id())
+                           ->exists();
+
         // Proverite da li je korisnik autorizovan da vidi ove poruke
         if (!auth()->check()) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -454,7 +490,69 @@ class MessageController extends Controller
 
 
         return response()->json([
-            'messages' => $messages
+            'messages' => $messages,
+            'blockedByYou' => $blockedByYou, // Dodajte blokirani status u odgovor
+            'blockedByHim' => $blockedByHim, // Dodajte blokirani status u odgovor
         ]);
+    }
+
+    public function blockUser($blockedUserId)
+    {
+        $user = auth()->user();
+        // Proverite da li je već blokirao tog korisnika
+        if ($user->blockedUsers()->where('blocked_user_id', $blockedUserId)->exists()) {
+            return response()->json(['message' => 'Korisnik je već blokiran.'], 400);
+        }
+
+        // Blokirajte korisnika
+        $user->blockedUsers()->create(['blocked_user_id' => $blockedUserId]);
+
+        // Provera blokiranja
+        $blockedByYou = BlockedUser::where('user_id', auth()->id())
+                           ->where('blocked_user_id', $blockedUserId)
+                           ->exists();
+
+        $blockedByHim = BlockedUser::where('user_id', $blockedUserId)
+                           ->where('blocked_user_id', auth()->id())
+                           ->exists();
+
+
+        return response()->json([
+            'success' => true,
+            'blockedByYou' => $blockedByYou,
+            'blockedByHim' => $blockedByHim,
+            'message' => 'Korisnik je uspešno blokiran.'
+        ], 200);
+    }
+
+    public function unblockUser($blockedUserId)
+    {
+        $user = auth()->user();
+
+        // Proverite da li je korisnik koji pokušava da odblokira već blokirao tog korisnika
+        $blockedUser = $user->blockedUsers()->where('blocked_user_id', $blockedUserId)->first();
+
+        if (!$blockedUser) {
+            return response()->json(['message' => 'Nema korisnika koji je blokiran sa tim ID-jem.'], 404);
+        }
+
+        // Uklonite blokadu
+        $blockedUser->delete();
+
+        // Provera blokiranja
+        $blockedByYou = BlockedUser::where('user_id', auth()->id())
+                           ->where('blocked_user_id', $blockedUserId)
+                           ->exists();
+
+        $blockedByHim = BlockedUser::where('user_id', $blockedUserId)
+                           ->where('blocked_user_id', auth()->id())
+                           ->exists();
+
+        return response()->json([
+            'success' => true,
+            'blockedByYou' => $blockedByYou,
+            'blockedByHim' => $blockedByHim,
+            'message' => 'Korisnik je uspešno odblokiran.'
+        ], 200);
     }
 }
