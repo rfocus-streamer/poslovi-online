@@ -20,13 +20,20 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $topServices = Service::where('visible', true)->with([
-            'user',
-            'category',
-            'subcategory',
-            'serviceImages',
-            'reviews',
-            'cartItems'])->take(3)->get();
+        // Provera za servise koji su vidljivi i imaju postavljen datum isteka (nije null)
+        $topServices = Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
+            ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
+            ->with([
+                'user',
+                'category',
+                'subcategory',
+                'serviceImages',
+                'reviews',
+                'cartItems'
+            ])
+            ->take(3)
+            ->get();
 
         // Dodajemo prosečnu ocenu za svaki servis u kolekciji
         $topServices->each(function ($service) {
@@ -37,18 +44,22 @@ class ServiceController extends Controller
 
         $selectedCategoryIds = $topServices->pluck('id')->toArray(); // ID-jevi kategorija iz prvog upita
 
-        $lastServices = Service::where('visible', true)->with([
-            'user',
-            'category',
-            'subcategory',
-            'serviceImages',
-            'cartItems',
-            'reviews'
-        ])
-        ->whereNotIn('id', $selectedCategoryIds) // Uklanjamo već odabrane kategorije
-        ->orderBy('created_at', 'desc') // Poslednje dodate
-        ->take(3)
-        ->get();
+        // Provera za poslednje dodate servise koji imaju postavljen datum isteka (nije null)
+        $lastServices = Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
+            ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
+            ->with([
+                'user',
+                'category',
+                'subcategory',
+                'serviceImages',
+                'cartItems',
+                'reviews'
+            ])
+            ->whereNotIn('id', $selectedCategoryIds) // Uklanjamo već odabrane kategorije
+            ->orderBy('created_at', 'desc') // Poslednje dodate
+            ->take(3)
+            ->get();
 
         // Dodajemo prosečnu ocenu za svaki servis u kolekciji
         $lastServices->each(function ($service) {
@@ -60,7 +71,10 @@ class ServiceController extends Controller
         if ($request->has('search')) {
             $searchTerm = $request->input('search');
 
-            $services = Service::where('visible', true)->with([
+            $services = Service::where('visible', true)
+                ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
+                ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
+                ->with([
                     'user',
                     'category',
                     'subcategory',
@@ -103,9 +117,9 @@ class ServiceController extends Controller
         }
 
         return view('index', compact(
-                    'topServices',
-                    'lastServices'
-                ));
+            'topServices',
+            'lastServices'
+        ));
     }
 
     /**
@@ -504,7 +518,11 @@ class ServiceController extends Controller
             'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ], $packageRules));
 
-        $visible = $request->has('visible') ? 1 : 0;
+        if(Auth::user()->package){
+            $visible = $request->has('visible') ? 1 : 0;
+        }else{
+            $visible = 0;
+        }
 
         try {
             // Priprema podataka za ažuriranje
@@ -514,8 +532,13 @@ class ServiceController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'visible' => ($visible === 0 && $service->visible === null) ? null : $visible,
-                'visible_expires_at' => ($visible === 0 && $service->visible === null) ? null : now()->addMonth()
             ];
+
+            if(Auth::user()->package && $visible === 1){
+                $serviceData['visible_expires_at'] = now()->addMonth();
+            }else{
+                $serviceData['visible_expires_at'] = null;
+            }
 
             // Ažuriramo podatke za svaki paket koji je poslat
             foreach ($availablePackages as $package) {
