@@ -33,7 +33,7 @@ class CommonDataComposer
         $projectCount = 0;
         $seller = [];
         $messagesCount = 0;
-        $messagesCount = 0;
+        $complaintCount = 0;
 
         if (Auth::check()) {
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
