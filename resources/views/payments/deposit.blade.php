@@ -40,7 +40,7 @@
 
                         <div class="mb-3">
                             <label for="amount" class="form-label">Iznos</label>
-                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="1000" required>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="1" required>
                         </div>
 
                         <div class="mb-3">
