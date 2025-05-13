@@ -31,6 +31,7 @@ use App\Http\Controllers\MessageController;
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
     Route::get('/get-messages', [MessageController::class, 'getMessages'])->name('get.messages');
+    Route::get('/get-messages-complaints', [MessageController::class, 'getMessagesComplaints'])->name('get.messagesComplaints');
     Route::post('/messages/block/{user}', [MessageController::class, 'blockUser'])->name('messages.blockUser');
     Route::post('/messages/unblock/{user}', [MessageController::class, 'unblockUser'])->name('messages.unblockUser');
 });

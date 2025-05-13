@@ -54,7 +54,7 @@
                             {{ $complaint->seller->firstname .' '.$complaint->seller->lastname}}
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('complaints.create', $complaint) }}">
+                            <a href="{{ route('complaints.show', $complaint) }}">
                                 <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Pogledaj arbitražu</button>
                             </a>
                         </td>

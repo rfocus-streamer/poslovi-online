@@ -62,11 +62,11 @@
                             @case('uncompleted')
                                 <div class="d-flex gap-2 text-center">
                                     @if($project->seller_uncomplete_decision === 'arbitration' && $countReply > 0)
-                                        <a href="{{ route('complaints.create', $project) }}">
+                                        <a href="{{ route('complaints.show', $project) }}">
                                             <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Pogledaj arbitražu</button>
                                         </a>
                                     @elseif($project->seller_uncomplete_decision === null and $countReply == 0)
-                                        <a href="{{ route('complaints.create', $project) }}">
+                                        <a href="{{ route('complaints.show', $project) }}">
                                             <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Podnesi prigovor</button>
                                         </a>
                                     @endif

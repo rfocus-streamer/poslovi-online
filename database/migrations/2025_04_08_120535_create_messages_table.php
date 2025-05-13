@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('sender_id')->constrained('users');
             $table->foreignId('receiver_id')->constrained('users');
             $table->foreignId('service_id')->constrained('services');
+            $table->foreignId('project_id')->nullable()->constrained('projects');
             $table->timestamp('read_at')->nullable();
             $table->string('attachment_path')->nullable();
             $table->timestamps();

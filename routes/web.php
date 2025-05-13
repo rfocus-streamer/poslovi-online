@@ -91,8 +91,8 @@ Route::middleware('auth')->group(function () {
     // Rute za prigovore
     Route::get('/complaints/', [ComplaintController::class, 'index'])
         ->name('complaints.index');
-    Route::get('/projects/{project}/complaints', [ComplaintController::class, 'create'])
-        ->name('complaints.create');
+    Route::get('/projects/{project}/complaints', [ComplaintController::class, 'show'])
+        ->name('complaints.show');
     Route::post('/projects/{project}/complaints', [ComplaintController::class, 'store'])
         ->name('complaints.store');
     Route::put('/complaints/{complaint}', [ComplaintController::class, 'update'])

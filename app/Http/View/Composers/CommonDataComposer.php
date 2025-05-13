@@ -33,6 +33,7 @@ class CommonDataComposer
         $projectCount = 0;
         $seller = [];
         $messagesCount = 0;
+        $messagesCount = 0;
 
         if (Auth::check()) {
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
@@ -47,9 +48,14 @@ class CommonDataComposer
             $messagesCount = Message::where('receiver_id', Auth::id())
                                 ->where('read_at', null)
                                 ->count();
+
+            // Broj otvorenih žalbi
+            $complaintCount = Project::where('seller_uncomplete_decision', 'arbitration')
+                ->whereHas('complaints')
+                ->count();
         }
 
         // Data koja će biti dostupna svim prikazima
-        $view->with(compact('categories', 'favoriteCount', 'cartCount', 'projectCount', 'seller', 'reserved_amount', 'messagesCount'));
+        $view->with(compact('categories', 'favoriteCount', 'cartCount', 'projectCount', 'seller', 'reserved_amount', 'messagesCount', 'complaintCount'));
     }
 }

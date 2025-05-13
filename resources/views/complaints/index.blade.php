@@ -1,6 +1,47 @@
 @extends('layouts.app')
 
 @section('content')
+<style type="text/css">
+/* Poruke sa leve strane */
+.conversation-list-left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+/* Poruke sa desne strane */
+.conversation-list-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+/* Stilizacija za avatar i sadržaj */
+.chat-avatar {
+    margin-right: 1px;
+}
+
+.user-chat-content {
+    max-width: 70%; /* Podesi širinu sadržaja poruke */
+    background-color: #f1f1f1; /* Boja pozadine za poruke */
+    padding: 10px;
+    border-radius: 10px;
+}
+
+/* Različite boje pozadine za leve i desne poruke */
+.conversation-list-left .user-chat-content {
+    background-color: #e0e0e0;  /* Siva pozadina za levo */
+}
+
+.conversation-list-right .user-chat-content {
+    background-color: #ffe5b5;  /* Žuta pozadina za desno */
+}
+
+</style>
 <div class="container py-5">
     <div class="row">
 
@@ -172,6 +213,16 @@
 
 
         @if($project->complaints->count() > 0)
+            @if(Auth::user()->role === 'support')
+                <div class="text-end mb-1">
+                    <a href="" id="openMessageHistoryModal" data-bs-toggle="tooltip" title="Pogledaj istoriju poruka izmedju strana">
+                        <button class="btn btn-warning ms-auto btn-sm">
+                            Istorija poruka <i class="fas fa-envelope"></i>
+                        </button>
+                    </a>
+                </div>
+            @endif
+
         <div class="col-md-8 mb-1 g-0">
             <div class="card">
                 <div class="card-body">
@@ -293,6 +344,29 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="messageHistoryModal" tabindex="-1" aria-labelledby="messageHistoryModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="messageHistoryModalLabel">Istorija poruka</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                  </div>
+                   <div class="modal-body">
+                    <div id="chatHistory" class="chat-history" style="max-height: 60vh; overflow-y: auto;">
+                      <!-- Poruke će biti dinamčki ubačene ovde -->
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                   <small class="text-secondary">Skroluj nadole da učitaš još poruka</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
         @endif
     </div>
 </div>
@@ -313,5 +387,238 @@
             }, 1000); // Vreme trajanja animacije (1s)
         }, 5000); // Poruka će početi da nestaje nakon 5s
     }
+</script>
+
+<script type="text/javascript">
+let currentPage = 1;  // Početna stranica
+const serviceId = "{{$project->service_id}}";  // Primer ID-a usluge, trebaš ga postaviti prema stvarnim podacima
+let isLoading = false;  // Flag koji sprečava višestruko učitavanje u isto vreme
+// Prikazivanje datuma samo ako se menja u odnosu na poslednji datum
+let dateDisplay = '';
+let displayedDates = [];  // Lista koja prati prikazane datume
+
+// Povezivanje dugmeta sa modalom putem JS-a
+document.getElementById('openMessageHistoryModal').addEventListener('click', async function(event) {
+    event.preventDefault(); // Sprečava standardnu akciju linka
+    const apiToken = "{{ $token }}";  // Token koji se koristi za autentifikaciju
+
+    try {
+        // Resetuj prikazane datume svaki put kada se otvori modal
+        displayedDates = [];
+
+        // API poziv za preuzimanje poruka
+        const response = await fetch(`/api/get-messages-complaints?service_id=${serviceId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Greška prilikom preuzimanja poruka');
+        }
+
+        const data = await response.json();
+
+        // Prvo proveravamo da li postoji "data" unutar "messages"
+        if (data.messages && data.messages.data && data.messages.data.length > 0) {
+            const chatHistoryContainer = document.getElementById('chatHistory');
+            chatHistoryContainer.innerHTML = '';  // Očisti prethodne poruke
+
+            // Iteracija kroz sve poruke u "data" nizu
+            data.messages.data.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.innerHTML = getMessageHtml(message);  // Pretpostavljamo da postoji funkcija koja generiše HTML za poruku
+                //chatHistoryContainer.insertBefore(messageDiv, chatHistoryContainer.firstChild);
+                chatHistoryContainer.appendChild(messageDiv)
+            });
+        } else {
+            // Ako nema poruka, prikaži odgovarajuću poruku u modalu
+            document.getElementById('chatHistory').innerHTML = '<p class="text-center">Nema poruka za ovu uslugu.</p>';
+        }
+
+        // Otvori modal
+        var messageHistoryModal = new bootstrap.Modal(document.getElementById('messageHistoryModal'));
+        messageHistoryModal.show();
+
+    } catch (error) {
+        console.error('Greška prilikom preuzimanja poruka:', error);
+        //alert('Došlo je do greške prilikom učitavanja poruka.');
+    }
+});
+
+
+// Funkcija za generisanje HTML-a poruke
+function getMessageHtml(msg) {
+    // Formatiraj datum i vreme
+    const formattedDate = formatDate(msg.created_at);
+    const [date, time] = formattedDate.split(' ');  // Razdvaja datum (YYYY-MM-DD) i vreme (HH:MM)
+
+    // Proveravamo da li je datum već prikazan
+    if (!displayedDates.includes(date)) {
+        // Ako datum nije prikazan, dodajemo ga u listu prikazanih datuma
+        displayedDates.push(date);
+
+        // Ako je datum nov, prikazujemo ga
+        dateDisplay = `
+            <div class="mb-1 justify-content-center">
+                <div class="date-separator w-100 text-center">
+                    <span class="date-text text-secondary">${date}</span>
+                </div>
+            </div>
+        `;
+    } else {
+        // Ako je datum već prikazan, ne prikazujemo ga ponovo
+        dateDisplay = '';  // Prazan string znači da datum neće biti prikazan ponovo
+    }
+
+    let attach = `${msg.sender.firstname.charAt(0).toLowerCase() + msg.sender.firstname.slice(1)}_${time.replace(/:/g, '')}`;
+
+    // Zavisno o tome da li je poruka poslana ili primljena, odaberi odgovarajući raspored
+    if (msg.sender.role === 'seller') {
+        // Dodaj HTML za poruku
+        return `
+            ${dateDisplay} <!-- Prikazivanje datuma samo ako je promenjen -->
+            <div class="conversation-list-right">
+                <div class="chat-avatar">
+                    <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
+                </div>
+
+                <div class="user-chat-content">
+                    <div class="conversation-name">
+                        <span class="me-1 text-success">
+                            <i class="bx bx-check-double bx-check"></i>
+                        </span>
+                        <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
+                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                    </div>
+                    <div class="ctext-wrap">
+                        <div class="ctext-wrap-content">
+                            <p class="mb-0 rightChat">${msg.content}</p>
+                        </div>
+                        <!-- Prilog (ako postoji) -->
+                        ${msg.attachment_path ? `
+                            <div class="d-flex justify-content-end mt-1">
+                                <small><a href="/${msg.attachment_path}" target="_blank" class="text-decoration-none">
+                                            <i class="fa fa-download"></i> ${attach}
+                                </a></small>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Dodaj HTML za poruku
+        return `
+            ${dateDisplay} <!-- Prikazivanje datuma samo ako je promenjen -->
+            <div class="conversation-list-left">
+                <div class="chat-avatar">
+                    <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
+                </div>
+
+                <div class="user-chat-content">
+                    <div class="conversation-name">
+                        <span class="me-1 text-success">
+                            <i class="bx bx-check-double bx-check"></i>
+                        </span>
+                        <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
+                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                    </div>
+                    <div class="ctext-wrap">
+                        <div class="ctext-wrap-content">
+                            <p class="mb-0 leftChat">${msg.content}</p>
+                        </div>
+                        <!-- Prilog (ako postoji) -->
+                        ${msg.attachment_path ? `
+                            <div class="d-flex justify-content-end mt-1">
+                                <small><a href="/${msg.attachment_path}" target="_blank" class="text-decoration-none">
+                                            <i class="fa fa-download"></i> ${attach}
+                                </a></small>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+
+function formatDate(dateString) {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+
+    // Opcije za formatiranje datuma i vremena
+    const options = {
+        timeZone: 'Europe/Belgrade', // Postavljanje vremenske zone na Beograd
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false // Koristi 24-časovni format
+    };
+
+    // Formater koji koristi vremensku zonu i daje željeni format
+    const formattedDate = new Intl.DateTimeFormat('sr-RS', options).format(date);
+
+    return formattedDate;
+}
+
+
+// Funkcija koja se poziva kada se korisnik skroluje na dno
+const chatHistoryElement = document.getElementById('chatHistory');
+
+chatHistoryElement.addEventListener('scroll', async () => {
+    // Ako je skrolovanje došlo do dna i još nismo učitali poruke
+    const nearBottom = chatHistoryElement.scrollTop + chatHistoryElement.clientHeight >= chatHistoryElement.scrollHeight - 10;
+
+    if (nearBottom && !isLoading) {
+        isLoading = true;  // Sprečava višestruko učitavanje
+
+         const apiToken = "{{ $token }}";  // Token za autentifikaciju
+
+        try {
+            // API poziv za novije poruke (pretpostavljamo paginaciju)
+            const response = await fetch(`/api/get-messages-complaints?service_id=${serviceId}&page=${currentPage}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${apiToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            // Sortiramo poruke od starijih ka novijim
+            const chatMessages = data.messages.data;
+
+            currentPage += 1;  // Uvećavamo broj stranice za sledeći API poziv
+
+            // Dodajemo novije poruke na kraj
+            chatMessages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.innerHTML = getMessageHtml(msg);  // Pretpostavka: postoji funkcija koja generiše HTML
+                chatHistoryElement.appendChild(messageDiv);  // Dodajemo na kraj
+            });
+
+            // Pomeramo skrol na dno da ostane pri novim porukama
+            //chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
+
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+
+        isLoading = false;  // Omogućava novo učitavanje
+    }
+});
+
 </script>
 @endsection

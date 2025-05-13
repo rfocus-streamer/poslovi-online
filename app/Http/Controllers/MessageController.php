@@ -496,6 +496,52 @@ class MessageController extends Controller
         ]);
     }
 
+    public function getMessagesComplaints(Request $request)
+    {
+        $serviceId = $request->input('service_id');
+        $page = $request->input('page', 1);  // Novi parametar za stranicu
+
+        // Proverite da li je korisnik autorizovan da vidi ove poruke
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Dobijte sveže poruke iz baze
+        $messages = Message::where('service_id', $serviceId)
+            ->with([
+                'sender' => function($query) {
+                    $query->select([
+                        'id',
+                        'firstname',
+                        'lastname',
+                        'avatar',
+                        'stars',
+                        'is_online',
+                        'role',
+                        'last_seen_at'
+                    ]);
+                },
+                'receiver' => function($query) {
+                    $query->select([
+                        'id',
+                        'firstname',
+                        'lastname',
+                        'avatar',
+                        'stars',
+                        'is_online',
+                        'role',
+                        'last_seen_at'
+                    ]);
+                }
+            ])
+            ->orderBy('created_at', 'asc')
+            ->paginate(10, ['*'], 'page', $page); // Paginacija->get()
+
+        return response()->json([
+            'messages' => $messages
+        ]);
+    }
+
     public function blockUser($blockedUserId)
     {
         $user = auth()->user();

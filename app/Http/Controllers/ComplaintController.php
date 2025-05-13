@@ -55,10 +55,12 @@ class ComplaintController extends Controller
     /**
      * Prikaz forme za podnošenje prigovora.
      */
-    public function create(Project $project)
+    public function show(Project $project)
     {
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
+
+        $token = $user->createToken('posloviOnline')->plainTextToken;
 
         if($user->role !== 'support')
         {
@@ -68,7 +70,7 @@ class ComplaintController extends Controller
             }
         }
 
-        return view('complaints.index', compact('project', 'reserved_amount'));
+        return view('complaints.index', compact('project', 'reserved_amount', 'token'));
     }
 
     /**
@@ -126,7 +128,7 @@ class ComplaintController extends Controller
 
         $project->save();
 
-        return redirect()->route('complaints.create', $project)
+        return redirect()->route('complaints.show', $project)
             ->with('success', 'Prigovor je uspešno podnet.');
     }
 
