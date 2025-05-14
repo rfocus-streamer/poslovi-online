@@ -118,7 +118,7 @@
                             </div>
                         </div>
                     @endforeach
-                    <small><i class="fas fa-info-circle"></i> Promena mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
+                    <small><i class="fas fa-info-circle"></i> Promena godišnje ili mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
                     </div>
                 </div>
             </div>

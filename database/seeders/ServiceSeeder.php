@@ -25,7 +25,7 @@ class ServiceSeeder extends Seeder
                 'premium_price' => 1500,
                 'premium_delivery_days' => 10,
                 'premium_inclusions' => '10 stranica, SEO, hosting',
-                'visible' => true
+                //'visible' => true
             ],
             [
                 'user_id' => 2, // Prodavac 1
@@ -42,7 +42,7 @@ class ServiceSeeder extends Seeder
                 'premium_price' => 2500,
                 'premium_delivery_days' => 7,
                 'premium_inclusions' => 'Montaža do 30 minuta sa kompletnim postprodukcijom',
-                'visible' => true
+                //'visible' => true
             ],
             [
                 'user_id' => 3, // Prodavac 2
@@ -59,7 +59,7 @@ class ServiceSeeder extends Seeder
                 'premium_price' => 1000,
                 'premium_delivery_days' => 7,
                 'premium_inclusions' => '3 koncepta, neograničene revizije',
-                'visible' => true
+                //'visible' => true
             ],
             [
                 'user_id' => 4, // Prodavac 3
@@ -76,7 +76,7 @@ class ServiceSeeder extends Seeder
                 'premium_price' => 5000,
                 'premium_delivery_days' => 25,
                 'premium_inclusions' => 'Full-stack aplikacija sa admin panelom',
-                'visible' => true
+                //'visible' => true
             ],
             [
                 'user_id' => 3, // Prodavac 2
@@ -93,7 +93,7 @@ class ServiceSeeder extends Seeder
                 'premium_price' => 5000,
                 'premium_delivery_days' => 7,
                 'premium_inclusions' => '10 postova nedeljno + paid ads',
-                'visible' => true
+                //'visible' => true
             ]
         ];
 

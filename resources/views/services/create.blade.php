@@ -27,6 +27,26 @@
         font-size: 0.7rem;
         padding: 0.15rem 0.4rem;
     }
+
+    .form-check-input {
+        border-color: #198754;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754; /* Bootstrap "success" zelena */
+    }
+
+    .form-check-input {
+        width: 1em;
+        height: 1em;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        font-weight: 400;
+        font-size: 1rem;
+        cursor: pointer;
+    }
 </style>
 
 <div class="container">
@@ -85,8 +105,16 @@
                     @if(Auth::user()->package)
                         @if($seller['countPublicService'] < Auth::user()->package->quantity)
                             <div class="form-check text-end mt-5">
-                                <input type="checkbox" name="visible" id="visiblee" class="form-check-input">
-                                <label for="visiblee" class="form-check-label">Aktiviraj ponudu da bude javno vidljiva</label>
+                                <input
+                                    type="checkbox"
+                                    name="visible"
+                                    id="visiblee"
+                                    class="form-check-input"
+                                >
+                                <label for="visiblee" class="form-check-label">
+                                    <i class="fa-solid fa-eye me-1 text-success" id="icon-visible"></i>
+                                    Aktiviraj ponudu da bude javno vidljiva
+                                </label>
                             </div>
                         @endif
                     @endif
