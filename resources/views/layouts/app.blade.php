@@ -177,7 +177,10 @@ input:not(:checked) + .slider .label-text.right {
 
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('tickets.index') ? 'active' : '' }}" href="{{ route('tickets.index') }}">
-                                    <i class="fas fa-ticket {{ request()->routeIs('tickets.index') ? 'text-danger' : '' }}"></i> Ticketi
+                                    <i class="fas fa-ticket {{ request()->routeIs('tickets.index') ? 'text-danger' : '' }}"></i> Tiketi
+                                    @if($ticketCount > 0)
+                                        <span class="badge bg-danger">{{ $ticketCount }}</span>
+                                    @endif
                                 </a>
                             </li>
                         @endif

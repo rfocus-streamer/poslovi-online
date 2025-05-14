@@ -18,7 +18,7 @@ class ComplaintController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Project::with(['complaints', 'seller', 'service']);
+        $query = Project::with(['complaints', 'seller', 'service'])->whereNull('admin_decision');
 
         // Primena uslova samo ako nije pretraga
         if (!$request->has('search') || empty($request->search)) {
