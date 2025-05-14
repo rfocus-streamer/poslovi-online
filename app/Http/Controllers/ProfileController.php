@@ -33,9 +33,9 @@ class ProfileController extends Controller
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
             $totalEarnings = Commission::where('seller_id', Auth::id())
-                                ->whereMonth('created_at', $currentMonth)
-                                ->whereYear('created_at', $currentYear)
-                                ->sum(DB::raw('amount - seller_amount'));
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear)
+                ->sum(DB::raw('CASE WHEN seller_amount > 0 THEN amount - seller_amount ELSE 0 END'));
         }
 
         return view('profile.edit', compact(

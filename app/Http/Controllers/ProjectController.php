@@ -74,7 +74,7 @@ class ProjectController extends Controller
                 ->where('status', 'waiting_confirmation')
                 ->count() > 0) ? true : false;
 
-            $countReply = Complaint::where('user_id', Auth::id())->count();
+            $countReply = Complaint::where('user_id', Auth::id())->where('project_id', $project->id)->count();
 
             return view('projects.view_seller', compact(
                 'title',
@@ -136,9 +136,9 @@ class ProjectController extends Controller
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
             $totalEarnings = Commission::where('seller_id', Auth::id())
-                                ->whereMonth('created_at', $currentMonth)
-                                ->whereYear('created_at', $currentYear)
-                                ->sum(DB::raw('amount - seller_amount'));
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear)
+                ->sum(DB::raw('CASE WHEN seller_amount > 0 THEN amount - seller_amount ELSE 0 END'));
         }
 
         return view('projects.seller', compact(
@@ -412,11 +412,10 @@ class ProjectController extends Controller
 
     public function uncompleteConfirmationSeller(Project $project)
     {
-         $commission = Commission::where('project_number', $project->project_number)->first();
+        $commission = Commission::where('project_number', $project->project_number)->first();
 
         if ($commission) {
             $buyer_amount = $commission->buyer_amount;
-            $commission->delete();
         }else{
             $buyer_amount = 0;
         }
