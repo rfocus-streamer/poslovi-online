@@ -49,6 +49,15 @@ class DepositController extends Controller
         $successUrl = route('deposit.paypal.success');
         $cancelUrl = route('deposit.paypal.cancel');
 
+        // Izračunavanje naknade
+        $paymentAmount = $amount; // Originalni iznos
+        $paypalFeePercentage = 2.9; // PayPal naknada u %
+        $fixedFee = 0.30; // Fiksna naknada
+
+        // Izračunaj koliko bi trebalo da kupac plati kako bi ti dobio željeni iznos
+        $feeAmount = ($paymentAmount * ($paypalFeePercentage / 100)) + $fixedFee;
+        $totalAmount = number_format(($paymentAmount + $feeAmount), 2, '.', '');
+
         // Kreiraj transakciju
         $transaction = Transaction::create([
             'user_id' => auth()->id(),
@@ -62,7 +71,7 @@ class DepositController extends Controller
             case 'paypal':
                 try {
                     $paymentOrder = $this->payPalService->createPayment(
-                        $amount,
+                        $totalAmount,
                         $currency,
                         $description,
                         $successUrl,
@@ -71,7 +80,8 @@ class DepositController extends Controller
 
                     // Ažuriraj transakciju sa PayPal order ID
                     $transaction->update([
-                        'transaction_id' => $paymentOrder->id
+                        'transaction_id' => $paymentOrder->id,
+                        'payload' => json_encode($paymentOrder) // Skladišti ceo odgovor od PayPal-a
                     ]);
 
                     // Pronađi approval link
@@ -115,21 +125,28 @@ class DepositController extends Controller
                 throw new \Exception('Payment not completed');
             }
 
+            $amount = $result->purchase_units[0]->amount->value;
+            $currency = $result->purchase_units[0]->amount->currency_code;
             // Kreiraj depozit
             $deposit = Deposit::create([
                 'user_id' => Auth::id(),
-                'amount' => $result->purchase_units[0]->amount->value,
-                'currency' => $result->purchase_units[0]->amount->currency_code,
+                'amount' => $amount,
+                'currency' => $currency,
                 'status' => 'completed'
             ]);
 
             // Ažuriraj transakciju
             $transaction->update([
                 'status' => 'completed',
-                'deposit_id' => $deposit->id
+                'deposit_id' => $deposit->id,
+                'payload' => json_encode($result) // Skladišti ceo odgovor od PayPal-a
             ]);
 
-            return redirect()->route('deposit.form')->with('success', 'Deposit successful!');
+            $user = Auth::user();
+            $user->deposits += $amount;
+            $user->save();
+
+            return redirect()->route('deposit.form')->with('success', 'Deposit uspešno dodat!');
 
         } catch (\Exception $e) {
             return redirect()->route('deposit.form')

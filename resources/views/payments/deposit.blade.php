@@ -40,14 +40,14 @@
 
                         <div class="mb-3">
                             <label for="amount" class="form-label">Iznos</label>
-                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="1" required>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="5.00" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="currency" class="form-label">Valuta</label>
                             <select class="form-select" id="currency" name="currency">
                                 <option value="EUR">EUR</option>
-                                <option value="USD">USD</option>
+                               <!--  <option value="USD">USD</option> -->
                             </select>
                         </div>
 
