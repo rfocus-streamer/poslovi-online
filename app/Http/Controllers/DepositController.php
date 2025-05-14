@@ -51,7 +51,7 @@ class DepositController extends Controller
 
         // Izračunavanje naknade
         $paymentAmount = $amount; // Originalni iznos
-        $paypalFeePercentage = 2.9; // PayPal naknada u %
+        $paypalFeePercentage = 4.99; // PayPal naknada u %
         $fixedFee = 0.30; // Fiksna naknada
 
         // Izračunaj koliko bi trebalo da kupac plati kako bi ti dobio željeni iznos
