@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-use App\Models\Category;
 use App\Models\Project;
+use App\Models\Deposit;
+use App\Models\Commission;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Services\PayPalService;
 use App\Services\StripeService;
+use Carbon\Carbon;
 
 class DepositController extends Controller
 {
@@ -26,7 +29,13 @@ class DepositController extends Controller
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
         $stripeKey=  config('services.stripe.public');
-        $totalEarnings = 0;
+        // Dohvati trenutni mesec i godinu
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+        $totalEarnings = Commission::where('seller_id', Auth::id())
+                                ->whereMonth('created_at', $currentMonth)
+                                ->whereYear('created_at', $currentYear)
+                                ->sum(DB::raw('amount - seller_amount'));
 
         return view('payments.deposit', compact(
             'reserved_amount',

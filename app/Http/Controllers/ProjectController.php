@@ -38,10 +38,10 @@ class ProjectController extends Controller
 
         $projects = [];
 
-        if ($user->role == 'buyer' or $user->role == 'both') {
-            $projects = Project::where('buyer_id', $user->id)->with('service')->get();
+        if ($user->role == 'buyer') {
+            $projects = Project::where('buyer_id', $user->id)->with('service')->orderBy('created_at', 'desc')->get();
         } elseif ($user->role == 'seller') {
-            $projects = Project::where('seller_id', $user->id)->with('service')->get();
+            $projects = Project::where('seller_id', $user->id)->with('service')->orderBy('created_at', 'desc')->get();
         }
 
         return view('projects.index', compact('projects', 'reserved_amount'));
@@ -123,9 +123,9 @@ class ProjectController extends Controller
         $totalEarnings = 0;
 
         if ($user->role == 'buyer') {
-            $projects = Project::where('buyer_id', $user->id)->with('service')->get();
+            $projects = Project::where('buyer_id', $user->id)->with('service')->orderBy('created_at', 'desc')->get();
         } elseif ($user->role == 'seller' or $user->role == 'both') {
-            $projects = Project::where('seller_id', $user->id)->with('service', 'buyer')->get();
+            $projects = Project::where('seller_id', $user->id)->with('service', 'buyer')->orderBy('created_at', 'desc')->get();
         }
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
@@ -521,12 +521,11 @@ class ProjectController extends Controller
         $packageAmount = $sellerAmount;
         $commissionAmount = $packageAmount * 0.10; // 10% za komisiju
 
-         // Dodavanje dodatnih 10% u tabelu za komisije ( kompletan projekat )
-        Commission::where('project_id', $project->id)->increment('seller_amount', $commissionAmount);
-        Commission::where('project_id', $project->id)->increment('commission_amount', $commissionAmount);
-
-
         $buyerAmount = $project->reserved_funds - $sellerAmount - $commissionAmount;
+
+         // Dodavanje dodatnih 10% u tabelu za komisije ( kompletan projekat )
+        Commission::where('project_id', $project->id)->increment('seller_amount', $sellerAmount);
+        Commission::where('project_id', $project->id)->increment('commission_amount', $commissionAmount);
 
         DB::transaction(function () use ($project, $sellerAmount, $buyerAmount) {
             // Ažuriranje statusa projekta i odluke podrške
