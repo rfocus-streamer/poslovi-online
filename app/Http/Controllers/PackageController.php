@@ -63,6 +63,11 @@ class PackageController extends Controller
         $user = Auth::user();
         $price = 0;
 
+        if (empty($user->street) || empty($user->city) || empty($user->country)) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'Moraš da prvo popuniš ulicu, grad i zemlju pre nego što nastaviš sa kupovinom paketa !');
+        }
+
         if ($user->package) {
 
             // Datum isteka aktivnog paketa

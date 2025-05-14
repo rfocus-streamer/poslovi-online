@@ -107,7 +107,7 @@
                         <div class="row mb-3">
                             <!-- Ulica -->
                             <div class="col-12 col-md-4">
-                                <label for="street" class="form-label"><i class="fas fa-road me-1"></i> Ulica</label>
+                                <label for="street" class="form-label"><i class="fas fa-road me-1"></i> Ulica i broj</label>
                                 <input type="text" id="street" name="street" class="form-control" value="{{ Auth::user()->street ?? '' }}" required>
                             </div>
 

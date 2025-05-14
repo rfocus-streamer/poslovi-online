@@ -225,6 +225,14 @@ class ProjectController extends Controller
     public function store(CartItem $cart)
     {
         if (Auth::check()) {
+            // Dohvati trenutno prijavljenog korisnika
+            $user = Auth::user();
+
+            if (empty($user->street) || empty($user->city) || empty($user->country)) {
+                return redirect()->route('profile.edit')
+                    ->with('error', 'Moraš da prvo popuniš ulicu, grad i zemlju pre nego što nastaviš sa kupovinom !');
+            }
+
            // Konvertujemo naziv paketa u mala slova
             $packageColumn = strtolower($cart->package) . '_price';
 
@@ -263,9 +271,6 @@ class ProjectController extends Controller
                 'seller_amount' => 0, // prodavceva zarada od projekta
                 'buyer_amount' => $commissionAmount // kupceva placena provizija
             ]);
-
-            // Dohvati trenutno prijavljenog korisnika
-            $user = Auth::user();
 
             // Umanji iznos iz deposits kolone
             $user->deposits -= ($reserved_funds * $cart->quantity)+$commissionAmount;
