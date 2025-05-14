@@ -57,7 +57,7 @@ class CommonDataComposer
                 ->whereNull('admin_decision')
                 ->count();
 
-            $ticketCount = Ticket::where('status', '!=', 'closed')->count();
+            $ticketCount = Ticket::where('status', '!=', 'closed')->where('assigned_team', Auth::user()->role)->count();
         }
 
         // Data koja će biti dostupna svim prikazima
