@@ -1,5 +1,5 @@
 @extends('layouts.app')
-<title>Poslovi Online | Projekti</title>
+<title>Poslovi Online | Poslovi</title>
 @section('content')
 @php
     use Illuminate\Support\Facades\Crypt;
@@ -19,26 +19,26 @@
     @endif
 
     <div class="d-flex justify-content-between align-items-center">
-        <h4><i class="fas fa-project-diagram"></i> Tvoji projekti</h4>
+        <h4><i class="fas fa-project-diagram"></i> Tvoji poslovi</h4>
         <h6 class="text-secondary">
             <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva: <strong class="text-success">{{ number_format($reserved_amount, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
     </div>
 
     @if($projects->isEmpty())
-        <p>Nemaš aktivnih projekata.</p>
+        <p>Nemaš aktivnih poslova.</p>
     @else
         <table class="table">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Usluga</th>
-                    <th>ID projekta</th>
+                    <th>ID posla</th>
                     <th>Količina</th>
                     <th>Paket</th>
                     <th>Početak</th>
                     <th>Završetak</th>
-                    <th>Rezervisano <i class="fas fa-euro-sign"></i></th>
+                    <th>Rezervisano €</th>
                     <th class="text-center">Status/Akcija</th>
                 </tr>
             </thead>
@@ -89,11 +89,11 @@
                                         @break
 
                                         @case('rejected')
-                                            <i class="fas fa-times-circle text-danger mt-2" title="Izvršilac je odbio projekat" style="font-size: 1.1em;"></i>
+                                            <i class="fas fa-times-circle text-danger mt-2" title="Izvršilac je odbio posao" style="font-size: 1.1em;"></i>
                                         @break
 
                                         @case('completed')
-                                            <i class="fas fa-check-circle text-success mt-2" title="Projekat je kompletiran" style="font-size: 1.1em;"></i>
+                                            <i class="fas fa-check-circle text-success mt-2" title="Posao je kompletiran" style="font-size: 1.1em;"></i>
                                         @break
 
                                         @case('uncompleted')
@@ -130,36 +130,36 @@
         </table>
 
         <div class="mt-4 p-3 border rounded bg-light">
-            <h5><i class="fas fa-info-circle"></i> Status projekta</h5>
+            <h5><i class="fas fa-info-circle"></i> Status posla</h5>
             <ul class="list-unstyled">
                 <li class="mb-2">
                     <i class="fas fa-hourglass-start text-secondary"></i>
-                    <strong>Čeka se prihvat:</strong> Čeka se izvršilac da prihvati projekat.
+                    <strong>Čeka se prihvat:</strong> Čeka se izvršilac da prihvati posao.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-tasks text-primary"></i>
-                    <strong>U toku:</strong> Izvršilac je prihvatio projekat i radi na njemu.
+                    <strong>U toku:</strong> Izvršilac je prihvatio posao i radi na njemu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-user-check text-primary"></i>
-                    <strong>Čeka se odobrenje:</strong> Izvršilac završio, čeka se vaša potvrda da je projekat završen prema očekivanjima.
+                    <strong>Čeka se odobrenje:</strong> Izvršilac završio, čeka se tvoja potvrda da je posao završen prema očekivanjima.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-undo-alt  text-danger"></i>
-                    <strong> Potrebne su korekcije:</strong> Projekat je označen kao završen, ali vi zahtevate dodatne izmene ili korekcije pre finalnog kompletiranja.
+                    <strong> Potrebne su korekcije:</strong> Posao je označen kao završen, ali ti zahtevaš dodatne izmene ili korekcije pre finalnog kompletiranja.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-times-circle text-danger"></i>
-                    <strong>Odbijeno:</strong> Izvršilac je odbio projekat, sredstva su vama refundirana.
+                    <strong>Odbijeno:</strong> Izvršilac je odbio posao, sredstva su tebi refundirana.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-check-circle text-success"></i>
-                    <strong>Završeno:</strong> Projekat je uspešno završen, sredstva su prebačena izvršiocu.
+                    <strong>Završeno:</strong> Posao je uspešno završen, sredstva su prebačena izvršiocu.
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
-                    <strong>Nije završeno:</strong> Projekat nije završen, rezervisana sredstva su zamrznuta.<br>
-                    <span style="margin-left: 3%;"><i class="fas fa-check-circle text-success"></i> Izvršilac je saglasan da je projekat "nekompletiran", sredstva su refundirana na tvoj račun</span>
+                    <strong>Nije završeno:</strong> Posao nije završen, rezervisana sredstva su zamrznuta.<br>
+                    <span style="margin-left: 3%;"><i class="fas fa-check-circle text-success"></i> Izvršilac je saglasan da je posao "nekompletiran", sredstva su refundirana na tvoj račun</span>
                 </li>
                 <li class="mb-2">
                     <i class="fas fa-balance-scale text-danger"></i>
@@ -168,7 +168,7 @@
                     <span style="margin-left: 3%;">
                         <i class="fas fa-adjust text-warning"></i> <strong>Delimično završen:</strong> <i>Rezervisana sredstva su podeljena između tvog i prodavčevog računa a po visini procene podrške</i>
                     </span><br>
-                    <span style="margin-left: 3%;"><i class="fas fa-times-circle text-danger"></i> <strong>Nekompletiran projekat:</strong> <i>Rezervisana sredstva su refundirana na tvoj račun</i></span>
+                    <span style="margin-left: 3%;"><i class="fas fa-times-circle text-danger"></i> <strong>Nekompletiran posao:</strong> <i>Rezervisana sredstva su refundirana na tvoj račun</i></span>
                 </li>
             </ul>
         </div>

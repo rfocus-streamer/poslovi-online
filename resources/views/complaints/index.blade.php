@@ -111,7 +111,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <span>Rezervisana sredstva za ovaj projekat: {{$project->reserved_funds}} <i class="fas fa-euro-sign"></i></span><br>
+                                <span>Rezervisana sredstva za ovaj posao: {{$project->reserved_funds}} <i class="fas fa-euro-sign"></i></span><br>
                                 <label for="fairPlayAmount" class="form-label">Iznos:</label>
                                 <input type="number" class="form-control" id="fairPlayAmount" name="fairPlayAmount" placeholder="Unesite iznos za prodavca" step="0.01" required="">
                             </div>
@@ -158,7 +158,7 @@
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header"><i class="fas fa-exclamation-circle text-warning"></i>
-                        <a class="text-dark" href="{{ route('projects.view', $project->id) }}"> Podnesi prigovor za projekat: {{ $project->service->title }}</a>
+                        <a class="text-dark" href="{{ route('projects.view', $project->id) }}"> Podnesi prigovor za posao: {{ $project->service->title }}</a>
                         <!-- O kupcu -->
                         <div class="text-end">
                             <div class="d-inline-block text-center">
@@ -204,7 +204,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header text-center">
-                        <h6><i class="fas fa-exclamation-circle text-danger"></i> Za ovaj projekat nema dodatih prigovora</h6>
+                        <h6><i class="fas fa-exclamation-circle text-danger"></i> Za ovaj posao nema dodatih prigovora</h6>
                     </div>
                 </div>
             </div>
@@ -269,7 +269,7 @@
                     <div class="card-body mb-2">
                         <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o prigovoru</h6>
                         @if(Auth::user()->role !== 'support')
-                            <small>Podrška će pregledati tvoj prigovor i doneti odluku. Može ga prihvatiti i prebaciti rezervisana sredstva na tvoj račun, odbiti i izvršiti povraćaj kupcu, proceniti da je projekat delimično završen i na osnovu toga prebaci procentualni deo rezervisanih sredstava na oba računa, ili zatražiti dodatne informacije pre konačne odluke.</small>
+                            <small>Podrška će pregledati tvoj prigovor i doneti odluku. Može ga prihvatiti i prebaciti rezervisana sredstva na tvoj račun, odbiti i izvršiti povraćaj kupcu, proceniti da je posao delimično završen i na osnovu toga prebaci procentualni deo rezervisanih sredstava na oba računa, ili zatražiti dodatne informacije pre konačne odluke.</small>
                         @else
                             <small>Pristigli prigovori zahtevaju vašu odluku, možete:<br><br> 1) Prihvatiti prigovor i time prebaciti rezervisana sredstva prodavcu,<br> 2) Odbiti ga i time izvršiti povraćaj kupcu,<br> 3) Zatražiti dodatne informacije od prodavca pre donošenja konačne odluke.</small>
                         @endif

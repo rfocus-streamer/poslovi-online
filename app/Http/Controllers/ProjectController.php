@@ -165,7 +165,7 @@ class ProjectController extends Controller
         ]);
 
         // Redirekcija nazad sa porukom o uspehu
-        return redirect()->back()->with('success', 'Opis projekta je uspešno ažuriran.');
+        return redirect()->back()->with('success', 'Opis posla je uspešno ažuriran.');
     }
 
     public function upload(Request $request, Project $project)
@@ -274,7 +274,7 @@ class ProjectController extends Controller
             $cart->delete();
             return redirect()
                     ->back()
-                    ->with('success', "Uspešno je pokrenut projekat")
+                    ->with('success', "Uspešno je pokrenut posao (projekat)")
                     ->withFragment('cart-message'); // Skrolujte do elementa sa ID "cart-message"
         }else{
             return redirect(RouteServiceProvider::HOME);
@@ -321,7 +321,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Odbio si ovaj projekat, rezervisana sredstva vracaju se kupcu !")
+                    ->with('success', "Odbio si ovaj posao, rezervisana sredstva vracaju se kupcu !")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -331,14 +331,14 @@ class ProjectController extends Controller
         if ($project->status === 'completed') {
             return redirect()
                       ->back()
-                      ->with('error', 'Projekat je već završen.');
+                      ->with('error', 'Posao (projekat) je već završen.');
         }
 
         // Provera da li je provizija već obračunata
         if ($project->commission) {
             return redirect()
                       ->back()
-                      ->with('error', 'Provizija za ovaj projekat je već obračunata.');
+                      ->with('error', 'Provizija za ovaj posao (projekat) je već obračunata.');
         }
 
         // Izračunavanje 10% i 90% od ukupnog iznosa ( prodavac - kupac )
@@ -390,7 +390,7 @@ class ProjectController extends Controller
 
         return redirect()
                   ->back()
-                  ->with('success', "Uspešno si potvrdio da je projekat završen!")
+                  ->with('success', "Uspešno si potvrdio da je posao (projekat) završen!")
                   ->withFragment('project-message');
     }
 
@@ -572,7 +572,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Tvoja odluka je sačuvana da projekat nije završen!")
+                    ->with('success', "Tvoja odluka je sačuvana da posao (projekat) nije završen!")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 
@@ -583,7 +583,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Tvoja odluka je sačuvana da projektu treba korekcije!")
+                    ->with('success', "Tvoja odluka je sačuvana da projektu (poslu) treba korekcije!")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 

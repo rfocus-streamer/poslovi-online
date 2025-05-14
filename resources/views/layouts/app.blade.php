@@ -213,9 +213,9 @@ input:not(:checked) + .slider .label-text.right {
 
                             <li class="nav-item">
                                 @if(isset($projectCount) && $projectCount > 0)
-                                    <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-project-diagram {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Projekti <span class="badge bg-danger">{{ $projectCount }}</span></a>
+                                    <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-handshake {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Poslovi <span class="badge bg-danger">{{ $projectCount }}</span></a>
                                 @else
-                                    <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-project-diagram {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Projekti</a>
+                                    <a class="nav-link {{ request()->routeIs('projects.index') ? 'active' : '' }}" href="{{ route('projects.index') }}"><i class="fas fa-handshake {{ request()->routeIs('projects.index') ? 'text-danger' : '' }}"></i> Poslovi</a>
                                 @endif
                             </li>
                         @endif
@@ -226,7 +226,7 @@ input:not(:checked) + .slider .label-text.right {
 
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('projects.jobs') ? 'active' : '' }}" href="{{ route('projects.jobs') }}">
-                                    <i class="fas fa-handshake {{ request()->routeIs('projects.jobs') ? 'text-danger' : '' }}"></i> Projekti
+                                    <i class="fas fa-handshake {{ request()->routeIs('projects.jobs') ? 'text-danger' : '' }}"></i> Poslovi
                                     @if(isset($seller['countProjects']))
                                         <span class="badge bg-danger">{{ $seller['countProjects'] }}</span>
                                     @endif

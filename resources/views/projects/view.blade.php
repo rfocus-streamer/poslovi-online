@@ -61,14 +61,14 @@
                     @case('inactive')
                         <li class="mb-2">
                             <i class="fas fa-hourglass-start text-secondary" style="font-size: 1.1em;"></i>
-                            <strong>Čeka se prihvat:</strong><br> Čeka se izvršilac da prihvati projekat.
+                            <strong>Čeka se prihvat:</strong><br> Čeka se izvršilac da prihvati posao.
                         </li>
                     @break
 
                     @case('in_progress')
                         <li class="mb-2">
                             <i class="fas fa-tasks text-primary"></i>
-                            <strong>U toku</strong><br> Izvršilac je prihvatio projekat i radi na njemu.
+                            <strong>U toku</strong><br> Izvršilac je prihvatio posao i radi na njemu.
                         </li>
                     @break
 
@@ -77,9 +77,9 @@
                             <i class="fas fa-user-check text-primary"></i>
                             <strong>Čeka se odobrenje</strong><br>
                             <strong>Možeš da preduzmeš sledeće akcije:</strong><br>
-                            <i class="fas fa-check-circle text-success"></i> Izvršilac je završio projekat prema tvojim očekivanjima.<br>
+                            <i class="fas fa-check-circle text-success"></i> Izvršilac je završio posao prema tvojim očekivanjima.<br>
                             <i class="fas fa-exclamation-triangle text-warning"></i>
-                            Projekat nije završen, rezervisana sredstva biće zamrznuta.<br>
+                            Posao nije završen, rezervisana sredstva biće zamrznuta.<br>
                             <span style="margin-left: 3%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor. Naša podrška će doneti konačnu odluku.</span><br>
                             <i class="fas fa-undo-alt  text-danger"></i>
                             Zahtevaš dodatne korekcije pre finalnog kompletiranja.<br>
@@ -90,7 +90,7 @@
                     @case('rejected')
                         <li class="mb-2">
                             <i class="fas fa-times-circle text-danger"></i>
-                            <strong>Odbijeno:</strong><br> Izvršilac je odbio projekat, sredstva su tebi refundirana.
+                            <strong>Odbijeno:</strong><br> Izvršilac je odbio posao, sredstva su tebi refundirana.
                         </li>
                     @break
 
@@ -106,7 +106,7 @@
                     @case('completed')
                         <li class="mb-2">
                             <i class="fas fa-check-circle text-success"></i>
-                            <strong>Završeno:</strong><br> Čestitamo projekat je uspešno završen, sredstva su prebačena izvršiocu.
+                            <strong>Završeno:</strong><br> Čestitamo posao je uspešno završen, sredstva su prebačena izvršiocu.
                         </li>
                     @break
 
@@ -131,7 +131,7 @@
                             <li class="mb-2">
                                 <i class="fas fa-exclamation-triangle text-warning"></i>
                                 <strong>Nije završeno</strong> <br>
-                                <span style="margin-left: 6%;"><i class="fas fa-check-circle text-success"></i> Izvršilac se složio da je projekat "nekompletiran", sredstva su refundirana vama.</span>
+                                <span style="margin-left: 6%;"><i class="fas fa-check-circle text-success"></i> Izvršilac se složio da je posao "nekompletiran", sredstva su tebi refundirana.</span>
                             </li>
                         @elseif($project->admin_decision === 'partially')
                             <li class="mb-2">
@@ -143,9 +143,9 @@
                              <li class="mb-2">
                                 <i class="fas fa-exclamation-triangle text-warning"></i>
                                 <strong>Nije završeno</strong> <br>
-                                <span style="margin-left: 3%;">Označio si da projekat nije završen, rezervisana sredstva su zamrznuta.</span><br>
-                                <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor ili prihvatiti projekat kao nekompletiran.</span><br>
-                                <span style="margin-left: 9%;">Ako je status projekta "nekompletiran" sredstva se refundiraju na tvoj račun.</span><br>
+                                <span style="margin-left: 3%;">Označio si da posao nije završen, rezervisana sredstva su zamrznuta.</span><br>
+                                <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-warning"></i> Izvršilac može uložiti prigovor ili prihvatiti posao kao nekompletiran.</span><br>
+                                <span style="margin-left: 9%;">Ako je status posla "nekompletiran" sredstva se refundiraju na tvoj račun.</span><br>
 
                                 @if($countReply > 0)
                                     <span style="margin-left: 6%;"><i class="fas fa-exclamation-circle text-danger"></i> Izvršilac je uložio prigovor. Naša podrška će doneti konačnu odluku.</span>
@@ -232,7 +232,7 @@
             <div class="card">
                 <div class="card-body">
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-hashtag text-primary"></i> <strong>ID projekta:</strong> {{ $project->project_number }}</li>
+                        <li><i class="fas fa-hashtag text-primary"></i> <strong>ID posla:</strong> {{ $project->project_number }}</li>
                         <li><i class="fas fa-box text-success"></i> <strong>Paket:</strong> {{ $project->package }}</li>
                         <li><i class="fas fa-layer-group text-warning"></i> <strong>Količina:</strong> {{ $project->quantity }}</li>
                     </ul>
@@ -359,7 +359,7 @@
                 <div class="card-body">
                     <div class="row">
                         <h5 class="card-title mb-4 text-success">
-                            <i class="fas fa-tasks text-dark"></i> Detalji projekta
+                            <i class="fas fa-tasks text-dark"></i> Detalji posla
                         </h5>
 
                         @if($project->status === 'inactive')
@@ -391,7 +391,7 @@
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije</h6>
-                    <p>Možeš popunjavati detalje projekta sve dok izvršilac ne prihvati projekat. Nakon prihvatanja, izmene više neće biti moguće</p>
+                    <p>Možeš popunjavati detalje posla sve dok izvršilac ne prihvati posao. Nakon prihvatanja, izmene više neće biti moguće</p>
                 </div>
             </div>
         </div>
@@ -427,7 +427,7 @@
             <div class="card">
                 <div class="card-body mb-2">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o datotekama</h6>
-                    <small>Izvršilac će u ovom odeljku dodati datoteke vezane za projekat, kojim ćeš moći da pregledaš u toku rada. Takođe, po završetku projekta, sve relevantne datoteke će biti dostupne.</small>
+                    <small>Izvršilac će u ovom odeljku dodati datoteke vezane za posao, kojim ćeš moći da pregledaš u toku rada. Takođe, po završetku posla, sve relevantne datoteke će biti dostupne.</small>
                 </div>
             </div>
         </div>
@@ -477,7 +477,7 @@
             <div class="card">
                 <div class="card-body mb-3">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o tvojoj datoteci</h6>
-                    <small>Možeš dostaviti datoteke neophodne za rad na projektu, koje će izvršilac koristiti za njegovo uspešno izvođenje.</small>
+                    <small>Možeš dostaviti datoteke neophodne za rad na poslu, koje će izvršilac koristiti za njegovo uspešno izvođenje.</small>
                 </div>
             </div>
         </div>
@@ -573,7 +573,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5><i class="fas fa-bullhorn"></i></i> <span class="card-title mb-4 text-success">Recinzija</span></h5>
-                        <p>Recenziju možeš ostaviti tek nakon što se kompletira projekat ili nakon završetka arbitraže</p>
+                        <p>Recenziju možeš ostaviti tek nakon što se kompletira posao ili nakon završetka arbitraže</p>
                     </div>
                 </div>
             </div>
