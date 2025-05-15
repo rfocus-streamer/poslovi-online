@@ -198,7 +198,7 @@ input:not(:checked) + .slider .label-text.right {
                         @endif
                         <li class="nav-item" id="messages">
                             <a class="nav-link {{ request()->routeIs('messages.index') ? 'active' : '' }}" href="{{ route('messages.index') }}">
-                                <i class="fas fa-envelope"></i> Poruke
+                                <i class="fas fa-envelope {{ request()->routeIs('messages.index') ? 'text-danger' : '' }}"></i> Poruke
                                 <!-- Dodajemo span za broj novih poruka -->
                                 <span class="badge bg-danger" id="unread-count-id-{{ Auth::user()->id }}" style="display: {{ $messagesCount > 0 ? 'inline-block' : 'none' }}">{{$messagesCount}}</span>
                             </a>
