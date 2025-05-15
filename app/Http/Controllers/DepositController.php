@@ -47,7 +47,7 @@ class DepositController extends Controller
     public function createPayment(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:5',
+            'amount' => 'required|numeric|min:1',
             'currency' => 'required|in:USD,EUR',
             'payment_method' => 'required|in:paypal,stripe,wise'
         ]);
