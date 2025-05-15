@@ -176,18 +176,28 @@ class DepositController extends Controller
             'payment_method_stripe' => 'required|string',
         ]);
 
+        // Izračunavanje naknade
+        $paymentAmount = $request->amount; // Originalni iznos
+        $stripeFeePercentage = 2.9; // Stripe naknada u %
+        $fixedFee = 0.30; // Fiksna naknada
+
+        // Izračunaj koliko bi trebalo da kupac plati kako bi ti dobio željeni iznos
+        $feeAmount = ($paymentAmount * ($stripeFeePercentage / 100)) + $fixedFee;
+        $totalAmount = number_format(($paymentAmount + $feeAmount), 2, '.', '');
+
         try {
             $returnUrl = route('deposit.form');
             $paymentIntent = $this->stripeService->createPayment(
-                $request->amount,
-                $request->currency,
+                $totalAmount,
+                'EUR',
                 $request->payment_method_stripe,
                 $returnUrl
             );
 
             // Ažuriraj transakciju sa PayPal order ID
             $transaction->update([
-                'transaction_id' => $paymentIntent->id
+                'transaction_id' => $paymentIntent->id,
+                'payload' => json_encode($paymentIntent) // Skladišti ceo odgovor od stripe
             ]);
 
 

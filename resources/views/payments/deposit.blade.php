@@ -60,6 +60,22 @@
                                         <i class="fab fa-paypal"></i> PayPal
                                     </label>
                                 </div>
+
+                                <div class="form-check ms-3">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="stripe" value="stripe">
+                                    <label class="form-check-label" for="stripe">
+                                        <i class="fas fa-credit-card"></i> Kreditna kartica
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="stripe-container" class="d-none">
+                            <div class="mb-3">
+                                <label for="card-element" class="form-label">Kartični podaci</label>
+                                <div id="card-element">
+                                    <!-- Stripe's card input will be inserted here -->
+                                </div>
                             </div>
                         </div>
 
@@ -184,12 +200,85 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 5000);
     }
 
-    // PayPal loading state
+    // PayPal/Stripe loading state
     const form = document.getElementById('depositForm');
     form.addEventListener('submit', () => {
         const submitButton = form.querySelector('button[type="submit"]');
         submitButton.disabled = true;
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Preusmeravam na PayPal...';
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesiram...';
+    });
+});
+</script>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    const stripe = Stripe('{{ $stripeKey }}');
+    const elements = stripe.elements();
+
+    const card = elements.create('card', {
+        hidePostalCode: true,
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#32325d',
+            }
+        }
+    });
+
+    card.mount('#card-element');
+
+    const stripeContainer = document.getElementById('stripe-container');
+    const paypalRadio = document.getElementById('paypal');
+    const stripeRadio = document.getElementById('stripe');
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const form = document.getElementById('depositForm');
+
+    stripeRadio.addEventListener('change', function () {
+        if (stripeRadio.checked) {
+            stripeContainer.classList.remove('d-none');
+            submitButton.innerHTML = 'Plati preko kreditne kartice';
+        }
+    });
+
+    paypalRadio.addEventListener('change', function () {
+        if (paypalRadio.checked) {
+            stripeContainer.classList.add('d-none');
+            submitButton.innerHTML = 'Plati preko PayPal-a';
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (stripeRadio.checked) {
+            const { error, paymentMethod } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: card,
+            });
+
+            if (error) {
+                document.getElementById('card-errors').textContent = error.message;
+                return;
+            }
+
+            // Add loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesiram...';
+
+            // Send paymentMethod.id to server
+            const hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'payment_method_stripe');
+            hiddenInput.setAttribute('value', paymentMethod.id);
+            form.appendChild(hiddenInput);
+
+            // Submit form
+            form.submit();
+        } else {
+            form.submit();
+        }
     });
 });
 </script>

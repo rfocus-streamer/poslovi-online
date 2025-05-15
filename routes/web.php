@@ -103,6 +103,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/deposit/paypal/success', [DepositController::class, 'payPalSuccess'])->name('deposit.paypal.success');
     Route::get('/deposit/paypal/cancel', [DepositController::class, 'payPalCancel'])->name('deposit.paypal.cancel');
 
+    Route::post('/deposit/stripe/create', [DepositController::class, 'createStripePayment'])->name('deposit.stripe.create');
+    Route::get('/deposit/stripe/success', [DepositController::class, 'stripeSuccess'])->name('deposit.stripe.success');
+    Route::get('/deposit/stripe/cancel', [DepositController::class, 'stripeCancel'])->name('deposit.stripe.cancel');
+
     Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
     Route::patch('/package/{package}', [PackageController::class, 'activatePackage'])->name('package.activate');
 
