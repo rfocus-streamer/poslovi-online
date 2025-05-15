@@ -134,8 +134,8 @@ class DepositController extends Controller
                 throw new \Exception('Payment not completed');
             }
 
-            $amount = $result->purchase_units[0]->amount->value;
-            $currency = $result->purchase_units[0]->amount->currency_code;
+            $amount = $transaction->amount;  // Pretpostavljamo da je amount već postavljen u Transaction tabeli
+            $currency = $transaction->currency;
             // Kreiraj depozit
             $deposit = Deposit::create([
                 'user_id' => Auth::id(),
