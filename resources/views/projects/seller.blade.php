@@ -95,6 +95,10 @@
                                             <i class="fas fa-check-circle text-success mt-2" title="Posao je kompletiran" style="font-size: 1.1em;"></i>
                                         @break
 
+                                        @case('requires_corrections')
+                                            <i class="fas fa-undo-alt text-danger mt-2" title="Posao je kompletiran" style="font-size: 1.1em;"></i>
+                                        @break
+
                                         @case('uncompleted')
                                             @if($project->admin_decision === 'rejected')
                                                 <i class="fas fa-balance-scale text-danger mt-2"></i>

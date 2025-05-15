@@ -119,7 +119,6 @@ class ProjectController extends Controller
         $user = Auth::user();
         $reserved_amount = Project::where('buyer_id', Auth::id())->sum('reserved_funds');
         $projects = [];
-        $seller = [];
         $totalEarnings = 0;
 
         if ($user->role == 'buyer') {
@@ -129,9 +128,6 @@ class ProjectController extends Controller
         }
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
-            $seller['countProjects'] = Project::where('seller_id', Auth::id())
-                ->whereNotIn('status', ['completed', 'uncompleted'])
-                ->count();
             // Dohvati trenutni mesec i godinu
             $currentMonth = Carbon::now()->month;
             $currentYear = Carbon::now()->year;
@@ -143,7 +139,6 @@ class ProjectController extends Controller
 
         return view('projects.seller', compact(
             'projects',
-            'seller',
             'reserved_amount',
             'totalEarnings'
         ));
@@ -326,7 +321,7 @@ class ProjectController extends Controller
 
         return redirect()
                     ->back()
-                    ->with('success', "Odbio si ovaj posao, rezervisana sredstva vracaju se kupcu !")
+                    ->with('success', "Odbio si ovaj posao, rezervisana sredstva vraćaju se kupcu !")
                     ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
     }
 

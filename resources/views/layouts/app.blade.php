@@ -230,7 +230,7 @@ input:not(:checked) + .slider .label-text.right {
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('projects.jobs') ? 'active' : '' }}" href="{{ route('projects.jobs') }}">
                                     <i class="fas fa-handshake {{ request()->routeIs('projects.jobs') ? 'text-danger' : '' }}"></i> Poslovi
-                                    @if(isset($seller['countProjects']))
+                                    @if(isset($seller['countProjects']) and $seller['countProjects'] > 0)
                                         <span class="badge bg-danger">{{ $seller['countProjects'] }}</span>
                                     @endif
                                 </a>

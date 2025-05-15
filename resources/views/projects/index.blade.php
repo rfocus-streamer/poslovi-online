@@ -19,7 +19,7 @@
     @endif
 
     <div class="d-flex justify-content-between align-items-center">
-        <h4><i class="fas fa-project-diagram"></i> Tvoji poslovi</h4>
+        <h4><i class="fas fa-handshake"></i> Tvoji poslovi</h4>
         <h6 class="text-secondary">
             <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva: <strong class="text-success">{{ number_format($reserved_amount, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
@@ -94,6 +94,10 @@
 
                                         @case('completed')
                                             <i class="fas fa-check-circle text-success mt-2" title="Posao je kompletiran" style="font-size: 1.1em;"></i>
+                                        @break
+
+                                        @case('requires_corrections')
+                                            <i class="fas fa-undo-alt text-danger mt-2" title="Posao je kompletiran" style="font-size: 1.1em;"></i>
                                         @break
 
                                         @case('uncompleted')

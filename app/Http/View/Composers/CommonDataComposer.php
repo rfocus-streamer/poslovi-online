@@ -40,9 +40,9 @@ class CommonDataComposer
         if (Auth::check()) {
             $favoriteCount = Favorite::where('user_id', Auth::id())->count();
             $cartCount = CartItem::where('user_id', Auth::id())->count();
-            $projectCount = Project::where('buyer_id', Auth::id())->count();
+            $projectCount = Project::where('buyer_id', Auth::id())->whereNotIn('status', ['completed', 'rejected', 'uncompleted'])->count();
             $seller['countProjects'] = Project::where('seller_id', Auth::id())
-                ->whereNotIn('status', ['completed', 'uncompleted'])
+                ->whereNotIn('status', ['completed', 'rejected', 'uncompleted'])
                 ->count();
             $seller['countPublicService'] = Service::where('user_id', Auth::id())
                 ->where('visible', 1)
