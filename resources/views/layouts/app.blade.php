@@ -246,8 +246,8 @@ input:not(:checked) + .slider .label-text.right {
 
                     @auth
                         <li class="nav-item dropdown">
-                            <a class="nav-link {{ request()->routeIs('deposit.form') ? 'active' : '' }}" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user {{ request()->routeIs('deposit.form', 'logout') ? 'text-danger' : '' }}"></i> Profil
+                            <a class="nav-link {{ request()->routeIs('deposit.form', 'profile.edit', 'invoices.index', 'affiliate.index','tickets.index') ? 'active' : '' }}" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user {{ request()->routeIs('deposit.form', 'profile.edit', 'invoices.index', 'affiliate.index','tickets.index') ? 'text-danger' : '' }}"></i> Profil
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>

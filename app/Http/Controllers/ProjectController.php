@@ -301,28 +301,62 @@ class ProjectController extends Controller
 
     public function rejectOffer(Project $project)
     {
-        $commission = Commission::where('project_number', $project->project_number)->first();
-
-        if ($commission) {
-            $buyer_amount = $commission->buyer_amount;
-            $commission->delete();
-        }else{
-            $buyer_amount = 0;
+        if($project->status !== 'inactive'){
+            return redirect()
+                        ->back()
+                        ->with('error', "Posao je već u toku, nije moguće otkazati !")
+                        ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
         }
 
-        $project->status = 'rejected';
-        $project->buyer->deposits += $project->reserved_funds + $buyer_amount;
+        $user = Auth::user();
+        if($user->role === 'seller'){
+            $commission = Commission::where('project_number', $project->project_number)->first();
 
-        // Spremanje promena na korisniku
-        $project->buyer->save();
+            if ($commission) {
+                $buyer_amount = $commission->buyer_amount;
+                $commission->delete();
+            }else{
+                $buyer_amount = 0;
+            }
 
-        // Spremanje promena na projektu
-        $project->save();
+            $project->status = 'rejected';
+            $project->buyer->deposits += $project->reserved_funds + $buyer_amount;
 
-        return redirect()
-                    ->back()
-                    ->with('success', "Odbio si ovaj posao, rezervisana sredstva vraćaju se kupcu !")
-                    ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
+            // Spremanje promena na korisniku
+            $project->buyer->save();
+
+            // Spremanje promena na projektu
+            $project->save();
+
+            return redirect()
+                            ->back()
+                            ->with('success', "Odbio si ovaj posao, rezervisana sredstva vraćaju se kupcu !")
+                            ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
+        }else{
+            $commission = Commission::where('project_number', $project->project_number)->first();
+
+            if ($commission) {
+                $buyer_amount = $commission->buyer_amount;
+                $commission->delete();
+            }else{
+                $buyer_amount = 0;
+            }
+
+            $project->buyer->deposits += $project->reserved_funds + $buyer_amount;
+
+            // Spremanje promena na korisniku
+            $project->buyer->save();
+
+            // Spremanje promena na projektu
+            $project->save();
+
+            $project->delete();
+
+            return redirect()
+                            ->route('projects.index')
+                            ->with('error', "Otkazao si ovaj posao, rezervisana sredstva su ti vraćena !")
+                            ->withFragment('project-message'); // Skrolujte do elementa sa ID "cart-message"
+        }
     }
 
     public function doneConfirmation(Project $project)

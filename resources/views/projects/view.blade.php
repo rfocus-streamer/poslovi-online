@@ -27,6 +27,14 @@
                 <div class="ms-auto mt-3"> <!-- Ovo gura dugmad na desno -->
                     @if(Auth::user()->role == 'buyer')
                         @switch($project->status)
+                            @case('inactive')
+                                <div class="d-flex gap-2 text-center">
+                                    <form action="{{ route('projects.rejectoffer', $project) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger">Otkaži posao <i class="fas fa-times-circle"></i></button>
+                                    </form>
+                                </div>
+                            @break
                             @case('waiting_confirmation')
                                 <div class="text-center">
                                     <i class="fas fa-hand-point-down text-primary"></i> Klikni da preduzmeš akciju <i class="fas fa-hand-point-down text-primary"></i>

@@ -43,10 +43,18 @@
                         <td>{{ $invoice->issue_date->format('d.m.Y') }}</td>
                         @foreach($invoice->items as $item)
                             <td>
-                                {{ $item['description'] }}
+                                @if(strlen($item['description']) > 25)
+                                    {{ \Illuminate\Support\Str::limit($item['description'], 25) }}
+                                @else
+                                    {{ $item['description'] }}
+                                @endif
                             </td>
                             <td>
-                                {{ $item['billing_period'] }}
+                                @if(strlen($item['billing_period']) > 25)
+                                    {{ \Illuminate\Support\Str::limit($item['billing_period'], 25) }}
+                                @else
+                                    {{ $item['billing_period'] }}
+                                @endif
                             </td>
                         @endforeach
                         <td class="text-center">{{ ucfirst($invoice->status) }}</td>

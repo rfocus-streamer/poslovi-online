@@ -16,6 +16,21 @@
                 {{ session('error') }}
             </div>
         @endif
+
+        @if(!Auth::user()->package)
+            <div class="d-flex col-md-8">
+                <div class="alert alert-danger ms-auto">
+                    <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Da bi nastavio sa poslom, moraš imati aktivan plan !
+                </div>
+
+                <div class="text-warning mb-2 ms-auto">
+                    <a href="{{ route('packages.index') }}" class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> <i class="fas fa-calendar-alt"></i>
+                    </a>
+                    <p class="text-center text-secondary">Odaberi paket</p>
+                </div>
+            </div>
+        @endif
+
         <!-- Glavni sadržaj -->
         <div class="col-md-8 g-0">
             <!-- Naslov i osnovne informacije -->
@@ -25,62 +40,64 @@
                 @auth
                 <div class="ms-auto mt-3"> <!-- Ovo gura dugmad na desno -->
                     @if(Auth::user()->role == 'seller')
-                        @switch($project->status)
-                            @case('inactive')
-                                <div class="d-flex gap-2 text-center">
-                                    <form action="{{ route('projects.acceptoffer', $project) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Prihvati <i class="fas fa-handshake"></i></button>
-                                    </form>
-
-
-                                    <form action="{{ route('projects.rejectoffer', $project) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-danger">Odbij <i class="fas fa-times-circle"></i></button>
-                                    </form>
-                                </div>
-                            @break
-
-                            @case('in_progress')
-                                <div class="d-flex gap-2 text-center">
-                                    <form action="{{ route('projects.waitingconfirmation', $project) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Zahtevaj <i class="fas fa-user-check"></i></button>
-                                    </form>
-                                </div>
-                            @break
-
-                            @case('requires_corrections')
-                                <div class="d-flex gap-2 text-center">
-                                    <form action="{{ route('projects.waitingconfirmation', $project) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">Zahtevaj <i class="fas fa-user-check"></i></button>
-                                    </form>
-                                </div>
-                            @break
-
-                            @case('uncompleted')
-                                <div class="d-flex gap-2 text-center">
-                                    @if($project->seller_uncomplete_decision === 'arbitration' && $countReply > 0)
-                                        <a href="{{ route('complaints.show', $project) }}">
-                                            <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Pogledaj arbitražu</button>
-                                        </a>
-                                    @elseif($project->seller_uncomplete_decision === null and $countReply == 0)
-                                        <a href="{{ route('complaints.show', $project) }}">
-                                            <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Podnesi prigovor</button>
-                                        </a>
-                                    @endif
-
-                                    @if($project->admin_decision === null and $project->seller_uncomplete_decision !== 'accepted')
-                                        <form action="{{ route('projects.confirmationuncompleteseller', $project) }}" method="POST">
+                        @if(Auth::user()->package)
+                            @switch($project->status)
+                                @case('inactive')
+                                    <div class="d-flex gap-2 text-center">
+                                        <form action="{{ route('projects.acceptoffer', $project) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Slažem se</button>
+                                            <button type="submit" class="btn btn-sm btn-success">Prihvati <i class="fas fa-handshake"></i></button>
                                         </form>
-                                    @endif
-                                </div>
-                            @break
 
-                        @endswitch
+
+                                        <form action="{{ route('projects.rejectoffer', $project) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-danger">Odbij <i class="fas fa-times-circle"></i></button>
+                                        </form>
+                                    </div>
+                                @break
+
+                                @case('in_progress')
+                                    <div class="d-flex gap-2 text-center">
+                                        <form action="{{ route('projects.waitingconfirmation', $project) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success">Zahtevaj <i class="fas fa-user-check"></i></button>
+                                        </form>
+                                    </div>
+                                @break
+
+                                @case('requires_corrections')
+                                    <div class="d-flex gap-2 text-center">
+                                        <form action="{{ route('projects.waitingconfirmation', $project) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success">Zahtevaj <i class="fas fa-user-check"></i></button>
+                                        </form>
+                                    </div>
+                                @break
+
+                                @case('uncompleted')
+                                    <div class="d-flex gap-2 text-center">
+                                        @if($project->seller_uncomplete_decision === 'arbitration' && $countReply > 0)
+                                            <a href="{{ route('complaints.show', $project) }}">
+                                                <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Pogledaj arbitražu</button>
+                                            </a>
+                                        @elseif($project->seller_uncomplete_decision === null and $countReply == 0)
+                                            <a href="{{ route('complaints.show', $project) }}">
+                                                <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-exclamation-circle"></i> Podnesi prigovor</button>
+                                            </a>
+                                        @endif
+
+                                        @if($project->admin_decision === null and $project->seller_uncomplete_decision !== 'accepted')
+                                            <form action="{{ route('projects.confirmationuncompleteseller', $project) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Slažem se</button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @break
+
+                            @endswitch
+                        @endif
                     @endif
                 </div>
                 @endauth

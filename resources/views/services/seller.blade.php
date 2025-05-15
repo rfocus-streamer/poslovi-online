@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="text-warning mb-2">
-                    <a href="{{ route('packages.index') }}" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> Izmeni paket <i class="fas fa-calendar-alt"></i>
+                    <a href="{{ route('packages.index') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket"> Izmeni paket <i class="fas fa-calendar-alt"></i>
                     </a>
                 </div>
             @endif
