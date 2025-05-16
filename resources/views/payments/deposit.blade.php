@@ -10,6 +10,25 @@
     .blinking-alert {
         animation: blink 1s infinite;
     }
+
+    .form-check-input {
+        border-color: #198754;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754; /* Bootstrap "success" zelena */
+    }
+
+    .form-check-input {
+        width: 1em;
+        height: 1em;
+        cursor: pointer;
+    }
+
+    .form-check label{
+        cursor: pointer;
+    }
+
 </style>
 
 <div class="container py-5">
@@ -40,7 +59,7 @@
 
                         <div class="mb-3">
                             <label for="amount" class="form-label">Iznos</label>
-                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="5.00" required>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="1.00" oninput="formatAmount()" required>
                         </div>
 
                         <div class="mb-3">
@@ -51,9 +70,9 @@
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Način plaćanja</label>
-                            <div class="d-flex justify-content-center">
+                        <div class="mb-3 d-flex">
+                            <label class="form-label">Način plaćanja:</label>
+                            <div class="ms-2 d-flex justify-content-center text-center">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal" checked>
                                     <label class="form-check-label" for="paypal">
@@ -64,7 +83,7 @@
                                 <div class="form-check ms-3">
                                     <input class="form-check-input" type="radio" name="payment_method" id="stripe" value="stripe">
                                     <label class="form-check-label" for="stripe">
-                                        <i class="fas fa-credit-card"></i> Kreditna kartica
+                                        <i class="fas fa-credit-card"></i> Kreditna ili debitna kartica
                                     </label>
                                 </div>
                             </div>
@@ -79,9 +98,14 @@
                             </div>
                         </div>
 
+                        <div>
+                          <small class="font-weight-bold text-secondary">Napomena o visini naknade (fee):</small><br>
+                        <small class="text-secondary">Visina naknade za obradu depozita zavisi od izabranog platnog sistema. Različiti sistemi mogu primenjivati različite naknade u zavisnosti od njihove politike i uslova.</small>
+                        </div>
+
                         <div class="mt-4">
                             <button type="submit" id="submit-button" class="btn w-100" style="background-color: #198754">
-                                <span id="button-text">Plati preko PayPal-a</span>
+                                <span id="button-text" class="text-white">Plati preko PayPal-a</span>
                             </button>
                         </div>
                     </form>
@@ -238,13 +262,15 @@ document.addEventListener('DOMContentLoaded', function() {
     stripeRadio.addEventListener('change', function () {
         if (stripeRadio.checked) {
             stripeContainer.classList.remove('d-none');
-            submitButton.innerHTML = 'Plati preko kreditne kartice';
+            submitButton.classList.add('text-white');
+            submitButton.innerHTML = 'Plati preko kartice';
         }
     });
 
     paypalRadio.addEventListener('change', function () {
         if (paypalRadio.checked) {
             stripeContainer.classList.add('d-none');
+            submitButton.classList.add('text-white');
             submitButton.innerHTML = 'Plati preko PayPal-a';
         }
     });
@@ -281,4 +307,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+</script>
+
+<script>
+    let timeout;
+
+    function formatAmount() {
+        // Ako je prethodni timeout postavljen, brišemo ga
+        clearTimeout(timeout);
+
+        // Postavljamo novi timeout koji će se izvršiti nakon 300ms
+        timeout = setTimeout(function() {
+            let amountInput = document.getElementById('amount');
+            let value = amountInput.value;
+
+            // Ako je unos celo broj, formatiramo ga sa dve decimale
+            if (value && value % 1 === 0) {
+                amountInput.value = parseFloat(value).toFixed(2);
+            }
+        }, 500);  // 500ms čekanja
+    }
 </script>
