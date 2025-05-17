@@ -320,7 +320,7 @@ class MessageController extends Controller
 
             $user = Auth::user();
 
-            // Provera blokiranja
+             // Provera blokiranja
             $blockedByYou = BlockedUser::where('user_id', auth()->id())
                            ->where('blocked_user_id', $request->input('user_id'))
                            ->exists();
@@ -454,6 +454,7 @@ class MessageController extends Controller
                       ->where('receiver_id', auth()->id());
             })
             ->where('service_id', $serviceId)
+            ->orderBy('created_at', 'desc') // Sortiraj od najnovijih ka najstarijima
             ->with([
                 'sender' => function($query) {
                     $query->select([
@@ -480,9 +481,8 @@ class MessageController extends Controller
                     ]);
                 }
             ])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20, ['*'], 'page', $page) // Paginacija->get()
-             ->map(function($message) use ($contactId) {
+            ->paginate(10, ['*'], 'page', $page) // Paginacija->get()
+            ->map(function($message) use ($contactId) {
                 // Dodajemo broj nepročitanih poruka kao zaseban ključ
                 $message->unReadMessages = Message::countUnreadForSender(auth()->id(), $contactId, $message->service_id);
                 return $message;
@@ -494,6 +494,31 @@ class MessageController extends Controller
             'blockedByYou' => $blockedByYou, // Dodajte blokirani status u odgovor
             'blockedByHim' => $blockedByHim, // Dodajte blokirani status u odgovor
         ]);
+    }
+
+    public function getLastMessageByService(Request $request)
+    {
+        $serviceId = $request->input('service_id');
+        $contactId = $request->input('contact_id');
+        $lastMessage = Message::where(function($query) use ($contactId) {
+                        $query->where('sender_id', auth()->id())
+                              ->where('receiver_id', $contactId);
+                    })
+                    ->orWhere(function($query) use ($contactId) {
+                        $query->where('sender_id', $contactId)
+                              ->where('receiver_id', auth()->id());
+                    })
+                    ->where('service_id', $serviceId)
+                    ->orderBy('created_at', 'desc')  // Sortiraj po vremenu slanja (opadajuće)
+                    ->first();  // Uzmi prvu (poslednju) poruku
+
+        // // Ako postoji poslednja poruka, možemo dobiti vreme
+        if ($lastMessage) {
+            $lastMessageTime = $lastMessage->created_at;  // Datum i vreme poslednje poruke
+            return response()->json(['last_message_time' => $lastMessage->created_at->format('Y-m-d H:i:s')]);
+        } else {
+            return response()->json(['last_message_time' => null]);
+        }
     }
 
     public function getMessagesComplaints(Request $request)

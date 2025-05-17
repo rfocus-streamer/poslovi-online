@@ -155,19 +155,6 @@ function appendNewMessage(msg) {
     const formattedDate = formatDate(msg.created_at);
     const [date, time] = formattedDate.split(' ');  // Razdvaja datum (YYYY-MM-DD) i vreme (HH:MM)
 
-    // Prikazivanje datuma samo ako se menja u odnosu na poslednji datum
-    let dateDisplay = '';
-    if (date !== lastDate) {
-        // Ako je datum nov, prikazujemo ga i ažuriramo poslednji prikazani datum
-        dateDisplay = `<div class="mb-1 justify-content-center">
-                        <div class="date-separator w-100 text-center">
-                                <span class="date-text text-secondary">${formatDate(msg.created_at).split(' ')[0]}</span>
-                            </div>
-                        </div>
-         `;
-        lastDate = date;  // Ažuriraj poslednji prikazani datum
-    }
-
     let attach = `${msg.sender.firstname.charAt(0).toLowerCase() + msg.sender.firstname.slice(1)}_${time.replace(/:/g, '')}`;
 
     const messageDiv = document.createElement('div');
@@ -176,8 +163,7 @@ function appendNewMessage(msg) {
     if (isSentByCurrentUser) {
          // Dodaj HTML za poruku
         messageDiv.innerHTML += `
-            ${dateDisplay} <!-- Prikazivanje datuma samo ako je promenjen -->
-            <div class="conversation-list-right">
+            <div class="conversation-list-right" data-date="${date}">
                 <div class="chat-avatar">
                     <img src="storage/user/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
                 </div>
@@ -211,8 +197,7 @@ function appendNewMessage(msg) {
     } else {
         // Dodaj HTML za poruku
         messageDiv.innerHTML += `
-            ${dateDisplay} <!-- Prikazivanje datuma samo ako je promenjen -->
-            <div class="conversation-list">
+            <div class="conversation-list" data-date="${date}">
                 <div class="chat-avatar">
                     <img src="storage/user/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
                 </div>
@@ -293,6 +278,7 @@ function appendNewMessage(msg) {
         top: chatHistoryElement.scrollHeight,
         behavior: 'smooth'
     });
+    adjustDateSeparators(); // Dodajte ovaj poziv
 }
 
 
@@ -510,19 +496,26 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
         })
 
         .listenForWhisper('messageSeen', (data) => {
+            const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
+            if (messageElement) {
+                // Držimo ID setTimeout-a kako bi mogli da ga zaustavimo ako je potrebno
+                let timeoutId;
+                messageElement.classList.add('read');
+                timeoutId = setTimeout(() => {
+                    const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
+                    const readStatusElement = messageElement.querySelector('.read-status');
+                    if (readStatusElement) {
+                        readStatusElement.innerHTML = `<i class="fas fa-check-double text-success" title="Pročitano ${formatDate(data.read_at)}"></i>`;  // Promeni sadržaj
+                        // Onda zaustavi bilo kakve dalje timeoute (ako postoji)
+                        clearTimeout(timeoutId);
+                    }
+                }, 100);  // Čeka 100ms pre nego što pokuša da selektuje elemente
+            }
 
             // Sad šalješ whisper nazad
             window.Echo.private(`messages`).whisper('updateUnreadMessages', {
                 receiver_id: data.receiver_id
             });
-
-            const messageElement = document.querySelector(`[data-message-id="${data.message_id}"]`);
-            if (messageElement) {
-                messageElement.classList.add('read');
-                messageElement.querySelector('.read-status').innerHTML = `
-                    <i class="fas fa-check-double text-success" title="Pročitano ${formatDate(data.read_at)}"></i>
-                `;
-            }
         })
 
         .listenForWhisper('updateUnreadMessages', (data) => {
