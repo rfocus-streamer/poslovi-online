@@ -7,7 +7,7 @@
 
 <!-- Hero sekcija sa pozadinom -->
 <div class="hero-section">
-    <div class="hero-content text-center text-white">
+    <div class="hero-content text-center text-white mt-2">
         <span class="hero-subtitle">Tvoja online platforma za sigurno poslovanje</span>
         <h1 class="hero-title mt-1">Poslovi<mark>online</mark></h1>
 

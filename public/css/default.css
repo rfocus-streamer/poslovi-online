@@ -43,7 +43,7 @@
 }
 
  /* Hero sekcija */
-.hero-section {
+/*.hero-section {
     position: relative;
     height: 400px;
     background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
@@ -53,7 +53,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}*/
+
+.hero-section {
+  background: linear-gradient(to bottom, #003366, #99ccff); /* plavi gradient */
+  height: 100vh; /* visina hero sekcije */
+  background-size: cover;
+  background-position: center center;
 }
+
 
 .hero-title {
     font-size: 3.5rem;
