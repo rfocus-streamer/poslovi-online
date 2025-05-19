@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\Admin\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/get-messages-complaints', [MessageController::class, 'getMessagesComplaints'])->name('get.messagesComplaints');
     Route::post('/messages/block/{user}', [MessageController::class, 'blockUser'])->name('messages.blockUser');
     Route::post('/messages/unblock/{user}', [MessageController::class, 'unblockUser'])->name('messages.unblockUser');
+
+    Route::get('/admin/{user}/profile', [DashboardController::class, 'profile'])->name('admin.user.profile');
+    Route::patch('/profile/{user}', [DashboardController::class, 'updateProfile'])->name('admin.profile.update');
+
+    Route::get('/admin/{user}/deposit', [DashboardController::class, 'deposit'])->name('admin.user.deposit');
+    Route::delete('admin/{user}', [DashboardController::class, 'destroy'])->name('admin.user.destroy');
+
+    Route::delete('/admin/files/delete', [FileController::class, 'delete'])->name('files.delete');
+    // ... ostale rute
 });
 
 

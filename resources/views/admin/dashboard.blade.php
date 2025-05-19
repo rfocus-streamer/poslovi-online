@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin panel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/default.css') }}" rel="stylesheet">
     <style>
         .sidebar {
@@ -15,6 +16,23 @@
             background: rgba(255,255,255,0.1);
             border-radius: 5px;
         }
+
+        .modal-header{
+            background-color: white;
+        }
+
+        .modal-content {
+          background-color: white;
+        }
+
+        .avatar-img{
+            object-fit: cover;
+        }
+
+        .nav-link { transition: all 0.3s; }
+        .nav-link:hover { transform: translateX(5px); }
+        .table-hover tr:hover { transform: translateY(-2px); }
+        .table a:hover { opacity: 0.8; transform: scale(1.1); }
     </style>
 </head>
 <body class="bg-light">
@@ -28,22 +46,27 @@
                         <a class="nav-link text-white {{ $activeTab === 'users' ? 'active' : '' }}"
                            data-bs-toggle="tab"
                            href="#users">
-                           Korisnici
+                           <i class="fas fa-user "></i> Korisnici
                         </a>
                         <a class="nav-link text-white {{ $activeTab === 'services' ? 'active' : '' }}"
                            data-bs-toggle="tab"
                            href="#services">
-                           Ponude
+                           <i class="fas fa-file-signature "></i> Ponude
                         </a>
                         <a class="nav-link text-white {{ $activeTab === 'projects' ? 'active' : '' }}"
                            data-bs-toggle="tab"
                            href="#projects">
-                           Projekti
+                           <i class="fas fa-handshake "></i> Projekti
                         </a>
                         <a class="nav-link text-white {{ $activeTab === 'packages' ? 'active' : '' }}"
                            data-bs-toggle="tab"
                            href="#packages">
-                           Plan paketa
+                           <i class="fas fa-calendar-alt "></i> Plan paketa
+                        </a>
+                        <a class="nav-link text-white {{ $activeTab === 'unusedfiles' ? 'active' : '' }}"
+                           data-bs-toggle="tab"
+                           href="#unusedfiles">
+                           <i class="fa fa-folder-open"></i> Nepotrebni file-ovi
                         </a>
                     </nav>
                 </div>
@@ -52,6 +75,19 @@
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 p-4">
                 <div class="tab-content">
+                    <!-- Prikaz poruke sa anchor ID -->
+                    @if(session('success'))
+                        <div id="dashboard-message" class="alert alert-success text-center">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div id="dashboard-message-danger" class="alert alert-danger text-center">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     <!-- Users Tab -->
                     <div class="tab-pane fade {{ $activeTab === 'users' ? 'show active' : '' }}" id="users">
                         <h2 class="mb-4">Korisnici</h2>
@@ -75,7 +111,31 @@
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->created_at->format('d.m.Y.') }}</td>
                                         <td>{{ $user->last_seen_at ? \Carbon\Carbon::parse($user->last_seen_at)->format('d.m.Y H:i:s') : 'Nije se jos logovao' }}</td>
-                                        <td></td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="#" class="text-decoration-none"
+                                                    data-action="profile"
+                                                    data-user-id="{{ $user->id }}"
+                                                    title="Profil">
+                                                    <i class="fas fa-user text-primary"></i>
+                                                </a>
+                                                <a href="#" class="text-decoration-none" title="Depozit">
+                                                    <i class="fas fa-money-bill-wave text-success"></i>
+                                                </a>
+                                                <a href="#" class="text-decoration-none" title="Računi">
+                                                    <i class="fas fa-file-invoice-dollar text-info"></i>
+                                                </a>
+                                                <a href="#" class="text-decoration-none" title="Preporuci">
+                                                    <i class="fas fa-users text-warning"></i>
+                                                </a>
+                                                <a href="#" class="text-decoration-none" title="Tiketi">
+                                                    <i class="fas fa-ticket-alt text-secondary"></i>
+                                                </a>
+                                                <a href="#" class="text-decoration-none" title="Obriši">
+                                                    <i class="fas fa-trash-alt text-danger"></i>
+                                                </a>
+                                            </div>
+                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -166,10 +226,178 @@
                             {{ $packages->withQueryString()->links() }}
                         </div>
                     </div>
+
+                    <!-- Nepotrebni file-ovi -->
+                    <div class="tab-pane fade {{ $activeTab === 'unusedfiles' ? 'show active' : '' }}" id="unusedfiles">
+                        <h2 class="mb-4">Nepotrebni fajlovi</h2>
+
+                        @if(count($unusedFiles))
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Folder</th>
+                                        <th>Naziv fajla</th>
+                                        <th>Pregled</th>
+                                        <th>Akcija</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($unusedFiles as $index => $file)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ explode('/', $file)[0] }}</td> {{-- npr. "tickets" --}}
+                                        <td>{{ basename($file) }}</td>
+                                        <td>
+                                            <a href="{{ asset('storage/' . $file) }}" target="_blank" class="btn btn-sm btn-primary">
+                                                View
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <form action="{{ route('files.delete') }}" method="POST" onsubmit="return confirm('Da li želiš da obrišeš ovaj fajl?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <input type="hidden" name="file_path" value="{{ $file }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @else
+                            <p class="text-muted">Nema nepotrebnih fajlova.</p>
+                        @endif
+                    </div>
+
+
+
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Korisnici modali -->
+    <div class="modal fade" id="actionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Učitavanje...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Potvrda brisanja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Jeste li sigurni da želite obrisati korisnika <strong id="userName"></strong>?</p>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Obriši</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Automatsko sakrivanje poruka
+    const messageElement = document.getElementById('dashboard-message');
+    if (messageElement) {
+        setTimeout(() => {
+            messageElement.remove();
+        }, 5000);
+    }
+
+    const messageElementDanger = document.getElementById('dashboard-message-danger');
+    if (messageElementDanger) {
+        setTimeout(() => {
+            messageElementDanger.remove();
+        }, 5000);
+    }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const actionModal = new bootstrap.Modal('#actionModal');
+    const deleteModal = new bootstrap.Modal('#deleteModal');
+    let currentUserId = null;
+
+    // Opći handler za akcije
+    document.querySelectorAll('[data-action]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const action = this.dataset.action;
+            currentUserId = this.dataset.userId;
+            const userName = this.dataset.userName;
+
+            if(action === 'delete') {
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('deleteForm').action = `/admin/users/${currentUserId}`;
+                deleteModal.show();
+                return;
+            }
+
+            const actionTitles = {
+                profile: 'Profil korisnika',
+                deposit: 'Depozit korisnika',
+                invoices: 'Računi korisnika',
+                referrals: 'Preporuke korisnika',
+                tickets: 'Tiketi korisnika'
+            };
+
+            actionModal._element.querySelector('.modal-title').textContent = actionTitles[action];
+            actionModal.show();
+
+            // AJAX poziv
+            fetch(`/api/admin/${currentUserId}/${action}`)
+                .then(response => response.text())
+                .then(html => {
+                    actionModal._element.querySelector('.modal-body').innerHTML = html;
+                })
+                .catch(error => {
+                    actionModal._element.querySelector('.modal-body').innerHTML =
+                        `<div class="alert alert-danger">Došlo je do greške pri učitavanju podataka</div>`;
+                });
+        });
+    });
+
+    // Handler za brisanje
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        fetch(document.getElementById('deleteForm').action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'Content-Type': 'application/json',
+                'X-HTTP-Method-Override': 'DELETE'
+            },
+        })
+        .then(response => {
+            if(response.ok) {
+                document.querySelector(`tr[data-user-id="${currentUserId}"]`).remove();
+                deleteModal.hide();
+            } else {
+                alert('Došlo je do greške prilikom brisanja');
+            }
+        });
+    });
+});
+</script>
+    <!-- Korisnici modali -->
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

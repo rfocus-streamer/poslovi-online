@@ -136,7 +136,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/responses/{response}/mark-as-read', [TicketController::class, 'markAsRead'])
     ->name('tickets.responses.mark-as-read');
 
+    // Admin route
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
 });
 
 Route::get('/attachments/{file}', function ($file) {
