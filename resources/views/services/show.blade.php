@@ -431,7 +431,7 @@
                     <!-- Osnovne informacije -->
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
-                            <img src="{{ asset('user/' . $service->user->avatar) }}"
+                            <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
                                  class="rounded-circle"
                                  alt="Avatar prodavca"
                                  width="50"
