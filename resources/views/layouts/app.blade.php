@@ -12,6 +12,8 @@
         <meta name="user_id" content="{{ auth()->user()->id }}">
         @vite(['resources/js/app.js'])
     @endauth
+     <!-- Dodaj favicon -->
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 </head>
 <style>
 .switch {
