@@ -42,35 +42,38 @@ class DashboardController extends Controller
             ->setPageName('packages_page')
             ->appends(['tab' => 'packages']);
 
-        // Definicija foldera i odgovarajućih modela + kolona
-        $foldersMap = [
-            'tickets' => [Ticket::class, 'attachment'],
-            'complaints' => [Complaint::class, 'attachment'],
-            'project_files' => [ProjectFile::class, 'file_path'],
-            'services' => [ServiceImage::class, 'image_path'],
-            'user' => [User::class, 'avatar'],
-            'ticket_responses' => [TicketResponse::class, 'attachment'],
-        ];
+        // FOLDER => [Model, kolona]
+            $folderMap = [
+                'attachments' => [Ticket::class, 'attachment'],
+                'complaints' => [Complaint::class, 'attachment'],
+                'project_files' => [ProjectFile::class, 'file_path'],
+                'services' => [ServiceImage::class, 'image_path'],
+                'user' => [User::class, 'avatar'],
+                'response-attachments' => [TicketResponse::class, 'attachment'],
+            ];
 
-        $unusedFiles = [];
+            $allFiles = [];
+            $unusedFiles = [];
 
-        foreach ($foldersMap as $folder => [$model, $column]) {
-            // Skeniraj sve fajlove iz foldera (npr. tickets/)
-            $files = Storage::disk('public')->files($folder);
+            foreach ($folderMap as $folder => [$model, $column]) {
+                $files = Storage::disk('public')->files($folder); // npr. tickets/file1.pdf
 
-            // Učitaj sve vrednosti iz kolone za poređenje
-            $usedValues = $model::pluck($column)->toArray();
-            $usedFilenames = array_map('basename', $usedValues); // sigurnost
+                // Učitaj sve vrednosti iz baze za odgovarajuću kolonu
+                $dbValues = $model::pluck($column)->filter()->toArray(); // filter() uklanja null
 
-            // Provera svakog fajla da li se koristi
-            foreach ($files as $filePath) {
-                $filename = basename($filePath);
+                // Izvuci samo ime fajla radi sigurnosti (ako je u bazi samo ime ili puna putanja)
+                $usedFilenames = array_map('basename', $dbValues);
 
-                if (!in_array($filename, $usedFilenames)) {
-                    $unusedFiles[] = $filePath; // zadrži punu putanju, npr. "tickets/file1.pdf"
+                foreach ($files as $filePath) {
+                    $allFiles[] = $filePath;
+
+                    $filename = basename($filePath);
+
+                    if (!in_array($filename, $usedFilenames)) {
+                        $unusedFiles[] = $filePath;
+                    }
                 }
             }
-        }
 
         return view('admin.dashboard', compact(
             'users',
@@ -109,7 +112,7 @@ class DashboardController extends Controller
                     ->withInput(); // Ovaj .withInput() omogućava da sačuvaš podatke forme nakon što se stranica učita ponovo
     }
 
-    public function delete(Request $request)
+    public function deleteFile(Request $request)
     {
         $file = $request->input('file_path');
 

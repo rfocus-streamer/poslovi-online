@@ -255,7 +255,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <form action="{{ route('files.delete') }}" method="POST" onsubmit="return confirm('Da li želiš da obrišeš ovaj fajl?')">
+                                            <form action="{{ route('files.delete') }}" method="POST" onsubmit="return confirm('Da li želiš da obrišeš fajl: {{ basename($file) }}?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <input type="hidden" name="file_path" value="{{ $file }}">
