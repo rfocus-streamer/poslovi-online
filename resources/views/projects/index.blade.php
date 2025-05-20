@@ -35,10 +35,10 @@
                     <th>Usluga</th>
                     <th>ID posla</th>
                     <th>Količina</th>
-                    <th>Paket</th>
                     <th>Početak</th>
                     <th>Završetak</th>
                     <th>Rezervisano €</th>
+                    <th>Provizija €</th>
                     <th class="text-center">Status/Akcija</th>
                 </tr>
             </thead>
@@ -68,11 +68,11 @@
                             </div>
                         </td>
                         <td class="text-center">{{$project->quantity}}</td>
-                        <td class="text-center">{{$project->package}}</td>
                         <td>{{ $project->start_date ? $project->start_date : 'N/A' }}</td>
                         <td>{{ $project->end_date ? $project->end_date : 'N/A' }}</td>
                         <td>{{ number_format($project->reserved_funds, 2) }}</td>
-                        <td>
+                        <td class="text-center">{{ $project->commission->buyer_amount }}</td>
+                        <td style="float: right;">
                             @if(Auth::user()->role == 'buyer')
                                 <div class="d-flex gap-2 justify-content-center">
                                     @switch($project->status)

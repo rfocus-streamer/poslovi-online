@@ -142,8 +142,16 @@
                     <td>{{ $item['description'] }}</td>
                     <td>{{ $item['billing_period'] }}</td>
                     <td style="text-align: center;">{{ $item['quantity'] ?? '' }}</td>
-                    <td>{{ $item['amount'] ? '€'.number_format($item['amount'], 2, ',', '.') : '' }}</td>
+                    <td style="text-align: right;">{{ $item['amount'] ? '€'.number_format($item['amount'], 2, ',', '.') : '' }}</td>
                 </tr>
+                @if(isset($item['buyer_amount']))
+                    <tr>
+                        <td colspan="3" style="border: none;">Provizija:</td>
+                        <td colspan="1" style="text-align: right; border: none;">
+                            €{{ number_format($item['buyer_amount'] ?? 0, 2, ',', '.') }}
+                        </td>
+                    </tr>
+                @endif
             @endforeach
         </tbody>
     </table>

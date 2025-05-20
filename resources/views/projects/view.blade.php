@@ -254,7 +254,7 @@
                     <ul class="list-unstyled">
                         <li><i class="fas fa-calendar-alt text-info"></i> <strong>Datum početka:</strong> {{ $project->start_date ?? 'N/A' }}</li>
                         <li><i class="fas fa-calendar-check text-success"></i> <strong>Datum završetka:</strong> {{ $project->end_date ?? 'N/A' }}</li>
-                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format($project->reserved_funds, 2) }} €</i></li>
+                        <li><i class="fas fa-credit-card text-danger"></i> <strong>Rezervisana sredstva:</strong> {{ number_format(($project->reserved_funds + $project->commission->amount * 0.03), 2) }} €</i></li>
                     </ul>
                 </div>
             </div>

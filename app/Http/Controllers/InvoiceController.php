@@ -17,7 +17,8 @@ class InvoiceController extends Controller
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
             // Dohvati za trenutno ulogovanog korisnika sa paginacijom
             $invoices = Invoice::where('user_id', Auth::id())
-                ->paginate(50); // Paginacija sa 50 stavke po stranici
+                                ->orderBy('created_at', 'desc') // Sortiraj od najnovijih ka najstarijima
+                                ->paginate(50); // Paginacija sa 50 stavke po stranici
         }
 
         return view('invoices.index', compact('invoices'));

@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Models\Project;
 use App\Models\Deposit;
 use App\Models\Commission;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\PayPalService;
@@ -155,6 +156,29 @@ class DepositController extends Controller
             $user->deposits += $amount;
             $user->save();
 
+            $invoice = Invoice::create([
+                'number' => 'INV_' . time() . '_' . Auth::id(),
+                'user_id' => $user->id,
+                'issue_date' => now(),
+                'status' => 'plaćen',
+                'total' => $amount,
+                'client_info' => [
+                    'name' => $user->firstname.' '.$user->lastname,
+                    'address' => $user->street,
+                    'city' => $user->city,
+                    'country' => $user->country
+                ],
+                'items' => [
+                    [
+                        'description' => 'Deponovanje sredstava na račun',
+                        'billing_period' => '',
+                        'quantity' => 1,
+                        'amount' => $amount,
+                    ]
+                ],
+                'payment_method' => 'PayPal'
+            ]);
+
             return redirect()->route('deposit.form')->with('success', 'Deposit uspešno dodat!');
 
         } catch (\Exception $e) {
@@ -171,6 +195,9 @@ class DepositController extends Controller
     // Stripe
     public function handleStripePayment(Request $request, $transaction)
     {
+        // Dohvatanje trenutno prijavljenog korisnika
+        $user = auth()->user();
+
         $request->validate([
             'amount' => 'required|numeric|min:1',
             'payment_method_stripe' => 'required|string',
@@ -206,6 +233,28 @@ class DepositController extends Controller
             }
 
             if ($paymentIntent->status === 'succeeded') {
+                $invoice = Invoice::create([
+                    'number' => 'INV_' . time() . '_' . Auth::id(),
+                    'user_id' => $user->id,
+                    'issue_date' => now(),
+                    'status' => 'plaćen',
+                    'total' => $paymentAmount,
+                    'client_info' => [
+                        'name' => $user->firstname.' '.$user->lastname,
+                        'address' => $user->street,
+                        'city' => $user->city,
+                        'country' => $user->country
+                    ],
+                    'items' => [
+                        [
+                            'description' => 'Deponovanje sredstava na račun',
+                            'billing_period' => '',
+                            'quantity' => 1,
+                            'amount' => $paymentAmount,
+                        ]
+                    ],
+                    'payment_method' => 'Kreditna ili debitna kartica'
+                ]);
                 return $this->handleSuccessfulPayment($transaction, $paymentIntent);
             }
 

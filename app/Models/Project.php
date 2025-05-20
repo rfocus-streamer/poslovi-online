@@ -48,6 +48,11 @@ class Project extends Model
         return $this->belongsTo(User::class, 'seller_id');
     }
 
+    public function commission()
+    {
+        return $this->belongsTo(Commission::class, 'id');
+    }
+
     public function files()
     {
         return $this->hasMany(ProjectFile::class);
