@@ -22,23 +22,23 @@ class DashboardController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $activeTab = request()->input('tab', 'users');
 
-        $users = User::paginate(10)
+        $users = User::paginate(10, ['*'], 'page', $request->input('users_page', 1))
             ->setPageName('users_page')
             ->appends(['tab' => 'users']);
 
-        $services = Service::paginate(10)
+        $services = Service::paginate(10, ['*'], 'page', $request->input('services_page', 1))
             ->setPageName('services_page')
             ->appends(['tab' => 'services']);
 
-        $projects = Project::paginate(10)
+        $projects = Project::paginate(10, ['*'], 'page', $request->input('projects_page', 1))
             ->setPageName('projects_page')
             ->appends(['tab' => 'projects']);
 
-        $packages = Package::paginate(10)
+        $packages = Package::paginate(10, ['*'], 'page', $request->input('packages_page', 1))
             ->setPageName('packages_page')
             ->appends(['tab' => 'packages']);
 

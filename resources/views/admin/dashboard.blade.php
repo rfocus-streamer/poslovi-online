@@ -140,7 +140,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            {{ $users->withQueryString()->links() }}
+                            <div class="mt-3 d-flex justify-content-center">
+                                {{ $users->onEachSide(1)->appends(['tab' => 'users'])->links('pagination::bootstrap-5') }}
+                            </div>
                         </div>
                     </div>
 
@@ -168,7 +170,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            {{ $services->withQueryString()->links() }}
+                                <div class="mt-3 d-flex justify-content-center">
+                                    {{ $services->onEachSide(1)->appends(['tab' => 'services'])->links('pagination::bootstrap-5') }}
+                                </div>
                         </div>
                     </div>
 
@@ -195,7 +199,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            {{ $projects->withQueryString()->links() }}
+                                <div class="mt-3 d-flex justify-content-center">
+                                    {{ $projects->onEachSide(1)->appends(['tab' => 'projects'])->links('pagination::bootstrap-5') }}
+                                </div>
                         </div>
                     </div>
 
@@ -223,7 +229,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                            {{ $packages->withQueryString()->links() }}
+                                <div class="mt-3 d-flex justify-content-center">
+                                    {{ $packages->onEachSide(1)->appends(['tab' => 'packages'])->links('pagination::bootstrap-5') }}
+                                </div>
                         </div>
                     </div>
 
