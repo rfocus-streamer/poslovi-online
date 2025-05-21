@@ -24,6 +24,11 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
         $activeTab = request()->input('tab', 'users');
 
         $users = User::paginate(10, ['*'], 'page', $request->input('users_page', 1))
@@ -87,7 +92,35 @@ class DashboardController extends Controller
 
     public function profile(User $user)
     {
+        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
         return view('admin.users.profile', compact('user'));
+    }
+
+    public function deposit(User $user)
+    {
+        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
+        return view('admin.users.deposit', compact('user'));
+    }
+
+    public function depositAmount(Request $request, User $user)
+    {
+        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
+        $depositAmount = $request->amount;
+        $user->deposits += $depositAmount;
+        $user->save();
+        return redirect()->back()->with('success', 'Depozit za '.$user->firstname.' '.$user->lastname.' je uspešno dodat!')
+                    ->withInput(); // Ovaj .withInput() omogućava da sačuvaš podatke forme nakon što se stranica učita ponovo
     }
 
 
@@ -96,6 +129,11 @@ class DashboardController extends Controller
      */
     public function updateProfile(Request $request, User $user)
     {
+        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
         // Ažuriranje ostalih podataka
         $user->firstname = $request->firstname;
         $user->lastname = $request->lastname;
@@ -114,6 +152,11 @@ class DashboardController extends Controller
 
     public function deleteFile(Request $request)
     {
+        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
         $file = $request->input('file_path');
 
         if (Storage::disk('public')->exists($file)) {

@@ -26,6 +26,8 @@
         }
 
         .avatar-img{
+            width: 120px !important;
+            height: 120px !important;
             object-fit: cover;
         }
 
@@ -119,7 +121,10 @@
                                                     title="Profil">
                                                     <i class="fas fa-user text-primary"></i>
                                                 </a>
-                                                <a href="#" class="text-decoration-none" title="Depozit">
+                                                <a href="#" class="text-decoration-none"
+                                                data-action="deposit"
+                                                data-user-id="{{ $user->id }}"
+                                                title="Depozit">
                                                     <i class="fas fa-money-bill-wave text-success"></i>
                                                 </a>
                                                 <a href="#" class="text-decoration-none" title="Računi">
@@ -375,6 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`/api/admin/${currentUserId}/${action}`)
                 .then(response => response.text())
                 .then(html => {
+
                     actionModal._element.querySelector('.modal-body').innerHTML = html;
                 })
                 .catch(error => {
@@ -431,5 +437,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     </script>
+<script type="text/javascript">
+    let timeout;
+    function formatAmount() {
+        // Ako je prethodni timeout postavljen, brišemo ga
+        clearTimeout(timeout);
+
+        // Postavljamo novi timeout koji će se izvršiti nakon 300ms
+        timeout = setTimeout(function() {
+            let amountInput = document.getElementById('amount');
+            let value = amountInput.value;
+
+            // Ako je unos celo broj, formatiramo ga sa dve decimale
+            if (value && value % 1 === 0) {
+                amountInput.value = parseFloat(value).toFixed(2);
+            }
+        }, 500);  // 500ms čekanja
+    }
+</script>
 </body>
 </html>
