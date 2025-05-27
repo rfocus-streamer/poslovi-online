@@ -11,17 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Dodaj Subscription model
-        Schema::create('subscriptions', function (Blueprint $table) {
+        Schema::create('package_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->string('plan_id');
-            $table->string('status');
-            $table->string('gateway'); // 'paypal' ili 'stripe'
-            $table->string('subscription_id')->nullable(); // ID od gateway-a
-            $table->string('stripe_session_id')->nullable();
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 12, 2);
-            $table->timestamp('ends_at')->nullable();
+            $table->date('expires_at');
             $table->timestamps();
         });
     }
@@ -31,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscriptions');
+        Schema::dropIfExists('package_orders');
     }
 };

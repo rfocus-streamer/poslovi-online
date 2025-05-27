@@ -48,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // ... ostale rute
 });
 
+// Webhookovi
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
+    ->middleware('api'); // Bez CSRF i session
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();

@@ -15,6 +15,8 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Mews\Captcha\Facades\Captcha;
@@ -136,10 +138,34 @@ Route::middleware('auth')->group(function () {
     Route::post('/tickets/responses/{response}/mark-as-read', [TicketController::class, 'markAsRead'])
     ->name('tickets.responses.mark-as-read');
 
+    // Subscriptions
+    Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+
+    // Kreiranje nove pretplate
+    Route::post('/subscriptions', [SubscriptionController::class, 'store'])->name('subscriptions.store');
+
+    // PayPal success/cancel
+    Route::get('/subscription/paypal/success/{subscription}', [SubscriptionController::class, 'payPalSuccess'])->name('subscription.paypal.success');
+    Route::get('/subscription/paypal/cancel/{subscription}', [SubscriptionController::class, 'payPalCancel'])->name('subscription.paypal.cancel');
+
+    // Stripe success/cancel
+    Route::get('/subscription/stripe/success', [SubscriptionController::class, 'stripeSuccess'])->name('subscription.stripe.success');
+    Route::patch('/subscription/stripe/cancel/{subscription}', [SubscriptionController::class, 'stripeCancel'])->name('subscription.stripe.cancel');
+
+    Route::get('/subscription/{id}/details', [SubscriptionController::class, 'details'])->name('subscription.details');
+    Route::delete('/subscriptions/{id}', [SubscriptionController::class, 'destroy'])
+    ->name('subscription.destroy');
+
+    // Webhookovi
+    Route::post('/webhook/paypal', [SubscriptionController::class, 'handlePayPalWebhook']);
+
     // Admin route
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
 });
+
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 Route::get('/attachments/{file}', function ($file) {
     $path = storage_path('app/attachments/'.$file);

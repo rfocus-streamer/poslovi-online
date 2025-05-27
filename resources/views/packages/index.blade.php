@@ -235,7 +235,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($subscriptions as $subscription)
+                                    @foreach($orders as $subscription)
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $subscription->package->name }}</td>
@@ -257,7 +257,7 @@
 
                         <!-- Paginacija -->
                         <div class="d-flex justify-content-center pagination-buttons" id="pagination-links">
-                            {{ $subscriptions->links() }}
+                            {{ $orders->links() }}
                         </div>
                     </div>
                 </div>

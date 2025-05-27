@@ -8,7 +8,7 @@ use App\Models\Favorite;
 use App\Models\CartItem;
 use App\Models\User;
 use App\Models\Affiliate;
-use App\Models\Subscription;
+use App\Models\PackageOrder;
 use App\Models\Commission;
 use App\Models\Invoice;
 use App\Providers\RouteServiceProvider;
@@ -45,7 +45,7 @@ class PackageController extends Controller
 
         }
 
-        $subscriptions = Subscription::with('package')
+        $orders = PackageOrder::with('package')
             ->where('user_id', auth()->id())  // Filtrira po user_id
             ->paginate(10);  // Paginacija sa 10 stavki po stranici
 
@@ -55,7 +55,7 @@ class PackageController extends Controller
             return redirect()->back()->with('error', 'Ukoliko želiš da budeš prodavac, ažuriraj profil sa označenim prodavcem !');
         }
 
-        return view('packages.index', compact('packages', 'totalEarnings', 'subscriptions'));
+        return view('packages.index', compact('packages', 'totalEarnings', 'orders'));
     }
 
     public function activatePackage(Package $package)
@@ -139,7 +139,7 @@ class PackageController extends Controller
         $user->save();
 
         // Sada kreiramo podatke o uplatama paketa
-        $subscription = Subscription::create([
+        $orders = PackageOrder::create([
             'user_id' => Auth::id(),
             'package_id' => $package->id,
             'amount' => $price,

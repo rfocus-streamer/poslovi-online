@@ -259,7 +259,7 @@ input:not(:checked) + .slider .label-text.right {
                                     <li><a class="dropdown-item" href="{{ route('affiliate.index') }}">Preporuči i Zaradi</a></li>
                                     <li><a class="dropdown-item" href="{{ route('tickets.index') }}">Tiketi</a></li>
                                 @endif
-                                <li><a class="dropdown-item" href="#">Podešavanja</a></li>
+                                <li><a class="dropdown-item" href="{{ route('subscriptions.index') }}">Pretplate</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST">

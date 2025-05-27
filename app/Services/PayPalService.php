@@ -66,4 +66,60 @@ class PayPalService
             throw $e;
         }
     }
+
+    //Pretplata
+    public function createPlan(Package $package)
+    {
+        $plan = new Plan();
+        $plan->setName($package->name)
+             ->setDescription($package->description)
+             ->setType('INFINITE');
+
+        $paymentDefinition = new PaymentDefinition();
+        $paymentDefinition->setName('Regular Payments')
+            ->setType('REGULAR')
+            ->setFrequency(strtoupper($package->duration === 'monthly' ? 'MONTH' : 'YEAR'))
+            ->setFrequencyInterval('1')
+            ->setCycles('0')
+            ->setAmount(new Currency(['value' => $package->price, 'currency' => $package->currency]));
+
+        $merchantPreferences = new MerchantPreferences();
+        $merchantPreferences->setReturnUrl(config('app.url'))
+            ->setCancelUrl(config('app.url'))
+            ->setAutoBillAmount('yes')
+            ->setInitialFailAmountAction('CONTINUE')
+            ->setMaxFailAttempts('0');
+
+        $plan->addPaymentDefinition($paymentDefinition);
+        $plan->setMerchantPreferences($merchantPreferences);
+
+        $createdPlan = $plan->create($this->apiContext);
+        return $createdPlan;
+    }
+
+    public function createAgreement($planId, $successUrl, $cancelUrl)
+    {
+        $agreement = new Agreement();
+        $agreement->setName('Subscription Agreement')
+            ->setDescription('Auto-Renewing Subscription')
+            ->setStartDate(now()->addMinutes(5)->toIso8601String());
+
+        $plan = new Plan();
+        $plan->setId($planId);
+        $agreement->setPlan($plan);
+
+        $payer = new Payer();
+        $payer->setPaymentMethod('paypal');
+        $agreement->setPayer($payer);
+
+        $agreement = $agreement->create($this->apiContext);
+        return $agreement;
+    }
+
+    public function executeAgreement($token)
+    {
+        $agreement = new Agreement();
+        $agreement->execute($token, $this->apiContext);
+        return $agreement;
+    }
 }

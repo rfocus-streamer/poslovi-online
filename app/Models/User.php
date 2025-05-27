@@ -167,4 +167,9 @@ class User extends Authenticatable
     {
         return $this->blockedUsers()->create(['blocked_user_id' => $userId]);
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
 }
