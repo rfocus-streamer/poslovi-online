@@ -18,17 +18,17 @@ class StripeWebhookController extends Controller
         $sigHeader = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret');
 
-        try {
-            $event = \Stripe\Webhook::constructEvent(
-                $payload,
-                $sigHeader,
-                $webhookSecret
-            );
-        } catch (\Exception $e) {
-            Log::error('Stripe webhook error: '.$e->getMessage());
-            return response()->json(['error' => 'Invalid signature'], Response::HTTP_BAD_REQUEST);
-        }
-        //$event = json_decode($payload); // ovo nam sluzi samo za test preko postman-a
+        // try {
+        //     $event = \Stripe\Webhook::constructEvent(
+        //         $payload,
+        //         $sigHeader,
+        //         $webhookSecret
+        //     );
+        // } catch (\Exception $e) {
+        //     Log::error('Stripe webhook error: '.$e->getMessage());
+        //     return response()->json(['error' => 'Invalid signature'], Response::HTTP_BAD_REQUEST);
+        // }
+        $event = json_decode($payload); // ovo nam sluzi samo za test preko postman-a
 
         switch ($event->type) {
             case 'invoice.payment_succeeded':
