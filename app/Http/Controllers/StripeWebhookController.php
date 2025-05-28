@@ -18,17 +18,13 @@ class StripeWebhookController extends Controller
         $sigHeader = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret');
 
-        // try {
-        //     $event = \Stripe\Webhook::constructEvent(
-        //         $payload,
-        //         $sigHeader,
-        //         $webhookSecret
-        //     );
-        // } catch (\Exception $e) {
-        //     Log::error('Stripe webhook error: '.$e->getMessage());
-        //     return response()->json(['error' => 'Invalid signature'], Response::HTTP_BAD_REQUEST);
-        // }
-        $event = json_decode($payload); // ovo nam sluzi samo za test preko postman-a
+        if (app()->environment('local')) {
+            Log::warning('Bypassing signature verification in local environment');
+            $event = json_decode($payload, false);
+        } else {
+            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+        }
+        //$event = json_decode($payload); // ovo nam sluzi samo za test preko postman-a
 
         switch ($event->type) {
             case 'invoice.payment_succeeded':
@@ -65,7 +61,7 @@ class StripeWebhookController extends Controller
                     'amount' => $invoice->amount_paid / 100,
                     'currency' => strtoupper($invoice->currency),
                     'payment_method' => 'stripe',
-                    'transaction_id' => $invoice->payment_intent,
+                    'transaction_id' => (isset($invoice->payment_intent)) ? $invoice->payment_intent : $subscription->subscription_id,
                     'status' => 'completed',
                     'payload' => json_encode($invoice)
                 ]);

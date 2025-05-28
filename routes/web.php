@@ -167,6 +167,35 @@ Route::middleware('auth')->group(function () {
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
+
+// routes/web.php (privremena test ruta)
+// Route::get('/generate-webhook', function() {
+//     $payload = json_encode([
+//         'id' => 'evt_test_' . Str::random(10),
+//         'type' => 'invoice.payment_succeeded',
+//         'data' => [
+//             'object' => [
+//                 'id' => 'in_test_' . Str::random(8),
+//                 'amount_paid' => 999,
+//                 'currency' => 'eur',
+//                 'subscription' => 'sub_' . Str::random(14)
+//             ]
+//         ]
+//     ]);
+
+//     $secret = config('services.stripe.webhook_secret');
+//     $timestamp = time();
+//     $signature = hash_hmac('sha256', $timestamp.'.'.$payload, $secret);
+
+//     return response()->json([
+//         'payload_to_send' => json_decode($payload),
+//         'headers_to_use' => [
+//             'Stripe-Signature' => "t=$timestamp,v1=$signature",
+//             'Content-Type' => 'application/json'
+//         ]
+//     ]);
+// });
+
 Route::get('/attachments/{file}', function ($file) {
     $path = storage_path('app/attachments/'.$file);
 
