@@ -17,6 +17,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Mews\Captcha\Facades\Captcha;
@@ -145,8 +146,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/subscriptions', [SubscriptionController::class, 'store'])->name('subscriptions.store');
 
     // PayPal success/cancel
-    Route::get('/subscription/paypal/success/{subscription}', [SubscriptionController::class, 'payPalSuccess'])->name('subscription.paypal.success');
-    Route::get('/subscription/paypal/cancel/{subscription}', [SubscriptionController::class, 'payPalCancel'])->name('subscription.paypal.cancel');
+    Route::get('/paypal/success', [SubscriptionController::class, 'paypalSuccess'])->name('paypal.success');
+    Route::patch('/subscriptions/{subscription}/paypal-cancel', [SubscriptionController::class, 'paypalCancel'])->name('subscription.paypal.cancel');
 
     // Stripe success/cancel
     Route::get('/subscription/stripe/success', [SubscriptionController::class, 'stripeSuccess'])->name('subscription.stripe.success');
@@ -166,7 +167,8 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
-
+Route::post('/stripe/webhook', [PayPalWebhookController::class, 'handleWebhook'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 // routes/web.php (privremena test ruta)
 // Route::get('/generate-webhook', function() {

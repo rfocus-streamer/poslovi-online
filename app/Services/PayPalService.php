@@ -7,13 +7,19 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
+use App\Models\Package;
+use GuzzleHttp\Client;
 
 class PayPalService
 {
     protected $client;
+    protected $guzzle;
+    protected $accessToken;
+    protected $baseUrl;
 
     public function __construct()
     {
+        // One-time payments (PayPal SDK)
         $clientId = config('services.paypal.client_id');
         $clientSecret = config('services.paypal.secret');
         $mode = config('services.paypal.settings.mode');
@@ -23,8 +29,20 @@ class PayPalService
             : new SandboxEnvironment($clientId, $clientSecret);
 
         $this->client = new PayPalHttpClient($environment);
+
+        // Subscriptions (Guzzle)
+        $this->baseUrl = $mode === 'live'
+            ? 'https://api-m.paypal.com'
+            : 'https://api-m.sandbox.paypal.com';
+
+        $this->guzzle = new Client([
+            'base_uri' => $this->baseUrl,
+        ]);
+
+        $this->accessToken = $this->getAccessToken($clientId, $clientSecret);
     }
 
+    // ✅ One-time Payment
     public function createPayment($amount, $currency, $description, $successUrl, $cancelUrl)
     {
         $request = new OrdersCreateRequest();
@@ -67,59 +85,158 @@ class PayPalService
         }
     }
 
-    //Pretplata
+    //Pretplata - subscription
+    // 🔐 Get OAuth 2.0 access token
+    protected function getAccessToken($clientId, $clientSecret)
+    {
+        try {
+            $response = $this->guzzle->post('/v1/oauth2/token', [
+                'auth' => [$clientId, $clientSecret],
+                'form_params' => ['grant_type' => 'client_credentials'],
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return $data['access_token'];
+        } catch (RequestException $e) {
+            throw new \Exception('PayPal token error: ' . $e->getMessage());
+        }
+    }
+
+    // ✅ Kreiraj pretplatnički plan ako ne postoji
     public function createPlan(Package $package)
     {
-        $plan = new Plan();
-        $plan->setName($package->name)
-             ->setDescription($package->description)
-             ->setType('INFINITE');
+        if ($package->paypal_plan_id) {
+            return $package->paypal_plan_id; // Već postoji
+        }
 
-        $paymentDefinition = new PaymentDefinition();
-        $paymentDefinition->setName('Regular Payments')
-            ->setType('REGULAR')
-            ->setFrequency(strtoupper($package->duration === 'monthly' ? 'MONTH' : 'YEAR'))
-            ->setFrequencyInterval('1')
-            ->setCycles('0')
-            ->setAmount(new Currency(['value' => $package->price, 'currency' => $package->currency]));
+        // PayPal API endpoint
+        $isLive = config('services.paypal.settings.mode') === 'live';
+        $baseUrl = $isLive ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
-        $merchantPreferences = new MerchantPreferences();
-        $merchantPreferences->setReturnUrl(config('app.url'))
-            ->setCancelUrl(config('app.url'))
-            ->setAutoBillAmount('yes')
-            ->setInitialFailAmountAction('CONTINUE')
-            ->setMaxFailAttempts('0');
+        // 1. Dohvati Access Token
+        $clientId = config('services.paypal.client_id');
+        $clientSecret = config('services.paypal.secret');
 
-        $plan->addPaymentDefinition($paymentDefinition);
-        $plan->setMerchantPreferences($merchantPreferences);
+        $client = new Client();
 
-        $createdPlan = $plan->create($this->apiContext);
-        return $createdPlan;
+        $authResponse = $client->post("$baseUrl/v1/oauth2/token", [
+            'auth' => [$clientId, $clientSecret],
+            'form_params' => ['grant_type' => 'client_credentials']
+        ]);
+
+        $accessToken = json_decode($authResponse->getBody())->access_token;
+
+        // 2. Kreiraj Product
+        $productResponse = $client->post("$baseUrl/v1/catalogs/products", [
+            'headers' => [
+                'Authorization' => "Bearer {$accessToken}",
+                'Content-Type' => 'application/json'
+            ],
+            'json' => [
+                'name' => $package->name,
+                'type' => 'SERVICE',
+                'category' => 'SOFTWARE'
+            ]
+        ]);
+
+        $productId = json_decode($productResponse->getBody())->id;
+
+        // Izračunavanje naknade
+        $paymentAmount = $package->price; // Originalni iznos
+        $paypalFeePercentage = 4.99; // PayPal naknada u %
+        $fixedFee = 0.30; // Fiksna naknada
+
+        // Izračunaj koliko bi trebalo da kupac plati kako bi ti dobio željeni iznos
+        $feeAmount = ($paymentAmount * ($paypalFeePercentage / 100)) + $fixedFee;
+        $totalAmount = number_format(($paymentAmount + $feeAmount), 2, '.', '');
+
+        // 3. Kreiraj Plan
+        $planResponse = $client->post("$baseUrl/v1/billing/plans", [
+            'headers' => [
+                'Authorization' => "Bearer {$accessToken}",
+                'Content-Type' => 'application/json'
+            ],
+            'json' => [
+                'product_id' => $productId,
+                'name' => $package->name,
+                'description' => $package->description ?? $package->name,
+                'billing_cycles' => [[
+                    'frequency' => [
+                        'interval_unit' => $package->duration === 'monthly' ? 'MONTH' : 'YEAR',
+                        'interval_count' => 1
+                    ],
+                    'tenure_type' => 'REGULAR',
+                    'sequence' => 1,
+                    'total_cycles' => 0,
+                    'pricing_scheme' => [
+                        'fixed_price' => [
+                            'value' => $totalAmount,
+                            'currency_code' => 'EUR'
+                        ]
+                    ]
+                ]],
+                'payment_preferences' => [
+                    'auto_bill_outstanding' => true,
+                    'setup_fee_failure_action' => 'CONTINUE',
+                    'payment_failure_threshold' => 1
+                ]
+            ]
+        ]);
+
+        $planId = json_decode($planResponse->getBody())->id;
+
+        $package->paypal_plan_id = $planId;
+        $package->save();
+
+        return $planId;
     }
 
-    public function createAgreement($planId, $successUrl, $cancelUrl)
+
+    // ✅ Kreiraj link za checkout
+    public function createSubscriptionLink(string $planId, string $returnUrl, string $cancelUrl)
     {
-        $agreement = new Agreement();
-        $agreement->setName('Subscription Agreement')
-            ->setDescription('Auto-Renewing Subscription')
-            ->setStartDate(now()->addMinutes(5)->toIso8601String());
+        $response = $this->guzzle->post('/v1/billing/subscriptions', [
+            'headers' => $this->headers(),
+            'json' => [
+                'plan_id' => $planId,
+                'application_context' => [
+                    'brand_name' => config('app.name'),
+                    'locale' => 'en-US',
+                    'shipping_preference' => 'NO_SHIPPING',
+                    'user_action' => 'SUBSCRIBE_NOW',
+                    'return_url' => $returnUrl,
+                    'cancel_url' => $cancelUrl,
+                ]
+            ]
+        ]);
 
-        $plan = new Plan();
-        $plan->setId($planId);
-        $agreement->setPlan($plan);
-
-        $payer = new Payer();
-        $payer->setPaymentMethod('paypal');
-        $agreement->setPayer($payer);
-
-        $agreement = $agreement->create($this->apiContext);
-        return $agreement;
+        return json_decode($response->getBody(), true);
     }
 
-    public function executeAgreement($token)
+    // ✅ Dohvatanje statusa pretplate
+    public function getSubscription(string $subscriptionId)
     {
-        $agreement = new Agreement();
-        $agreement->execute($token, $this->apiContext);
-        return $agreement;
+        $response = $this->guzzle->get("/v1/billing/subscriptions/{$subscriptionId}", [
+            'headers' => $this->headers(),
+        ]);
+
+        return json_decode($response->getBody(), true);
+    }
+
+    // ✅ Otkazivanje pretplate
+    public function cancelSubscription(string $subscriptionId)
+    {
+        return $this->guzzle->post("/v1/billing/subscriptions/{$subscriptionId}/cancel", [
+            'headers' => $this->headers(),
+            'json' => ['reason' => 'User requested cancellation'],
+        ]);
+    }
+
+    protected function headers()
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->accessToken,
+            'Content-Type' => 'application/json',
+        ];
     }
 }

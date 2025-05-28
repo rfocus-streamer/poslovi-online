@@ -52,6 +52,7 @@ return [
             'log.FileName' => storage_path('/logs/paypal.log'),
             'log.LogLevel' => 'ERROR'
         ],
+        'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
     ],
     'stripe' => [
         'secret' => env('STRIPE_SECRET'),

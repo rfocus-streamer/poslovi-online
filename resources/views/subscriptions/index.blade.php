@@ -169,7 +169,7 @@
                                         <td>{{ $subscription->ends_at ? Carbon::parse($subscription->ends_at)->format('d.m.Y') : '-' }}</td>
                                         <td>
                                             @if($subscription->gateway === 'stripe')
-                                                Kreditna ili debitna kartica
+                                                Kreditna kartica
                                             @elseif($subscription->gateway === 'paypal')
                                                 PayPal
                                             @else

@@ -101,24 +101,40 @@ class SubscriptionController extends Controller
     {
         try {
             if (!$package->paypal_plan_id) {
-                $paypalPlan = $this->payPalService->createPlan($package);
-                $package->update(['paypal_plan_id' => $paypalPlan->id]);
+                $paypalPlanId = $this->payPalService->createPlan($package);
+                $package->paypal_plan_id = $paypalPlanId;
+                $package->save();
             }
 
-            $agreement = $this->payPalService->createAgreement(
+            if (!$package->paypal_plan_id) {
+                throw new \Exception('PayPal plan ID nije definisan za ovaj paket.');
+            }
+
+            $returnUrl = route('paypal.success', ['subscription_id' => $subscription->id]);
+            $cancelUrl = route('subscriptions.index');
+
+            $paypalSubscription = $this->payPalService->createSubscriptionLink(
                 $package->paypal_plan_id,
-                route('subscription.paypal.success', $subscription),
-                route('subscription.paypal.cancel', $subscription)
+                $returnUrl,
+                $cancelUrl
             );
 
-            $subscription->update(['subscription_id' => $agreement->id]);
+            $subscription->update([
+                'subscription_id' => $paypalSubscription['id'] ?? null,
+                'status' => 'pending',
+                'payload' => json_encode($paypalSubscription)
+            ]);
 
-            return redirect()->away(
-                collect($agreement->links)->firstWhere('rel', 'approve')->href
-            );
+            $approvalUrl = collect($paypalSubscription['links'] ?? [])
+                                ->firstWhere('rel', 'approve')['href'] ?? null;
+
+            // Redirect na PayPal
+            return redirect($approvalUrl);
         } catch (\Exception $e) {
-            Log::error('PayPal Subscription Error: '.$e->getMessage());
-            return redirect()->route('subscriptions.index')->with('error', 'Došlo je do greške pri kreiranju pretplate.');
+            \Log::error('PayPal Subscription Error: ' . $e->getMessage());
+            $subscription->status = 'failed';
+            $subscription->save();
+            return redirect()->route('subscriptions.index')->with('error', 'Greška prilikom povezivanja sa PayPal-om.');
         }
     }
 
@@ -193,27 +209,35 @@ class SubscriptionController extends Controller
     }
 
 
-    public function payPalSuccess(Request $request, Subscription $subscription)
+    public function paypalSuccess(Request $request)
     {
+        $subscriptionId = $request->query('subscription_id');
+        $subscription = Subscription::findOrFail($subscriptionId);
+
         try {
-            $agreement = $this->payPalService->executeAgreement($request->token);
+            $paypalSubscription = $this->payPalService->getSubscription($subscription->subscription_id);
 
-            $subscription->update([
-                'status' => 'active',
-                'ends_at' => Carbon::parse($agreement->agreement_details->next_billing_date),
-            ]);
+            if ($paypalSubscription->status === 'ACTIVE') {
+                $subscription->update([
+                    'status' => 'active',
+                    'ends_at' => isset($paypalSubscription->billing_info->next_billing_time)
+                        ? Carbon::parse($paypalSubscription->billing_info->next_billing_time)
+                        : null,
+                    'payload' => json_encode($paypalSubscription)
+                ]);
 
-            return redirect()->route('subscriptions.index')->with('success', 'Uspešno ste aktivirali pretplatu!');
+                $user = $subscription->user;
+                $user->deposits += $subscription->amount;
+                $user->save();
+
+                return redirect()->route('subscriptions.index')->with('success', 'PayPal pretplata uspešno aktivirana.');
+            }
+
+            return redirect()->route('subscriptions.index')->with('info', 'Pretplata nije aktivirana.');
         } catch (\Exception $e) {
-            Log::error('PayPal Success Error: '.$e->getMessage());
-            return redirect()->route('subscriptions.index')->with('error', 'Greška pri aktivaciji pretplate.');
+            \Log::error('PayPal Success Error: ' . $e->getMessage());
+            return redirect()->route('subscriptions.index')->with('error', 'Greška prilikom obrade PayPal pretplate.');
         }
-    }
-
-    public function payPalCancel(Subscription $subscription)
-    {
-        $subscription->update(['status' => 'canceled']);
-        return redirect()->route('subscriptions.index')->with('error', 'Pretplata je otkazana.');
     }
 
     public function stripeSuccess(Request $request)
@@ -318,11 +342,30 @@ class SubscriptionController extends Controller
             ]);
     }
 
-    private function cancelPayPalSubscription($subscriptionId)
+    public function paypalCancel(Subscription $subscription)
     {
-        Subscription::where('subscription_id', $subscriptionId)
-            ->update(['status' => 'canceled']);
+        try {
+            if ($subscription->gateway !== 'paypal') {
+                return redirect()->back()->with('error', 'Ova pretplata nije PayPal pretplata.');
+            }
+
+            if (!$subscription->subscription_id) {
+                return redirect()->back()->with('error', 'Pretplata nema PayPal ID.');
+            }
+
+            $this->payPalService->cancelSubscription($subscription->subscription_id);
+
+            $subscription->update([
+                'status' => 'canceled',
+                'ends_at' => now(),
+            ]);
+
+            return redirect()->back()->with('success', 'PayPal pretplata je uspešno otkazana.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Greška prilikom otkazivanja PayPal pretplate: ' . $e->getMessage());
+        }
     }
+
 
     public function destroy($id)
     {
