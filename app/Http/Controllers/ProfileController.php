@@ -57,7 +57,7 @@ class ProfileController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             //'email' => 'required|email|unique:users,email,' . $user->id, // Proverava da email nije zauzet osim ako pripada korisniku
-            'phone' => 'nullable|string|regex:/^[0-9]{9,15}$/',
+            'phone' => 'nullable|string',
             'street' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'country' => 'required|string|max:255',

@@ -101,7 +101,7 @@
                         <!-- Telefon -->
                         <div class="form-group mb-1">
                             <label for="phone" class="form-label"><i class="fas fa-phone me-1"></i> Telefon</label>
-                            <input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{9,15}" placeholder="06X/XXX-XXX" value="{{ Auth::user()->phone }}" required>
+                            <input type="tel" id="phone" name="phone" class="form-control" placeholder="+3816X/XXX-XXX" value="{{ Auth::user()->phone }}" required>
                         </div>
 
                         <div class="row mb-3">
