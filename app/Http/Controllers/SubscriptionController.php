@@ -25,15 +25,16 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Prikaz svih dostupnih planova
+     * Prikaz svih dostupnih planova sa pretplatama
      */
-    public function index()
+       public function index()
     {
         $user = auth()->user();
         $packages = Package::all();
         $stripeKey = config('services.stripe.public');
-        // Pretplate korisnika (možeš filter po statusu ako želiš samo aktivne)
-        $subscriptions = $user->subscriptions()->latest()->get();
+
+        // Paginacija za subscriptions
+        $subscriptions = $user->subscriptions()->latest()->paginate(10);
 
         return view('subscriptions.index', compact('packages', 'stripeKey', 'subscriptions'));
     }

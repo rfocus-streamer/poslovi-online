@@ -135,7 +135,7 @@
                         Tvoje pretplate
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered align-middle">
+                        <table class="table table-bordered align-middle d-none d-md-block">
                             <thead>
                                 <tr>
                                     <th>Paket</th>
@@ -220,6 +220,98 @@
                                 @endforeach
                             </tbody>
                         </table>
+
+                         <!-- Mobile & Tablet cards -->
+                        <div class="d-md-none">
+                            @foreach($subscriptions as $subscription)
+                            <div class="card mb-3 subscription-card" data-id="{{ $subscription->id }}">
+                                <div class="card-header btn-poslovi-green text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>{{ $subscription->package->name ?? 'Nepoznat paket' }}</span>
+                                        <span class="badge bg-light text-dark">
+                                            @php
+                                                $status = strtolower($subscription->status);
+                                                $statusText = match($status) {
+                                                    'active' => 'Aktivan',
+                                                    'inactive' => 'Neaktivan',
+                                                    'failed' => 'Neuspešan',
+                                                    'canceled' => 'Otkazan',
+                                                    default => ucfirst($subscription->status),
+                                                };
+                                            @endphp
+                                            {{ $statusText }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Početak</small>
+                                            <div>{{ $subscription->created_at ? Carbon::parse($subscription->created_at)->format('d.m.Y') : '-' }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Kraj</small>
+                                            <div>{{ $subscription->ends_at ? Carbon::parse($subscription->ends_at)->format('d.m.Y') : '-' }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-2">
+                                        <div class="col-6">
+                                            <small class="text-muted">Način plaćanja</small>
+                                            <div>
+                                                @if($subscription->gateway === 'stripe')
+                                                    Kreditna kartica
+                                                @elseif($subscription->gateway === 'paypal')
+                                                    PayPal
+                                                @else
+                                                    {{ ucfirst($subscription->gateway) ?? '-' }}
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Cena</small>
+                                            <div>{{ $subscription->package->price ?? '' }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <small class="text-muted">Subscription ID</small>
+                                        <div class="text-truncate">
+                                            {{ $subscription->subscription_id ?? '-' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-white">
+                                    @if($subscription->status === 'active')
+                                        <form method="POST" action="{{ $subscription->gateway === 'stripe' ? route('subscription.stripe.cancel', $subscription->id) : route('subscription.paypal.cancel', $subscription->id) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-sm btn-danger w-100" onclick="return confirm('Da li ste sigurni da želite da otkažete pretplatu?')">
+                                                Otkaži pretplatu
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Details card for mobile (initially hidden) -->
+                            <div class="subscription-details-mobile collapse" id="details-mobile-{{ $subscription->id }}">
+                                <div class="card card-body bg-light">
+                                    <div class="details-loading text-center py-2">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <div class="details-content"></div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Navigacija za strane -->
+                        <div class="mt-4 pagination-buttons text-center">
+                            {{ $subscriptions->links() }}
+                        </div>
                     </div>
                 </div>
             @else
@@ -345,6 +437,91 @@ document.getElementById('subscriptionForm').addEventListener('submit', function(
         setTimeout(() => {
             messageElementDanger.remove();
         }, 5000);
+    }
+
+// Funkcija za prevođenje teksta paginacije
+function translatePaginationText() {
+   const textElement = document.querySelector("p.text-sm.text-gray-700"); // Selektujemo element koji sadrži tekst
+    if (textElement) {
+        let text = textElement.textContent.trim();
+
+        // Regex za hvatanje brojeva u stringu
+        let matches = text.match(/\d+/g);
+
+        if (matches && matches.length === 3) {
+            let translatedText = `Prikazuje od ${matches[0]} do ${matches[1]} od ukupno ${matches[2]} rezultata`;
+            textElement.textContent = translatedText;
+        }
+    }
+}
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        translatePaginationText();
+    });
+</script>
+<style>
+    /* Custom styles for responsive table */
+    .subscription-card {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .subscription-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .mobile-subscription-details {
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive table {
+            font-size: 0.85rem;
+        }
+
+        .table-responsive th,
+        .table-responsive td {
+            padding: 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .pagination .page-link {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<script>
+    // Toggle mobile details
+    document.querySelectorAll('.subscription-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const detailsElement = document.getElementById(`details-mobile-${id}`);
+
+            // Toggle collapse
+            const bsCollapse = new bootstrap.Collapse(detailsElement, {
+                toggle: true
+            });
+
+            // Load details if not loaded
+            if (!detailsElement.dataset.loaded) {
+                fetchDetails(id, 'mobile');
+                detailsElement.dataset.loaded = true;
+            }
+        });
+    });
+
+    // Function to fetch details (same as desktop version)
+    function fetchDetails(id, type = 'desktop') {
+        // Your existing AJAX implementation
+        // Update selector based on type:
+        // const container = (type === 'mobile')
+        //   ? document.querySelector(`#details-mobile-${id} .details-content`)
+        //   : document.querySelector(`#details-${id} .details-content`);
     }
 </script>
 @endsection

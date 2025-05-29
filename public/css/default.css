@@ -402,3 +402,10 @@ a[rel="prev"]::before {
     background-color: #9c1c2c !important;
     border-color: #9c1c2c !important;
 }
+
+.btn-poslovi-green
+{
+    color: #fff !important;
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+}
