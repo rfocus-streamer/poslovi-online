@@ -81,7 +81,7 @@ class PackageController extends Controller
             $monthly_price = $user->package->price; // Cena paketa u dinarima/eurima (prilagodite)
 
             // Proporcionalni iznos preostale pretplate
-            $daily_price = $monthly_price / 30; // Pretpostavljamo 30 dana u mesecu
+            $daily_price = $monthly_price / $daysRemaining; // Pretpostavljamo 30 dana u mesecu
             $remaining_amount = max(0, $daysRemaining * $daily_price); // Ako je isteklo, vraća 0
             $price = ($package->price - number_format($remaining_amount, 2, '.', ''));
         } else {
@@ -99,24 +99,34 @@ class PackageController extends Controller
                     $affiliate = User::where('id', $user->referred_by)->lockForUpdate()->first();
 
                     if ($affiliate) {
-                        $commission = $price * 0.7;
+                        // Mapa cena prema zaradi
+                        $commissionMap = [
+                            1.00 => 0.70,
+                            3.00 => 2.10,
+                            5.00 => 3.50,
+                            9.60 => 0.70,
+                            28.80 => 2.10,
+                            48.00 => 3.50,
+                        ];
 
-                        // Zaokruži na 2 decimale
-                        $commission = round($commission, 2);
+                        $price = round($price, 2); // Obezbedi preciznost
 
-                        // Ažuriraj deposits
-                        $affiliate->increment('affiliate_balance', $commission);
+                        if (isset($commissionMap[$price])) {
+                            $commission = $commissionMap[$price];
 
-                        // Kreiraj istoriju transakcije
-                        Affiliate::create([
-                            'affiliate_id' => $affiliate->id,
-                            'referral_id' => $user->id,
-                            'package_id' => $package->id,
-                            'amount' => $commission,
-                            'percentage' => 70,
-                            'status' => 'completed'
-                        ]);
+                            $affiliate->increment('affiliate_balance', $commission);
+
+                            Affiliate::create([
+                                'affiliate_id' => $affiliate->id,
+                                'referral_id' => $user->id,
+                                'package_id' => $package->id,
+                                'amount' => $commission,
+                                'percentage' => 70, // samo za prvi mesec ()
+                                'status' => 'completed',
+                            ]);
+                        }
                     }
+
                 });
             } catch (\Exception $e) {
                 Log::error('Affiliate commission error: ' . $e->getMessage());

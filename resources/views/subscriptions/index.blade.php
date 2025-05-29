@@ -70,7 +70,7 @@
                                 <div class="form-check ms-3">
                                     <input class="form-check-input" type="radio" name="payment_method" id="stripe" value="stripe">
                                     <label class="form-check-label" for="stripe">
-                                        <i class="fas fa-credit-card"></i> Kreditna kartica
+                                        <i class="fas fa-credit-card"></i> Kartično plaćanje
                                     </label>
                                 </div>
                             </div>
@@ -170,7 +170,7 @@
                                         <td>{{ $subscription->ends_at ? Carbon::parse($subscription->ends_at)->format('d.m.Y') : '-' }}</td>
                                         <td>
                                             @if($subscription->gateway === 'stripe')
-                                                Kreditna kartica
+                                                Kartično
                                             @elseif($subscription->gateway === 'paypal')
                                                 PayPal
                                             @else
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('subscriptionForm').addEventListener('submit', function(e) {
     const submitButton = document.getElementById('submit-button');
     submitButton.disabled = true;
-    submitButton.innerHTML = 'Obrada...';
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="color:white !important;"></span> Procesiram...';;
 });
 </script>
 

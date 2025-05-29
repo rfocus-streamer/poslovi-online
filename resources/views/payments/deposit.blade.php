@@ -83,7 +83,7 @@
                                 <div class="form-check ms-3">
                                     <input class="form-check-input" type="radio" name="payment_method" id="stripe" value="stripe">
                                     <label class="form-check-label" for="stripe">
-                                        <i class="fas fa-credit-card"></i> Kreditna ili debitna kartica
+                                        <i class="fas fa-credit-card"></i> Kartično plaćanje
                                     </label>
                                 </div>
                             </div>

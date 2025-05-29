@@ -43,6 +43,12 @@ class SubscriptionController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (empty($user->street) || empty($user->city) || empty($user->country)) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'Moraš da prvo popuniš ulicu, grad i zemlju pre nego što nastaviš sa kupovinom paketa !');
+        }
+
         $request->validate([
             'package_id' => 'required|exists:packages,id',
             'payment_method' => 'required|in:paypal,stripe'
@@ -201,7 +207,7 @@ class SubscriptionController extends Controller
             //Ažuriraj balans
             $user->deposits += $package->price; // Konvertuj iz centi
             $user->save();
-
+            app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
             return redirect()->route('subscriptions.index')->with('success', 'Pretplata uspešno aktivirana!');
 
         } catch (\Exception $e) {
@@ -232,7 +238,7 @@ class SubscriptionController extends Controller
                 $user = $subscription->user;
                 $user->deposits += $subscription->amount;
                 $user->save();
-
+                app(\App\Http\Controllers\PackageController::class)->activatePackage($user->package);
                 return redirect()->route('subscriptions.index')->with('success', 'PayPal pretplata uspešno aktivirana.');
             }
 
@@ -263,7 +269,8 @@ class SubscriptionController extends Controller
                 'status' => 'active',
                 'ends_at' => Carbon::createFromTimestamp($stripeSubscription->current_period_end),
             ]);
-
+            $user = $subscription->user;
+            app(\App\Http\Controllers\PackageController::class)->activatePackage($user->package);
             return redirect()->route('subscriptions.index')->with('success', 'Pretplata uspešno aktivirana!');
         } catch (\Exception $e) {
             Log::error('Stripe Success Error: ' . $e->getMessage());
