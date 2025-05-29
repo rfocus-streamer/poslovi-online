@@ -109,8 +109,8 @@
                                                 </button>
                                             @endif
                                         @else
-                                            <a href="{{ route('deposit.form') }}" class="btn btn-warning ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Deponuj novac">
-                                                <i class="fas fa-credit-card"></i> Deponuj novac
+                                            <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}" class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
+                                                <i class="fas fa-credit-card"></i> Pretplati se
                                             </a>
                                         @endif
                                     </form>

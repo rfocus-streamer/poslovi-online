@@ -27,7 +27,7 @@ class SubscriptionController extends Controller
     /**
      * Prikaz svih dostupnih planova sa pretplatama
      */
-       public function index()
+    public function index()
     {
         $user = auth()->user();
         $packages = Package::all();
@@ -36,7 +36,9 @@ class SubscriptionController extends Controller
         // Paginacija za subscriptions
         $subscriptions = $user->subscriptions()->latest()->paginate(10);
 
-        return view('subscriptions.index', compact('packages', 'stripeKey', 'subscriptions'));
+        $selectedPackageId = request()->query('package_id');
+
+        return view('subscriptions.index', compact('packages', 'stripeKey', 'subscriptions', 'selectedPackageId'));
     }
 
     public function store(Request $request)

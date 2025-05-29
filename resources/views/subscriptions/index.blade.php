@@ -48,7 +48,8 @@
                                     <option value="{{ $package->id }}"
                                         data-duration="{{ $package->duration }}"
                                         data-price="{{ $package->price }}"
-                                        data-currency="{{ $package->currency }}">
+                                        data-currency="{{ $package->currency }}"
+                                        {{ (isset($selectedPackageId) && $selectedPackageId == $package->id) ? 'selected' : '' }}>
                                         {{ $package->name }} - {{ $package->price }} {{ $package->currency }} / {{ $translatedDuration }}
                                     </option>
                                 @endforeach
