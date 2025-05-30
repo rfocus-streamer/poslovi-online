@@ -145,7 +145,7 @@
                     <input type="number" name="basic_price" id="basic_price" class="form-control" step="0.01" required>
                 </div>
                 <div class="mb-3">
-                    <label for="basic_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
+                    <label for="basic_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke (Dana)</label>
                     <input type="number" name="basic_delivery_days" id="basic_delivery_days" class="form-control" required>
                 </div>
                 <div class="mb-3">
@@ -168,6 +168,7 @@
             <label class="form-label">Dodaj slike (maks. 10)</label>
             <input type="file" name="serviceImages[]" class="form-control" multiple accept="image/*">
             <div class="d-flex">
+                <small class="text-muted">* Preporučena rezolucija: 1920x1080 px. Formati: JPG, JPEG, PNG, GIF.</small>
                 <small class="text-muted ms-auto">* Dozvoljena maksimalna veličina slike 2MB</small>
             </div>
         </div>
@@ -236,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="number" name="${packageKey}_price" id="${packageKey}_price" class="form-control" step="0.01" required>
                 </div>
                 <div class="mb-3">
-                    <label for="${packageKey}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
+                    <label for="${packageKey}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke (Dana)</label>
                     <input type="number" name="${packageKey}_delivery_days" id="${packageKey}_delivery_days" class="form-control" required>
                 </div>
                 <div class="mb-3">

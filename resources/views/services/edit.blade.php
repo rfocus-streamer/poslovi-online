@@ -182,7 +182,7 @@
                                class="form-control" value="{{ $service->{$type.'_price'} }}" step="0.01" required>
                     </div>
                     <div class="mb-3">
-                        <label for="{{ $type }}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
+                        <label for="{{ $type }}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke (Dana)</label>
                         <input type="number" name="{{ $type }}_delivery_days" id="{{ $type }}_delivery_days"
                                class="form-control" value="{{ $service->{$type.'_delivery_days'} }}" required>
                     </div>
@@ -209,6 +209,7 @@
             <input type="file" name="serviceImages[]" class="form-control" multiple accept="image/*">
             <div class="d-flex justify-content-between">
                 <small class="text-muted">* Možeš dodati još <span class="remaining-slots">{{ 10 - $service->serviceImages->count() }}</span> slika.</small>
+                <small class="text-muted text-center">* Preporučena rezolucija: 1920x1080 px. Formati: JPG, JPEG, PNG, GIF.</small>
                 <small class="text-muted">* Dozvoljena maksimalna veličina slike 2MB</small>
             </div>
         </div>
@@ -308,7 +309,7 @@
                             <input type="number" name="${packageKey}_price" value="${data.price || ''}" class="form-control" step="0.01" required>
                         </div>
                         <div class="mb-3">
-                            <label for="${packageKey}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke</label>
+                            <label for="${packageKey}_delivery_days" class="form-label"><i class="fas fa-hourglass-start text-secondary"></i> Rok isporuke (Dana)</label>
                             <input type="number" name="${packageKey}_delivery_days" value="${data.delivery_days || ''}" class="form-control" required>
                         </div>
                         <div class="mb-3">
