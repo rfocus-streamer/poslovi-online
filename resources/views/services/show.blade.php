@@ -331,7 +331,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        {{ $service->basic_inclusions }}
+                        {!! nl2br(e($service->basic_inclusions)) !!}
                     </div>
                 </div>
             </div>
@@ -348,7 +348,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        {{ $service->standard_inclusions }}
+                        {!! nl2br(e($service->standard_inclusions)) !!}
                     </div>
                 </div>
             </div>
@@ -365,7 +365,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        {{ $service->premium_inclusions }}
+                        {!! nl2br(e($service->premium_inclusions)) !!}
                     </div>
                 </div>
             </div>
@@ -383,8 +383,8 @@
                         <!-- Korisnik i ocena -->
                         <div class="d-flex align-items-center mb-3">
                             <div class="flex-shrink-0">
-                                <img src="{{ asset('user/' . $review->user->avatar) }}"
-                                     class="rounded-circle"
+                                <img src="{{ Storage::url('user/' . $review->user->avatar) }}"
+                                     class="rounded-circle avatar-img"
                                      alt="Avatar korisnika"
                                      width="50"
                                      height="50">
@@ -404,7 +404,7 @@
                         </div>
 
                         <!-- Komentar -->
-                        <p class="card-text">{{ $review->comment }}</p>
+                        <p class="card-text">{!! nl2br(e($review->comment)) !!}</p>
 
                         <!-- Datum i vreme -->
                         <small class="text-secondary">

@@ -382,10 +382,10 @@ class ServiceController extends Controller
             'reviews'
         ])->findOrFail($id);
 
-        // Izračunavanje prosečne ocene (ako nema ocena, podrazumevano 5)
+        // Izračunavanje prosečne ocene (ako nema ocena, podrazumevano 0)
         $averageRating = $service->reviews->count() > 0
             ? round($service->reviews->avg('rating'), 1)
-            : 5;
+            : 0;
 
         // Dodajemo prosečnu ocenu kao novu osobinu objekta
         $service->average_rating = $averageRating;
