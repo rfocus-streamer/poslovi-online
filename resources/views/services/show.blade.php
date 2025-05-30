@@ -198,7 +198,7 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h5 class="card-title mb-4 text-success">Opis</h5>
-                    <p>{{ $service->description }}</p>
+                    <p>{!! nl2br(e($service->description)) !!}</p>
                 </div>
             </div>
 
@@ -432,7 +432,7 @@
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
                             <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
-                                 class="rounded-circle"
+                                 class="rounded-circle avatar-img"
                                  alt="Avatar prodavca"
                                  width="50"
                                  height="50">
@@ -441,7 +441,7 @@
                             <h6>{{ $service->user->firstname .' '.$service->user->lastname }}</h6>
                             @php
                                 $sellerLevels = [
-                                    0 => 'Kupac',
+                                    0 => '',
                                     1 => 'Novi prodavac',
                                     2 => 'Level 1 prodavac',
                                     3 => 'Level 2 prodavac',
