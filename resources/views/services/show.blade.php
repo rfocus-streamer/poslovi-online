@@ -175,14 +175,14 @@
                                 @endfor
                             </div>
                             <p>
-                                <p>{{ $service->average_rating }}/5 ( od {{count($service->reviews) }} recenzija)</p>
+                                <p>{{ $service->average_rating }}/5 (od {{count($service->reviews) }} recenzija)</p>
                             </p>
                         </div>
 
                         <!-- Mogućnos reklamacije -->
                         <div class="col-md-4 text-center">
                             <i class="fas fa-clipboard-list fa-2x mb-2 text-secondary"></i>
-                            <p class="mb-0">Mogućnos reklamacije</p>
+                            <p class="mb-0">Mogućnost reklamacije</p>
                         </div>
 
                         <!-- Dostupnost -->
