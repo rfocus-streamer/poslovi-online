@@ -216,11 +216,13 @@
                             <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
                         </h6>
 
-                        <div class="text-warning mb-2">
-                            <a href="{{ route('deposit.form') }}" class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"> <i class="fas fa-credit-card"></i>
-                            </a>
-                            <p class="text-center text-secondary">Deponuj novac</p>
-                        </div>
+                        @if(Auth::user()->role === 'buyer')
+                            <div class="text-warning mb-2">
+                                <a href="{{ route('deposit.form') }}" class="btn btn-outline-warning ms-auto w-100" data-bs-toggle="tooltip" title="Deponuj novac"> <i class="fas fa-credit-card"></i>
+                                </a>
+                                <p class="text-center text-secondary">Deponuj novac</p>
+                            </div>
+                        @endif
 
                     </div>
                 </div>
