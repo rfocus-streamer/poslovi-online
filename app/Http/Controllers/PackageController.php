@@ -30,7 +30,10 @@ class PackageController extends Controller
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        $packages = Package::all(); // Dohvati sve
+        $packages = Package::orderBy('price')
+            ->orderByRaw("FIELD(duration, 'monthly', 'yearly')")
+            ->get();
+
         $user = Auth::user();
         $totalEarnings = 0;
 
