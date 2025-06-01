@@ -82,7 +82,7 @@
 
             <div class="col-md-4 g-0">
                 <div class="form-group">
-                    <label for="subcategory"><i class="fa fa-caret-right"></i> Podkategorija</label>
+                    <label for="subcategory"><i class="fa fa-caret-right"></i> Potkategorija</label>
                     <select id="subcategory" name="subcategory" class="form-control">
                         <option value="" disabled>Izaberite podkategoriju</option>
                         @foreach ($service->category->subcategories as $subcategory)

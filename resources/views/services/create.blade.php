@@ -79,7 +79,7 @@
 
             <div class="col-md-4 g-0">
                 <div class="form-group">
-                    <label for="subcategory">Podkategorija</label>
+                    <label for="subcategory">Potkategorija</label>
                     <select id="subcategory" name="subcategory" class="form-control" disabled>
                         <option value="" disabled selected>Izaberite podkategoriju</option>
                     </select>
