@@ -117,7 +117,7 @@
                         @endphp
 
                         @if($expired)
-                            <div class="form-check text-end mt-5">
+                            <div class="form-check text-end mt-5 d-none">
                                 <input
                                     type="checkbox"
                                     name="visible"
@@ -131,6 +131,13 @@
                                 </label>
                             </div>
                         @else
+                            <input
+                                    type="hidden"
+                                    name="visible"
+                                    id="visiblee"
+                                    class="form-check-input"
+                                    {{ $service->visible ? 'checked' : '' }}
+                                >
                             <div class="form-check text-end mt-4">
                                 <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
                                 <strong>Ponuda je javno dostupna do:</strong><br>
@@ -237,7 +244,26 @@
             </div>
         @endif
 
-        <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Sačuvaj promene</button>
+         @if(Auth::user()->package)
+            @if($seller['countPublicService'] < Auth::user()->package->quantity)
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success flex-fill"  id="submitBtn" style="background-color: #198754">
+                        <i class="fa fa-floppy-disk me-1"></i> Sačuvaj promene
+                    </button>
+                    @if (Auth::user()->package && $seller['countPublicService'] < Auth::user()->package->quantity && $expired)
+                        <button type="button" class="btn btn-poslovi flex-fill" id="saveAndPublishBtn">
+                            <i class="fa fa-floppy-disk me-1"></i> Sačuvaj i objavi
+                        </button>
+                    @endif
+                </div>
+            @else
+                <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Sačuvaj promene</button>
+            @endif
+        @else
+            <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"</i> Sačuvaj promene</button>
+        @endif
+
+        <!-- <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Sačuvaj promene</button> -->
     </form>
 
     <!-- Modal za potvrdu brisanja -->
@@ -281,6 +307,13 @@
     </div>
 
 </div>
+<script>
+    document.getElementById('saveAndPublishBtn')?.addEventListener('click', function() {
+        document.getElementById('visiblee').checked = true;
+        document.getElementById('serviceForm').submit();
+    });
+</script>
+
 <script>
         document.addEventListener('DOMContentLoaded', function() {
             const packagesContainer = document.getElementById('packages-container');
@@ -378,8 +411,16 @@ document.getElementById('serviceForm').addEventListener('submit', async function
     submitBtn.disabled = true;
     statusMessage.style.display = 'none';
 
+    // Prosleđivanje PHP promenljive u JavaScript
+    //const isExpired = @json($expired ?? false);
+
+    // if(!isExpired){    //
+    //     console.log("Expired status:", isExpired);
+    // }
+
     try {
         const formData = new FormData(form);
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
 
         // Provera broja slika pre slanja
         const files = formData.getAll('serviceImages[]');
@@ -393,6 +434,17 @@ document.getElementById('serviceForm').addEventListener('submit', async function
         for (const [name, value] of formData.entries()) {
             if (name === 'serviceImages[]' && value instanceof File) {
                 totalSize += value.size;
+            }
+        }
+
+         // Provera tipa fajlova
+        for (const file of files) {
+            if (!(file instanceof File)) continue;
+
+            if (!allowedTypes.includes(file.type)) {
+                const extension = file.name.split('.').pop().toLowerCase();
+                showError(`Format ".${extension}" nije dozvoljen. Dozvoljeni formati su: jpeg, png, jpg, gif.`);
+                return;
             }
         }
 

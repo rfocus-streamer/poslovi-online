@@ -171,14 +171,14 @@
                                 <hr>
                             @else
                                 <div class="alert alert-danger text-center">
-                                    <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemate aktivan paket!
+                                    <span class="blinking-alert"><i class="fas fa-exclamation-circle"></i></span> Trenutno nemaš aktivan paket!
                                 </div>
 
                                 <div class="text-warning mb-2">
                                     <a href="{{ route('packages.index') }}" class="btn btn-outline-primary ms-auto w-100" data-bs-toggle="tooltip" title="Odaberite paket">
                                         <i class="fas fa-calendar-alt"></i>
                                     </a>
-                                    <p class="text-center text-secondary">Odaberite paket</p>
+                                    <p class="text-center text-secondary">Odaberi paket</p>
                                 </div>
                             @endif
 

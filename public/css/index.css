@@ -107,6 +107,10 @@
         text-align: center;
     }
 
+    .avatar-img {
+        object-fit: cover;
+    }
+
     /* Responzivni stilovi */
     @media (max-width: 768px) {
         .hero-title {

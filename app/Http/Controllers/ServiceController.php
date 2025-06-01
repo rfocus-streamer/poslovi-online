@@ -217,12 +217,23 @@ class ServiceController extends Controller
         ini_set('max_input_time', '300');
 
         // Osnovna validacija koja je uvek potrebna
-        $validated = $request->validate([
-            'category' => 'required|exists:categories,id',
-            'subcategory' => 'required|numeric',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+        $request->validate([
+            'category' => ['required', 'exists:categories,id'],
+            'subcategory' => ['required', 'numeric'],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'serviceImages.*' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        ], [
+            'category.required' => 'Morate izabrati kategoriju.',
+            'category.exists' => 'Izabrana kategorija nije validna.',
+            'subcategory.required' => 'Morate izabrati potkategoriju.',
+            'subcategory.numeric' => 'Potkategorija mora biti numerička vrednost.',
+            'title.required' => 'Naslov je obavezan.',
+            'title.max' => 'Naslov ne sme biti duži od :max karaktera.',
+            'description.required' => 'Opis je obavezan.',
+            'serviceImages.*.image' => 'Svaka datoteka mora biti slika.',
+            'serviceImages.*.mimes' => 'Dozvoljeni formati slika su: jpeg, png, jpg, gif.',
+            'serviceImages.*.max' => 'Svaka slika može imati maksimalno 2048 KB.', // ili MB ako koristiš 2048
         ]);
 
         // Dinamička validacija za pakete
@@ -257,7 +268,14 @@ class ServiceController extends Controller
             'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ], $packageRules));
 
-        $visible = $request->has('visible') ? 1 : 0;
+        $visible = 0;
+
+        if(Auth::user()->package){
+            $countPublicService = Service::where('user_id', Auth::id())->where('visible', 1)->count();
+            if($countPublicService < Auth::user()->package->quantity){
+                $visible = $request->has('visible') ? 1 : 0;
+            }
+        }
 
         try {
             // Priprema podataka za čuvanje
@@ -518,10 +536,13 @@ class ServiceController extends Controller
             'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ], $packageRules));
 
+        $visible = 0;
+
         if(Auth::user()->package){
-            $visible = $request->has('visible') ? 1 : 0;
-        }else{
-            $visible = 0;
+            $countPublicService = Service::where('user_id', Auth::id())->where('visible', 1)->count();
+            if($countPublicService < Auth::user()->package->quantity){
+                $visible = $request->has('visible') ? 1 : 0;
+            }
         }
 
         try {

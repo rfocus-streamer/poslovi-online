@@ -100,7 +100,7 @@
             </div>
 
             <!-- Vidljivost -->
-            <div class="col-md-4 g-0">
+            <div class="col-md-4 g-0 d-none">
                 <div class="form-group">
                     @if(Auth::user()->package)
                         @if($seller['countPublicService'] < Auth::user()->package->quantity)
@@ -180,10 +180,142 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Dodaj ponudu</button>
+        @if(Auth::user()->package)
+            @if($seller['countPublicService'] < Auth::user()->package->quantity)
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success flex-fill" id="submitBtn" style="background-color: #198754">
+                        <i class="fa fa-floppy-disk me-1"></i> Sačuvaj ponudu
+                    </button>
+                    @if (Auth::user()->package && $seller['countPublicService'] < Auth::user()->package->quantity)
+                        <button type="button" class="btn btn-poslovi flex-fill" id="saveAndPublishBtn">
+                            <i class="fa fa-floppy-disk me-1"></i> Sačuvaj i objavi
+                        </button>
+                    @endif
+                </div>
+            @else
+                <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Dodaj ponudu</button>
+            @endif
+        @else
+            <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Dodaj ponudu</button>
+        @endif
     </form>
 
 </div>
+
+<script>
+    document.getElementById('saveAndPublishBtn')?.addEventListener('click', function() {
+        e.preventDefault();
+        document.getElementById('visiblee').checked = true;
+        const form = e.currentTarget;
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressText = document.querySelector('.progress-text');
+        const progressContainer = document.querySelector('.upload-progress');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Prikaži progress bar
+        progressContainer.style.display = 'block';
+        submitBtn.disabled = true;
+        statusMessage.style.display = 'none';
+
+        try {
+            const formData = new FormData(form);
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+
+            // Provera broja slika pre slanja
+            const files = formData.getAll('serviceImages[]');
+            if (files.length > 10) {
+                showError('Možete uploadovati najviše 10 slika odjednom.');
+                return;
+            }
+
+            // Računanje ukupne veličine za progress
+            let totalSize = 0;
+            for (const [name, value] of formData.entries()) {
+                if (name === 'serviceImages[]' && value instanceof File) {
+                    totalSize += value.size;
+                }
+            }
+
+            // Provera tipa fajlova
+            for (const file of files) {
+                if (!(file instanceof File)) continue;
+
+                if (!allowedTypes.includes(file.type)) {
+                    const extension = file.name.split('.').pop().toLowerCase();
+                    showError(`Format ".${extension}" nije dozvoljen. Dozvoljeni formati su: jpeg, png, jpg, gif.`);
+                    return;
+                }
+            }
+
+            const response = fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = response.json();
+                if (response.status === 422) {
+                    showError('Jedna ili više slika premašuje maksimalnu dozvoljenu veličinu od 2MB');
+                    return;
+                }
+                throw new Error(errorData.message || 'Došlo je do greške');
+            }
+
+            const reader = response.body.getReader();
+            let received = 0;
+            let chunks = [];
+
+            while(true) {
+                const {done, value} = reader.read();
+
+                if(done) {
+                    break;
+                }
+
+                chunks.push(value);
+                received += value.length;
+
+                // Update progress bara
+                const progress = Math.round((received / totalSize) * 100);
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+            }
+
+            // Finalni rezultat
+            const body = new Uint8Array(received);
+            let position = 0;
+            for(const chunk of chunks) {
+                body.set(chunk, position);
+                position += chunk.length;
+            }
+
+            const result = new TextDecoder("utf-8").decode(body);
+            const jsonResponse = JSON.parse(result);
+
+            if(jsonResponse.redirect) {
+                window.location.href = jsonResponse.redirect;
+            } else if(jsonResponse.error) {
+                showError(jsonResponse.error);
+            }
+
+        } catch (error) {
+            showError('Došlo je do greške prilikom upload-a');
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        if (document.getElementById('visiblee')) {
+            document.getElementById('visiblee').checked = false;
+        }
+    });
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -294,6 +426,7 @@ document.getElementById('serviceForm').addEventListener('submit', async function
 
     try {
         const formData = new FormData(form);
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
 
         // Provera broja slika pre slanja
         const files = formData.getAll('serviceImages[]');
@@ -310,6 +443,17 @@ document.getElementById('serviceForm').addEventListener('submit', async function
             }
         }
 
+        // Provera tipa fajlova
+        for (const file of files) {
+            if (!(file instanceof File)) continue;
+
+            if (!allowedTypes.includes(file.type)) {
+                const extension = file.name.split('.').pop().toLowerCase();
+                showError(`Format ".${extension}" nije dozvoljen. Dozvoljeni formati su: jpeg, png, jpg, gif.`);
+                return;
+            }
+        }
+
         const response = await fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -319,10 +463,12 @@ document.getElementById('serviceForm').addEventListener('submit', async function
             },
         });
 
+        console.log(response);
+
         if (!response.ok) {
             const errorData = await response.json();
             if (response.status === 422) {
-                showError('Jedna ili više slika premašuje maksimalnu dozvoljenu veličinu od 2MB');
+                showError('Jedna ili više slika premašuje maksimalnu dozvoljenu veličinu od 2MB ili format slike nije podržan');
                 return;
             }
             throw new Error(errorData.message || 'Došlo je do greške');

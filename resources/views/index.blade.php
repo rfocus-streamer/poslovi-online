@@ -62,7 +62,7 @@
                         <!-- Ocena (zvezdice i broj) -->
                         <div class="d-flex align-items-center mb-2">
                             <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
-                                         alt="Avatar" class="rounded-circle" width="30" height="30"> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
+                                         alt="Avatar" class="rounded-circle avatar-img" width="30" height="30"> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
                             <div class="text-warning ms-auto"> <!-- Dodali smo ms-auto za desno poravnavanje -->
                                 @for ($j = 1; $j <= 5; $j++)
                                     @if ($j <= $service->average_rating)
@@ -133,7 +133,7 @@
                     <!-- Ocena (zvezdice i broj) -->
                     <div class="d-flex align-items-center mb-2">
                         <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
-                                     alt="Avatar" class="rounded-circle" width="30" height="30"> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
+                                     alt="Avatar" class="rounded-circle avatar-img" width="30" height="30"> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
                         <div class="text-warning ms-auto"> <!-- Dodali smo ms-auto za desno poravnavanje -->
                             @for ($j = 1; $j <= 5; $j++)
                                 @if ($j <= $service->average_rating)
@@ -199,7 +199,7 @@
                     <!-- Ocena (zvezdice i broj) -->
                     <div class="d-flex align-items-center mb-2">
                         <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
-                                     alt="Avatar" class="rounded-circle" width="30" height="30"> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
+                                     alt="Avatar" class="rounded-circle  avatar-img" width="30" height="30"> &nbsp; {{ $service->user->firstname .' '.$service->user->lastname }} &nbsp;
                         <div class="text-warning ms-auto"> <!-- Dodali smo ms-auto za desno poravnavanje -->
                             @for ($j = 1; $j <= 5; $j++)
                                 @if ($j <= $service->average_rating)
