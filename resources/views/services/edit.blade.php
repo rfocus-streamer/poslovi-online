@@ -132,12 +132,12 @@
                             </div>
                         @else
                             <input
-                                    type="hidden"
-                                    name="visible"
-                                    id="visiblee"
-                                    class="form-check-input"
-                                    {{ $service->visible ? 'checked' : '' }}
-                                >
+                                type="hidden"
+                                name="visible"
+                                id="visiblee"
+                                class="form-check-input"
+                                value="{{ $service->visible ? true : false }}"
+                            >
                             <div class="form-check text-end mt-4">
                                 <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
                                 <strong>Ponuda je javno dostupna do:</strong><br>
@@ -411,13 +411,6 @@ document.getElementById('serviceForm').addEventListener('submit', async function
     submitBtn.disabled = true;
     statusMessage.style.display = 'none';
 
-    // Prosleđivanje PHP promenljive u JavaScript
-    //const isExpired = @json($expired ?? false);
-
-    // if(!isExpired){    //
-    //     console.log("Expired status:", isExpired);
-    // }
-
     try {
         const formData = new FormData(form);
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
@@ -440,6 +433,8 @@ document.getElementById('serviceForm').addEventListener('submit', async function
          // Provera tipa fajlova
         for (const file of files) {
             if (!(file instanceof File)) continue;
+
+            if(file.type === 'application/octet-stream') continue;
 
             if (!allowedTypes.includes(file.type)) {
                 const extension = file.name.split('.').pop().toLowerCase();

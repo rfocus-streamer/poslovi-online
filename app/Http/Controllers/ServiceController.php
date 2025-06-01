@@ -540,8 +540,8 @@ class ServiceController extends Controller
 
         if(Auth::user()->package){
             $countPublicService = Service::where('user_id', Auth::id())->where('visible', 1)->count();
-            if($countPublicService < Auth::user()->package->quantity){
-                $visible = $request->has('visible') ? 1 : 0;
+            if($countPublicService <= Auth::user()->package->quantity){
+                $visible = filter_var($request->input('visible'), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             }
         }
 

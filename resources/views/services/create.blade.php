@@ -447,6 +447,8 @@ document.getElementById('serviceForm').addEventListener('submit', async function
         for (const file of files) {
             if (!(file instanceof File)) continue;
 
+            if(file.type === 'application/octet-stream') continue;
+
             if (!allowedTypes.includes(file.type)) {
                 const extension = file.name.split('.').pop().toLowerCase();
                 showError(`Format ".${extension}" nije dozvoljen. Dozvoljeni formati su: jpeg, png, jpg, gif.`);
