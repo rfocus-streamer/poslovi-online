@@ -379,9 +379,9 @@ input:not(:checked) + .slider .label-text.right {
                 <div class="col-md-3 col-10 mb-4 text-center">
                     <h5>Pratite nas</h5>
                     <div class="social-links d-flex justify-content-center gap-3 mt-4">
-                        <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=61551626835206" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.instagram.com%2Fposlovionline%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAYnJpZBExR3JyTW9lRDlqR1dCOUZzTQEeL1mP9GyDIUexLr0pTEfePBh2SH2CdFgNAzXVvXfCKZx-9FcdjEXeHQGFH6Y_aem_Oipf62RZ-wvm0udGZmYSRQ&h=AT1FjqUsQTkzNnJy8pWYebNPKfQrnquUie8OeayO4RR9IloHbZTi3_kHOVTRbAnVrm6kAopEGALeiuRPEsK5-IPbGUDn6j_aAuPPepYzyZ5mitBUFd83kI4emE3bLbtVCXE7Mw" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Fposlovi-online%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAYnJpZBExR3JyTW9lRDlqR1dCOUZzTQEeq3K6W7hPnx8d8UMx4wyI1oDXDJFZ2uwobG5a3hFl4xW33nlCEx7dglStslI_aem_qnZQKQXyLatU2oVhLNnF7A&h=AT1FjqUsQTkzNnJy8pWYebNPKfQrnquUie8OeayO4RR9IloHbZTi3_kHOVTRbAnVrm6kAopEGALeiuRPEsK5-IPbGUDn6j_aAuPPepYzyZ5mitBUFd83kI4emE3bLbtVCXE7Mw" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
                         <a href="#" class="text-white"><i class="fab fa-twitter fa-lg"></i></a>
                     </div>
                 </div>
