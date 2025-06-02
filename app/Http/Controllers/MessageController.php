@@ -368,12 +368,19 @@ class MessageController extends Controller
                 }
             }
 
+            $attachmentName = null;
+
+            if ($request->hasFile('attachment')) {
+                $attachmentName = $request->file('attachment')->getClientOriginalName();
+            }
+
             $message = Message::create([
                 'sender_id' => auth()->id(),
                 'receiver_id' => $request->input('user_id'),
                 'content' => $request->content,
                 'service_id' => $request->input('service_id'),
-                'attachment_path' => $request->file('attachment') ? $request->file('attachment')->store('attachments') : null
+                'attachment_path' => $request->file('attachment') ? $request->file('attachment')->store('attachments') : null,
+                'attachment_name' => $attachmentName
             ]);
 
             $message->load('sender'); // Učitaj vezani model

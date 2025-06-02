@@ -641,7 +641,7 @@ function getMessageHtml(msg) {
     const formattedDate = formatDate(msg.created_at);
     const [date, time] = formattedDate.split(' ');  // Razdvaja datum (YYYY-MM-DD) i vreme (HH:MM)
 
-    let attach = `${msg.sender.firstname.charAt(0).toLowerCase() + msg.sender.firstname.slice(1)}_${time.replace(/:/g, '')}`;
+    let attach = `${msg.attachment_name}`;
 
     // Zavisno o tome da li je poruka poslana ili primljena, odaberi odgovarajući raspored
     if (msg.sender_id === currentUser.id) {

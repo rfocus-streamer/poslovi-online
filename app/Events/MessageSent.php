@@ -54,6 +54,7 @@ class MessageSent implements ShouldBroadcast
                 'service_id' => $this->message->service_id,
                 'created_at' => $this->message->created_at,
                 'attachment' => $this->message->attachment_path,
+                'attachment_name' => $this->message->attachment_name,
                 'totalUnreadMessages' => $totalUnreadMessages,
                 'totalSenderUnreadMessages' => $totalSenderUnreadMessages,
                 'unreadMessagesPerService' => $unreadMessagesPerService,

@@ -145,6 +145,18 @@ function appendNewMessage(msg) {
         return true;
     }
 
+    const chatHistory = document.getElementById('chatHistory');
+
+    // Pronađi sve <p> tagove unutar chatHistory
+    const paragraphs = chatHistory.querySelectorAll('p');
+
+    paragraphs.forEach(p => {
+        if (p.textContent.trim() === 'Nema poruka za ovu uslugu.') {
+            p.remove();
+        }
+    });
+
+
     const authUser = document.querySelector('meta[name="user_id"]').getAttribute('content')
     const isSentByCurrentUser = msg.sender_id === currentUser.id;
     const sender = msg.sender_id === authUser.id ? msg.sender : msg.receiver;
@@ -155,7 +167,7 @@ function appendNewMessage(msg) {
     const formattedDate = formatDate(msg.created_at);
     const [date, time] = formattedDate.split(' ');  // Razdvaja datum (YYYY-MM-DD) i vreme (HH:MM)
 
-    let attach = `${msg.sender.firstname.charAt(0).toLowerCase() + msg.sender.firstname.slice(1)}_${time.replace(/:/g, '')}`;
+    let attach = `${msg.attachment_name}`;
 
     const messageDiv = document.createElement('div');
 
