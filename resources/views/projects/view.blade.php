@@ -536,7 +536,7 @@
                                 @csrf
 
                                 <div class="form-group row">
-                                    <label for="rating" class="col-md-4 col-form-label text-md-right">Označi ocenu</label>
+                                    <label for="rating" class="col-md-4 col-form-label text-md-right">Označi ocenu (zvezdu)</label>
                                     <div class="col-md-6 mt-3">
                                         <div class="rating-input">
                                             @for($i = 5; $i >= 1; $i--)
