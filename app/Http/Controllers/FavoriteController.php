@@ -53,7 +53,7 @@ class FavoriteController extends Controller
             ->first();
 
         if ($existingFavorite) {
-            return redirect()->back()->with('error', 'Servis je već u omiljenim.');
+            return redirect()->back()->with('error', 'Ponuda je već u omiljenim.');
         }
 
         // Dodaj u omiljene
@@ -62,7 +62,7 @@ class FavoriteController extends Controller
             'service_id' => $service->id,
         ]);
 
-        return redirect()->back()->with('success', 'Servis je dodat u omiljene.');
+        return redirect()->back()->with('success', 'Ponuda je dodata u omiljene.');
     }
 
     // Ukloni servis iz omiljenih
@@ -76,9 +76,9 @@ class FavoriteController extends Controller
 
         if ($favorite) {
             $favorite->delete();
-            return redirect()->back()->with('success', 'Servis je uklonjen iz omiljenih.');
+            return redirect()->back()->with('success', 'Ponuda je uklonjena iz omiljenih.');
         }
 
-        return redirect()->back()->with('error', 'Servis nije pronađen u omiljenim.');
+        return redirect()->back()->with('error', 'Ponuda nije pronađena u omiljenim.');
     }
 }

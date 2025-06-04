@@ -19,7 +19,7 @@
 
         <!-- Naslov i osnovne informacije -->
             <h1 class="mb-4">{{ $service->title }}</h1>
-            <div class="col-8 text-end">
+            <div class="col-10 col-md-8 text-end">
                 <span class="fw-bold">Podeli na:</span>
 
                 <!-- Facebook -->
@@ -74,17 +74,24 @@
                 </div>
             </div>
 
-            <div class="col-8 d-flex align-items-center mb-4">
+            <div class="col-11 ml-2 col-md-8 d-flex flex-wrap align-items-center mb-4 mt-1">
+                <div class="d-flex align-items-center me-auto ms-2">
                 <span class="badge bg-primary me-2">{{ $service->category->name }}</span>
-                @if($service->subcategory)
-                    <span class="badge bg-secondary">{{ $service->subcategory->name }}</span>
-                @endif
+                    @if($service->subcategory)
+                        <span class="badge bg-secondary">{{ $service->subcategory->name }}</span>
+                    @endif
+                </div>
+            </div>
 
-                @auth
-                    @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
-                        <div class="ms-auto mt-3"> <!-- Ovo gura dugmad na desno -->
-                            @if(Auth::user()->favorites->contains('service_id', $service->id))
-                                <form action="{{ route('favorites.destroy', $service) }}" method="POST">
+             @auth
+                @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
+                    <div id="favoriteBtn" class="col-12 col-md-8 text-end"> <!-- Ovo gura dugmad na desno -->
+                        @php
+                            $favorite = Auth::user()->favorites->firstWhere('service_id', $service->id);
+                        @endphp
+
+                            @if($favorite)
+                                <form action="{{ route('favorites.destroy', $favorite) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-outline-danger ms-auto btn-sm" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Ukloni <i class="fas fa-heart"></i></button>
@@ -95,10 +102,9 @@
                                     <button class="btn btn-outline-success ms-auto btn-sm" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Dodaj <i class="fas fa-heart"></i></button>
                                 </form>
                             @endif
-                        </div>
-                    @endif
-                @endauth
-            </div>
+                    </div>
+                @endif
+            @endauth
 
         <!-- Glavni sadržaj -->
         <div class="col-md-8">
@@ -458,11 +464,15 @@
                             <p class="text-secondary">Ukupno ponuda: {{ $userServiceCount }}</p>
                             <p class="text-secondary">Ukupna ocena:
                                 @if ($service->user->stars > 0)
-                                    @for ($j = 1; $j <= $service->user->stars; $j++)
-                                        <i class="fas fa-star text-warning"></i>
+                                    @for ($j = 1; $j <= 5; $j++)
+                                        @if ($j <= $service->user->stars)
+                                             <i class="fas fa-star text-warning"></i>
+                                        @else
+                                            <i class="far fa-star text-warning"></i>
+                                        @endif
                                     @endfor
                                 @elseif ($service->user->stars == 0)
-                                    <p>No stars available</p>
+                                    <p>Prodavac nije još ocenjen</p>
                                 @endif
 
                                 <small class="ms-2">({{ $service->user->stars }})</small>

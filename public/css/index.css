@@ -113,6 +113,15 @@
 
     /* Responzivni stilovi */
     @media (max-width: 768px) {
+        h2.mb-4 {
+            border-bottom: 2px solid green; /* Dodaje zelenu podvučenu liniju */
+            padding-bottom: 10px; /* Dodaje razmak između teksta i linije */
+            margin: 20px auto;
+            text-align: center;
+            color: #9c1c2c;
+            font-size: 20px;
+        }
+
         .hero-title {
             font-size: 2.5rem;
         }
