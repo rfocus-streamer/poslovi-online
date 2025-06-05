@@ -81,9 +81,9 @@
             @foreach($favoriteServices as $key => $favorite)
             <div class="card mb-3 favorite-card" data-id="{{ $favorite->service->id }}">
                 <a href="{{ route('services.show', $favorite->service->id) }}" class="text-dark">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center" style="background-color: #198754 !important; color: white !important">
+                        <span>#{{ $key + 1 }}</span>
                         <span><strong>{{ $favorite->service->title }}</strong></span>
-                        <span class="badge bg-secondary">#{{ $key + 1 }}</span>
                     </div>
                 </a>
                 <div class="card-body">

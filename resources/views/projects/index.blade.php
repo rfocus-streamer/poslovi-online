@@ -19,16 +19,30 @@
     @endif
 
     <div class="d-flex justify-content-between align-items-center">
-        <h4><i class="fas fa-handshake"></i> Tvoji poslovi</h4>
-        <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva: <strong class="text-success">{{ number_format($reserved_amount, 2) }} <i class="fas fa-euro-sign"></i></strong>
-        </h6>
+        <!-- Desktop naslov + info -->
+        <div class="d-none d-md-flex align-items-center gap-3">
+            <h4 class="mb-0"><i class="fas fa-handshake"></i> Tvoji poslovi</h4>
+            <h6 class="text-secondary mb-0">
+                <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva:
+                <strong class="text-success">{{ number_format($reserved_amount, 2) }} €</strong>
+            </h6>
+        </div>
+
+        <!-- Mobile naslov + info -->
+        <div class="d-flex d-md-none flex-column text-center w-100">
+            <h5 class="mb-0"><i class="fas fa-handshake"></i> Tvoji poslovi</h5>
+            <h6 class="text-secondary mt-1">
+                <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva:
+                <strong class="text-success">{{ number_format($reserved_amount, 2) }} €</strong>
+            </h6>
+        </div>
     </div>
+
 
     @if($projects->isEmpty())
         <p>Nemaš aktivnih poslova.</p>
     @else
-        <table class="table">
+        <table class="table d-none d-md-table">
             <thead>
                 <tr>
                     <th>#</th>
@@ -132,6 +146,69 @@
                 @endforeach
             </tbody>
         </table>
+
+        <!-- Kartice za mobilne uređaje -->
+        <div class="d-md-none">
+            @foreach($projects as $key => $project)
+                @php
+                    $price = $project->reserved_funds;
+                    $commission = $project->commission->buyer_amount;
+                    $encryptedServiceId = Crypt::encrypt($project->service->id);
+                    $encryptedUserId = Crypt::encryptString($project->seller->id);
+                    $chatUrl = route('messages.index', ['service_id' => $encryptedServiceId, 'seller_id' => $encryptedUserId]);
+
+                    $statusIcons = [
+                        'inactive' => ['icon' => 'hourglass-start', 'color' => 'secondary', 'title' => 'Čeka se odobrenje izvršioca'],
+                        'in_progress' => ['icon' => 'tasks', 'color' => 'primary', 'title' => 'Radovi su u toku'],
+                        'waiting_confirmation' => ['icon' => 'user-check', 'color' => 'primary', 'title' => 'Čeka se vaše odobrenje'],
+                        'rejected' => ['icon' => 'times-circle', 'color' => 'danger', 'title' => 'Izvršilac je odbio posao'],
+                        'completed' => ['icon' => 'check-circle', 'color' => 'success', 'title' => 'Posao je kompletiran'],
+                        'requires_corrections' => ['icon' => 'undo-alt', 'color' => 'danger', 'title' => 'Zahteva ispravke']
+                    ];
+                @endphp
+
+                <div class="card mb-3">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center" style="background-color: #198754 !important; color: white !important">
+                        <span>#{{ $project->project_number }}</span>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-light btn-sm openUserModal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#userInfoModal"
+                                    data-firstname="{{ $project->seller->firstname }}"
+                                    data-lastname="{{ $project->seller->lastname }}"
+                                    data-image="{{ $project->seller->avatar ?? 'https://via.placeholder.com/120' }}"
+                                    data-userid="{{ $chatUrl }}"
+                                    data-projectid="{{ $project->project_number }}">
+                                Kontakt <i class="fas fa-user-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><a href="{{ route('services.show', $project->service->id) }}" class="text-dark text-decoration-none"><h6 class="card-title mb-1"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a></p>
+                        <p><strong>Količina:</strong> {{ $project->quantity }}</p>
+                        <p><strong>Početak:</strong> {{ $project->start_date ?? 'N/A' }}</p>
+                        <p><strong>Završetak:</strong> {{ $project->end_date ?? 'N/A' }}</p>
+                        <p><strong>Rezervisano:</strong> {{ number_format($price, 2) }} €</p>
+                        <p><strong>Provizija:</strong> {{ number_format($commission, 2) }} €</p>
+
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            {{-- Prikaz status ikone --}}
+                            @if(array_key_exists($project->status, $statusIcons))
+                                <i class="fas fa-{{ $statusIcons[$project->status]['icon'] }} text-{{ $statusIcons[$project->status]['color'] }}" title="{{ $statusIcons[$project->status]['title'] }}"></i>
+                            @else
+                                <i class="fas fa-info-circle text-warning" title="Nepoznat status"></i>
+                            @endif
+
+                            <form action="{{ route('projects.view', $project) }}" method="GET" class="ms-auto">
+                                @csrf
+                                <button class="btn btn-warning btn-sm">Pogledaj <i class="fas fa-eye"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
 
         <div class="mt-4 p-3 border rounded bg-light">
             <h5><i class="fas fa-info-circle"></i> Status posla</h5>

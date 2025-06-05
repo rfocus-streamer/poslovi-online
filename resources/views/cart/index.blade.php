@@ -159,9 +159,9 @@
 
                 <div class="card mb-3 cart-card" data-id="{{ $cartItem->id }}">
                     <a class="text-dark" href="{{ route('services.show', $cartItem->service->id) }}">
-                        <div class="card-header bg-light d-flex justify-content-between">
+                        <div class="card-header bg-light d-flex justify-content-between" style="background-color: #198754 !important; color: white !important">
+                            <span>#{{ $key + 1 }}</span>
                             <strong>{{ $cartItem->service->title }}</strong>
-                            <span class="badge bg-secondary">#{{ $key + 1 }}</span>
                         </div>
                     </a>
 

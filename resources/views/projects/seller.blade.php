@@ -18,17 +18,38 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center">
-        <h4><i class="fas fa-handshake"></i> Tvoji poslovi</h4>
-        <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Ukupna mesečna zarada: <strong class="text-success">{{ number_format($totalEarnings, 2) }} <i class="fas fa-euro-sign"></i></strong>
-        </h6>
+    <div class="d-flex flex-column">
+        <!-- Desktop prikaz -->
+        <div class="d-none d-md-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="fas fa-handshake"></i> Tvoji poslovi
+            </h4>
+            <h6 class="text-secondary mb-0">
+                <i class="fas fa-credit-card"></i> Ukupna mesečna zarada:
+                <strong class="text-success">
+                    {{ number_format($totalEarnings, 2) }} €
+                </strong>
+            </h6>
+        </div>
+
+        <!-- Mobilni prikaz -->
+        <div class="d-flex d-md-none flex-column text-center">
+            <h5 class="mb-0">
+                <i class="fas fa-handshake"></i> Tvoji poslovi
+            </h5>
+            <h6 class="text-secondary">
+                <i class="fas fa-credit-card"></i> Ukupna mesečna zarada:
+                <strong class="text-success">
+                    {{ number_format($totalEarnings, 2) }} €
+                </strong>
+            </h6>
+        </div>
     </div>
 
     @if(empty($projects))
         <p>Nemaš aktivnih poslova.</p>
     @else
-        <table class="table">
+        <table class="table d-none d-md-block">
             <thead>
                 <tr>
                     <th>#</th>
@@ -131,6 +152,89 @@
                 @endforeach
             </tbody>
         </table>
+
+        <!-- MOBILNI PRIKAZ -->
+        <div class="d-block d-md-none">
+            @foreach($projects as $project)
+                @php
+                    $encryptedServiceId = Crypt::encrypt($project->service->id);
+                    $encryptedUserId = Crypt::encryptString($project->buyer->id);
+                    $msgLink = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
+                @endphp
+                <div class="card mb-3 shadow-sm">
+                     <div class="card-header bg-light d-flex justify-content-between align-items-center" style="background-color: #198754 !important; color: white !important">
+                        <span>#{{ $project->project_number }}</span>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-outline-light btn-sm openUserModal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#userInfoModal"
+                                    data-firstname="{{ $project->buyer->firstname }}"
+                                    data-lastname="{{ $project->buyer->lastname }}"
+                                    data-image="{{ $project->buyer_id->avatar ?? 'https://via.placeholder.com/120' }}"
+                                    data-userid="{{ $msgLink }}"
+                                    data-projectid="{{ $project->project_number }}">
+                                Kontakt <i class="fas fa-user-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ route('services.show', $project->service->id) }}"><h6 class="card-title mb-1 text-dark"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a>
+                        <p class="mb-1"><strong>Količina:</strong> {{ $project->quantity }}</p>
+                        <p class="mb-1"><strong>Početak:</strong> {{ $project->start_date ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Završetak:</strong> {{ $project->end_date ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Rezervisano:</strong> {{ number_format($project->reserved_funds - $project->commission->amount * 0.10, 2) }} €</p>
+                        <p class="mb-2"><strong>Provizija:</strong> {{ number_format($project->commission->amount * 0.10, 2) }} €</p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            @switch($project->status)
+                                @case('inactive')
+                                    <i class="fas fa-hourglass-start text-secondary" title="Čeka se odobrenje"></i>
+                                    @break
+                                @case('in_progress')
+                                    <i class="fas fa-tasks text-primary" title="Radovi u toku"></i>
+                                    @break
+                                @case('waiting_confirmation')
+                                    <i class="fas fa-user-check text-primary" title="Čeka se potvrda"></i>
+                                    @break
+                                @case('rejected')
+                                    <i class="fas fa-times-circle text-danger" title="Odbijeno"></i>
+                                    @break
+                                @case('completed')
+                                    <i class="fas fa-check-circle text-success" title="Završeno"></i>
+                                    @break
+                                @case('requires_corrections')
+                                    <i class="fas fa-undo-alt text-danger" title="Potreban ispravak"></i>
+                                    @break
+                                @case('uncompleted')
+                                    @if($project->admin_decision === 'rejected')
+                                        <i class="fas fa-balance-scale text-danger"></i>
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    @elseif($project->admin_decision === 'accepted')
+                                        <i class="fas fa-balance-scale text-danger"></i>
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    @elseif($project->admin_decision === 'partially')
+                                        <i class="fas fa-balance-scale text-danger"></i>
+                                        <i class="fas fa-adjust text-warning"></i>
+                                    @elseif($project->seller_uncomplete_decision === 'accepted')
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    @elseif($project->seller_uncomplete_decision === 'arbitration')
+                                        <i class="fas fa-balance-scale text-danger"></i>
+                                    @else
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    @endif
+                                    @break
+                            @endswitch
+
+                            <form action="{{ route('projects.view', $project) }}" method="GET">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-warning">Pogledaj <i class="fas fa-eye"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
 
         <div class="mt-4 p-3 border rounded bg-light">
             <h5><i class="fas fa-info-circle"></i> Status posla</h5>
