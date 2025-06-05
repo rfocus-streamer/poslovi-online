@@ -78,7 +78,7 @@ class CartController extends Controller
         $cartItem->delete();
         return redirect()
                 ->back()
-                ->with('error', "Uspešno ste uklonili iz korpe uslugu")
+                ->with('error', "Uspešno si uklonio iz korpe uslugu")
                 ->withFragment('cart-message-danger'); // Skrolujte do elementa sa ID "cart-message-danger"
 
     }

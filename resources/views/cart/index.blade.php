@@ -1,6 +1,11 @@
 @extends('layouts.app')
 <title>Poslovi Online | Tvoja korpa</title>
 @section('content')
+<style type="text/css">
+    h4 {
+        font-size: 1rem !important;
+    }
+</style>
 <div class="container">
     <!-- Prikaz poruke sa anchor ID -->
     @if(session('success'))
@@ -23,15 +28,17 @@
         <h6 class="text-secondary">
             <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
         </h6>
-         <!-- pretraga omiljenih ponuda desno -->
-        <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25">
+        @if(!$cartItems->isEmpty())
+             <!-- pretraga omiljenih ponuda desno -->
+            <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table">
+        @endif
     </div>
 
 
     @if($cartItems->isEmpty())
         <p>Tvoja korpa je prazna.</p>
     @else
-        <table class="table">
+        <table class="table table-bordered align-middle d-none d-md-table">
             <thead>
                 <tr>
                     <th></th>
@@ -133,6 +140,89 @@
                 @endforeach
             </tbody>
         </table>
+
+        <!-- Kartice za mobilne uređaje -->
+        <div class="d-md-none">
+            @foreach($cartItems as $key => $cartItem)
+                @php
+                    $price = match($cartItem->package) {
+                        'Basic' => $cartItem->service->basic_price,
+                        'Standard' => $cartItem->service->standard_price,
+                        'Premium' => $cartItem->service->premium_price,
+                        default => 0
+                    };
+                    $totalPrice = $price * $cartItem->quantity;
+                    $commissionAmount = $totalPrice * 0.03;
+                    $totalWithCommisionPrice = $totalPrice + $commissionAmount;
+                    $userBalance = Auth::user()->deposits;
+                @endphp
+
+                <div class="card mb-3 cart-card" data-id="{{ $cartItem->id }}">
+                    <a class="text-dark" href="{{ route('services.show', $cartItem->service->id) }}">
+                        <div class="card-header bg-light d-flex justify-content-between">
+                            <strong>{{ $cartItem->service->title }}</strong>
+                            <span class="badge bg-secondary">#{{ $key + 1 }}</span>
+                        </div>
+                    </a>
+
+                    <form action="{{ route('cart.update', $cartItem) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <label class="form-label">Paket</label>
+                                <select name="package" class="form-select">
+                                    <option value="Basic" {{ $cartItem->package == 'Basic' ? 'selected' : '' }}>Basic</option>
+                                    <option value="Standard" {{ $cartItem->package == 'Standard' ? 'selected' : '' }}>Standard</option>
+                                    <option value="Premium" {{ $cartItem->package == 'Premium' ? 'selected' : '' }}>Premium</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Količina</label>
+                                <input type="number" name="quantity" class="form-control" min="1" value="{{ $cartItem->quantity }}">
+                            </div>
+
+                            <button type="submit" class="btn btn-sm btn-primary w-100 mb-2">Izmeni <i class="fas fa-sync"></i></button>
+
+                            <div class="mb-1"><strong>Cena po komadu:</strong> {{ number_format($price, 2) }} €</div>
+                            <div class="mb-1"><strong>Ukupno:</strong> {{ number_format($totalPrice, 2) }} €</div>
+                            <div class="mb-1"><strong>Provizija (3%):</strong> {{ number_format($commissionAmount, 2) }} €</div>
+                            <div class="mb-2"><strong>Svega:</strong> {{ number_format($totalWithCommisionPrice, 2) }} €</div>
+                        </div>
+                    </form>
+
+                    <div class="card-footer bg-white">
+                        <div class="d-flex flex-column gap-2">
+                            @if($userBalance >= $totalWithCommisionPrice)
+                                <form action="{{ route('projects.store', $cartItem) }}" method="POST">
+                                    @csrf
+                                    <button class="btn btn-sm btn-success w-100" title="Kupi i pokreni projekat">
+                                        Kupi <i class="fas fa-shopping-cart"></i>
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('deposit.form') }}">
+                                    <button class="btn btn-sm btn-warning w-100" title="Dopuni">
+                                        Dopuni <i class="fas fa-credit-card"></i>
+                                    </button>
+                                </a>
+                            @endif
+
+                            <form action="{{ route('cart.destroy', $cartItem) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-danger w-100" title="Obriši iz korpe">
+                                    Obriši <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
 
         <div class="mt-4 p-3 border rounded bg-light">
             <h5><i class="fas fa-info-circle"></i> Opis akcija</h5>
