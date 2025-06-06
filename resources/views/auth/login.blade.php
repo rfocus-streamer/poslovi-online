@@ -96,9 +96,9 @@
                         <a href="{{ route('login.google') }}" class="btn btn-outline-danger">
                             <i class="fab fa-google me-1"></i>Google
                         </a>
-                        <a href="{{ route('login.facebook') }}" class="btn btn-outline-primary">
+                       <!--  <a href="{{ route('login.facebook') }}" class="btn btn-outline-primary">
                             <i class="fab fa-facebook-f me-1"></i>Facebook
-                        </a>
+                        </a> -->
                     </div>
                 </form>
             </div>
