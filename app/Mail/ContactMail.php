@@ -43,6 +43,11 @@ class ContactMail extends Mailable
             $mail->with(['verificationUrl' => $this->details['verificationUrl']]);
         }
 
+        // Proveravamo da li postoji resetUrl
+        if (isset($this->details['resetUrl'])) {
+            $mail->with(['resetUrl' => $this->details['resetUrl']]);
+        }
+
 
         return $mail;
     }

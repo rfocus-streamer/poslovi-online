@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
+use App\Mail\ContactMail;
 
 class PasswordResetLinkController extends Controller
 {
@@ -36,9 +39,50 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                            ->withErrors(['email' => __($status)]);
+        // Ako je sve prošlo kako treba, pozivamo našu metodu za slanje personalizovanog emaila
+        if ($status == Password::RESET_LINK_SENT) {
+            // Prvo proverimo da li korisnik postoji u bazi
+            $user = \App\Models\User::where('email', $request->email)->first();
+            if ($user) {
+                // Pozivamo našu metodu za slanje reset email-a
+                $this->sendResetEmail($user);
+            }
+
+            return back()->with('status', __($status));
+        } else {
+            return back()->withInput($request->only('email'))
+                ->withErrors(['email' => __($status)]);
+        }
+    }
+
+    public function sendResetEmail($user)
+    {
+        // Generišemo link za resetovanje lozinke (koristimo već ugrađenu logiku iz Laravel-a)
+        $resetUrl = URL::temporarySignedRoute(
+            'password.reset', // ime rute za reset lozinke
+            now()->addMinutes(60), // link važi 1 sat
+            [
+                'email' => $user->email,
+                'token' => app('auth.password.broker')->createToken($user),
+            ]
+        );
+
+        // Definišemo podatke koje šaljemo u email
+        $details = [
+            'first_name' => $user->firstname,
+            'last_name' => $user->lastname,
+            'email' => $user->email,
+            'message' => 'Kliknite na link ispod kako biste resetovali svoju lozinku.',
+            'template' => 'emails.reset_password', // Predloženi Blade šablon
+            'subject' => 'Resetujte vašu lozinku',
+            'from_email' => 'gligorijesaric@gmail.com',
+            'from' => 'Poslovi Online',
+            'resetUrl' => $resetUrl, // URL za reset lozinke
+        ];
+
+        // Šaljemo email korisniku
+        Mail::to($user->email)->send(new ContactMail($details));
+
+        return back()->with('success', 'Email za resetovanje lozinke je uspešno poslat!');
     }
 }

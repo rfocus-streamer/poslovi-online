@@ -1,12 +1,12 @@
 @extends('layouts.app')
-<title>Poslovi Online | Login stranica</title>
+<title>Poslovi Online | Zaboravljena lozinka</title>
 <link href="{{ asset('css/index.css') }}" rel="stylesheet">
 @section('content')
 
 <!-- Hero sekcija sa pozadinom -->
 <div class="hero-section">
     <div class="hero-content text-center text-white">
-        <span class="hero-subtitle">Prijavi se na tvoj nalog</span>
+        <span class="hero-subtitle">Prijavi se na tvoj nalog kroz resetovanje tvoje lozinke</span>
         <h1 class="hero-title text-center">Poslovi<mark>online</mark></h1>
     </div>
 </div>
@@ -34,31 +34,36 @@
             </div>
 
             <div class="modal-body p-4">
-                <!-- Session Status -->
-                <x-auth-session-status class="mb-1" :status="session('status')" />
-
-                <form method="POST" action="{{ route('password.email') }}">
-                    @csrf
-                    <!-- Email Address -->
-                    <div class="mb-1">
-                        <label for="email" class="form-label fw-bold">Email adresa</label>
-                        <input type="email"
-                               id="email"
-                               class="form-control form-control @error('email') is-invalid @enderror"
-                               name="email"
-                               value="{{ old('email') }}"
-                               required
-                               autofocus>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                <!-- Prikazivanje poruke iz sesije -->
+                @if (session('status'))
+                    <div class="alert alert-success text-center">
+                        <x-auth-session-status class="mb-1" :status="session('status')" />
                     </div>
+                @else
+                    <!-- Forma za reset link -->
+                    <form method="POST" action="{{ route('password.email') }}">
+                        @csrf
+                        <!-- Email Address -->
+                        <div class="mb-1">
+                            <label for="email" class="form-label fw-bold">Email adresa</label>
+                            <input type="email"
+                                   id="email"
+                                   class="form-control form-control @error('email') is-invalid @enderror"
+                                   name="email"
+                                   value="{{ old('email') }}"
+                                   required
+                                   autofocus>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                    <!-- Login Button -->
-                    <button type="submit" class="btn btn-primary w-100 mb-4 mt-3">
-                        <i class="fas fa-sign-in-alt me-1"></i>Pošalji reset link na email
-                    </button>
-                </form>
+                        <!-- Login Button -->
+                        <button type="submit" class="btn btn-primary w-100 mb-4 mt-3" style="background-color: #198754 !important; color: white !important">
+                            <i class="fas fa-sign-in-alt me-1"></i>Pošalji reset link na email
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </div>

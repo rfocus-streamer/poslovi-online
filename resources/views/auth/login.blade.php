@@ -46,7 +46,11 @@
 
             <div class="modal-body p-4">
                 <!-- Session Status -->
-                <x-auth-session-status class="mb-1" :status="session('status')" />
+                @if (session('status'))
+                    <div class="alert alert-success text-center">
+                        <x-auth-session-status class="mb-1" :status="session('status')" />
+                    </div>
+                @endif
 
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
