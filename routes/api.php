@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\Admin\DashboardController;
 
 /*
@@ -50,6 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Webhookovi
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
+    ->middleware('api'); // Bez CSRF i session
+Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handleWebhook'])
     ->middleware('api'); // Bez CSRF i session
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

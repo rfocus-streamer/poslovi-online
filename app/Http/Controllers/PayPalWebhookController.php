@@ -18,6 +18,7 @@ class PayPalWebhookController extends Controller
 
         if (!isset($event['event_type'])) {
             Log::error('Neispravan PayPal webhook payload');
+            Log::error($event);
             return response()->json(['error' => 'Invalid payload'], 400);
         }
 

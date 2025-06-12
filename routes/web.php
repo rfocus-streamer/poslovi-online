@@ -167,8 +167,10 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
-Route::post('/stripe/webhook', [PayPalWebhookController::class, 'handleWebhook'])
+Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handleWebhook'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+// Route::post('/stripe/webhook', [PayPalWebhookController::class, 'handleWebhook'])
+//     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 // routes/web.php (privremena test ruta)
 // Route::get('/generate-webhook', function() {
