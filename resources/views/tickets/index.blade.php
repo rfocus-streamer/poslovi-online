@@ -16,18 +16,34 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center">
+        <!-- Desktop naslov + info -->
+        <div class="d-none d-md-flex justify-content-between align-items-center">
+             @if(!in_array(Auth::user()->role, ['support', 'admin']))
+                <h4><i class="fas fa-ticket"></i> Tvoje tiketi</h4>
+                <div class="text-warning mb-2">
+                    <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
+                        </a>
+                </div>
+            @else
+                <h4><i class="fas fa-ticket"></i> Lista otvorenih tiketa</h4>
+            @endif
+        </div>
 
-        @if(!in_array(Auth::user()->role, ['support', 'admin']))
-            <h4><i class="fas fa-ticket"></i> Tvoje tiketi</h4>
-            <div class="text-warning mb-2">
-                <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
-                    </a>
-            </div>
-        @else
-            <h4><i class="fas fa-ticket"></i> Lista otvorenih tiketa</h4>
-        @endif
-    </div>
+        <!-- Mobile naslov + info -->
+        <div class="d-flex d-md-none flex-column text-center w-100">
+            @if(!in_array(Auth::user()->role, ['support', 'admin']))
+                <h6><i class="fas fa-ticket"></i> Tvoje tiketi</h6>
+                <div class="text-warning mb-2">
+                    <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
+                        </a>
+                </div>
+            @else
+                <h4><i class="fas fa-ticket"></i> Lista otvorenih tiketa</h4>
+            @endif
+        </div>
+
+        <!-- Originalna Tabela za desktop -->
+        <div class="d-none d-md-flex">
          <table class="table">
             <thead>
                 <tr>
@@ -96,6 +112,72 @@
         <div class="d-flex justify-content-center pagination-buttons" id="pagination-links">
             {{ $tickets->links() }}
         </div>
+    </div>
+
+    <!-- Mobile & Tablet cards -->
+    <div class="d-md-none">
+        @foreach($tickets as $key => $ticket)
+        <div class="card mb-3 subscription-card" data-id="{{ $ticket->id }}">
+            <div class="card-header btn-poslovi-green text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ route('tickets.show', $ticket) }}" class="text-light">
+                        <span>{{ $ticket->title }}</span>
+                    </a>
+                    <span class="badge bg-light text-dark">
+                        <span class="badge bg-{{ $ticket->status === 'open' ? 'success' : 'danger' }}">
+                            @if($ticket->status === 'open')
+                               Otvoren
+                            @else
+                               Zatvoren
+                            @endif
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">Kreiran</small>
+                        <div>{{ ucfirst($ticket->created_at->locale('sr')->diffForHumans()) }}</div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Poslednji odgovor</small>
+                        <div>
+                            @if ($ticket->responses->isNotEmpty())
+                                {{ ucfirst($ticket->responses->last()->created_at->locale('sr')->diffForHumans()) }}
+                            @else
+                                Nema još uvek odgovora
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white">
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="{{ route('tickets.show', $ticket) }}">
+                        <button type="button" class="btn btn-sm btn-warning position-relative">
+                            Pogledaj
+                            @php
+                                $unReadAnsw = $ticket->responses->whereNull('read_at')->where('user_id', '!=', auth()->id())->count();
+                                $countResponse = $ticket->responses->count();
+                                $isSupportOrAdmin = in_array(Auth::user()->role, ['support', 'admin']);
+                                $unReadAnsw = ($unReadAnsw === 0 && $countResponse === 0 && $isSupportOrAdmin) ? 1 : $unReadAnsw;
+                            @endphp
+                            <i class="fas fa-eye"></i>
+                            @if($unReadAnsw > 0)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ $unReadAnsw }}
+                                </span>
+                            @endif
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+
 </div>
 <script type="text/javascript">
     // Poziv funkcije za prevođenje teksta paginacije

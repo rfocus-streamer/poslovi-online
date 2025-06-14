@@ -16,7 +16,8 @@
             </div>
         @endif
 
-        <div class="ml-1 mt-1 mb-1">
+        <!-- Desktop naslov + info -->
+        <div class="d-none d-md-block ml-1 mt-1 mb-1">
             <h4 class="mb-0"><i class="fas fa-ticket"></i> {{ $ticket->title }}</h4>
                 <small class="text-muted">
                     Kreiran {{ $ticket->user->name }} |
@@ -24,8 +25,18 @@
                 </small>
         </div>
 
+        <!-- Mobile naslov + info -->
+        <div class="d-flex d-md-none flex-column text-center w-100">
+            <h6 class="mb-0"><i class="fas fa-ticket"></i> {{ $ticket->title }}</h6>
+                <small class="text-muted">
+                    Kreiran {{ $ticket->user->name }} |
+                    {{ $ticket->created_at->format('d.m.Y H:i') }}
+                </small>
+        </div>
+
+        <!-- Desktop -->
         <!-- Leva kolona sa detaljima ticketa -->
-        <div class="col-md-8 mb-3 g-0">
+        <div class="d-none d-md-block col-md-8 mb-3 g-0">
             <div class="card">
                 <div class="card-body">
 
@@ -140,6 +151,119 @@
                 </div>
             </div>
         </div>
+
+        <!-- Mobile Version (Kartice) -->
+        <div class="d-md-none mb-1">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        @if($ticket->user->avatar)
+                        <img src="{{ Storage::url('user/' . $ticket->user->avatar) }}"
+                             class="rounded-circle me-2"
+                             alt="Avatar"
+                             width="60"
+                             height="60">
+                        @endif
+                        <div>
+                            <strong>{{ $ticket->user->firstname.' '. $ticket->user->lastname }}</strong><br>
+                            <small class="text-muted">{{ $ticket->created_at->format('d.m.Y H:i') }}</small>
+                        </div>
+                    </div>
+
+                    <p class="mb-2">{{ $ticket->description }}</p>
+
+                    @if($ticket->attachment)
+                    <div class="mt-2">
+                        <a href="{{ Storage::url($ticket->attachment) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-link">
+                            <i class="fas fa-paperclip"></i> Preuzmi originalni prilog
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <h5 class="mb-3"><i class="fas fa-comments"></i> Odgovori ({{ $ticket->responses->count() }})</h5>
+
+            <!-- Lista odgovora kao kartice -->
+            @foreach($ticket->responses as $response)
+            <div class="card mb-3 ticket-response"
+                 data-response-id="{{ $response->id }}"
+                 data-is-unread="{{ $response->isUnread() && $response->user_id !== auth()->id() ? 'true' : 'false' }}">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        @if($response->user->avatar)
+                        <img src="{{ Storage::url('user/' . $response->user->avatar) }}"
+                             class="rounded-circle me-2"
+                             alt="Avatar"
+                             width="40"
+                             height="40">
+                        @endif
+                        <div>
+                            <small class="text-muted">
+                                @if($response->user->role === 'support')
+                                {{ $response->created_at->format('d.m.Y H:i') }}
+                                <span class="badge bg-info ms-2">Podrška</span>
+                                @elseif($response->user->role === 'admin')
+                                {{ $response->created_at->format('d.m.Y H:i') }}
+                                <span class="badge bg-info">Administrator</span>
+                                @else
+                                {{$response->user->firstname.' '.$response->user->lastname}}<br>
+                                {{ $response->created_at->format('d.m.Y H:i') }}
+                                @endif
+
+                                @if($response->isUnread() && $response->user_id === auth()->id())
+                                <i class="fas fa-check-double text-secondary" title="Nepročitano"></i>
+                                @elseif(!$response->isUnread() && $response->user_id === auth()->id())
+                                <i class="fas fa-check-double text-success" title="Pročitano {{ \Carbon\Carbon::parse($response->read_at)->format('d.m.Y H:i') }}"></i>
+                                @endif
+                            </small>
+                        </div>
+                    </div>
+
+                    <p class="mb-2">{{ $response->content }}</p>
+
+                    @if($response->attachment)
+                    <div class="mt-2">
+                        <a href="{{ Storage::url($response->attachment) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-link">
+                            <i class="fas fa-paperclip"></i> Prilog uz odgovor
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+
+            <!-- Forma za novi odgovor -->
+            @if($ticket->status !== 'closed')
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="fas fa-reply"></i> Dodaj odgovor</h6>
+                    <form method="POST" action="{{ route('tickets.responses.store', $ticket) }}" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <textarea class="form-control"
+                                      name="content"
+                                      rows="4"
+                                      placeholder="Unesite tekst odgovora..."
+                                      required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="attachment" class="form-label">Prilog (opcionalno)</label>
+                            <input type="file" class="form-control" name="attachment">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100" style="background-color: #198754">
+                            <i class="fas fa-paper-plane"></i> Pošalji odgovor
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
+        </div>
+
 
         <!-- Desna kolona sa informacijama i akcijama -->
         <div class="col-md-4 mb-3 g-0">
