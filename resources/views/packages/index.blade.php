@@ -231,6 +231,7 @@
         </div>
         <!-- Package Stats Modal -->
         <div class="modal fade" id="packageStatsModal" tabindex="-1" aria-labelledby="packageStatsModalLabel" aria-hidden="true">
+
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -242,7 +243,8 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
-                    <div class="modal-body">
+                    <!-- Desktop -->
+                    <div class="d-none d-md-flex modal-body">
                         <div class="table-responsive" id="subscriptions-table">
                             <table class="table table-hover">
                                 <thead class="table-light">
@@ -281,6 +283,46 @@
                             {{ $orders->links() }}
                         </div>
                     </div>
+
+                   <!-- Mobile & Tablet cards -->
+                    <div class="d-md-none">
+                        @foreach($orders as $subscription)
+                            <div class="card mb-3 subscription-card" data-id="{{ $subscription->id }}">
+                                <div class="card-header btn-poslovi-green text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>{{ $subscription->package->name }}</span>
+                                        <span class="badge bg-light text-dark">
+                                            {{ $subscription->amount }} €
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Plan</small>
+                                            <div>
+                                                @if($subscription->package->duration == 'monthly')
+                                                    Mesečni
+                                                @elseif($subscription->package->duration == 'yearly')
+                                                    Godišnji
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Aktiviran</small>
+                                            <div>{{ Carbon\Carbon::parse($subscription->created_at)->format('d.m.Y') }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <small class="text-muted">Ističe</small>
+                                        <div>{{ Carbon\Carbon::parse($subscription->expires_at)->format('d.m.Y') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
                 </div>
             </div>
         </div>
