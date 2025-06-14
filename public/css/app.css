@@ -107,7 +107,7 @@ footer a:hover {
 /* Medijski upit za mobilne uređaje (ako je potrebno) */
 @media (max-width: 767px) {
     .nav-link-mobile {
-        font-size: 0.8rem; /* Prilagodite veličinu fonta za mobilne */
+        font-size: 0.9rem !important; /* Prilagodite veličinu fonta za mobilne */
     }
 }
 

@@ -375,7 +375,7 @@ input:not(:checked) + .slider .label-text.right {
             </a>
 
             @guest
-                <div class="d-flex mt-4" style="color: rgba(0,0,0,.5) !important;">
+                <div class="d-flex mt-5 gap-3 ms-auto mr-3" style="color: rgba(0,0,0,.5) !important;">
                     <a class="nav-link-mobile {{ request()->routeIs('login') ? 'active' : '' }}"" href="{{ route('login') }}">
                         <i class="fas fa-sign-in-alt"></i> Prijava
                     </a>

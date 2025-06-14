@@ -50,8 +50,15 @@
 
 </style>
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center">
+    <!-- Desktop  -->
+    <div class="d-none d-md-flex justify-content-between align-items-center">
         <h4><i class="fas fa-file-signature"></i> Uredi ponudu</h4>
+        <a href="{{ route('services.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Nazad</a>
+    </div>
+
+    <!-- Mobile -->
+    <div class="d-flex d-md-none justify-content-between">
+        <h6><i class="fas fa-file-signature"></i> Uredi ponudu</h6>
         <a href="{{ route('services.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Nazad</a>
     </div>
 
@@ -138,7 +145,15 @@
                                 class="form-check-input"
                                 value="{{ $service->visible ? true : false }}"
                             >
-                            <div class="form-check text-end mt-4">
+                            <!-- Desktop  -->
+                            <div class="d-none d-md-block form-check text-end mt-4">
+                                <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
+                                <strong>Ponuda je javno dostupna do:</strong><br>
+                                {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y H:i')}}
+                            </div>
+
+                            <!-- Mobile -->
+                            <div class="d-md-none form-check text-center mt-4">
                                 <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
                                 <strong>Ponuda je javno dostupna do:</strong><br>
                                 {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y H:i')}}
@@ -214,10 +229,20 @@
         <div class="mb-3">
             <label class="form-label">Dodaj slike (maks. <span class="remaining-slots">{{ 10 - $service->serviceImages->count() }}</span>)</label>
             <input type="file" name="serviceImages[]" class="form-control" multiple accept="image/*">
-            <div class="d-flex justify-content-between">
+
+            <!-- Desktop -->
+            <div class="d-none d-md-flex justify-content-between">
                 <small class="text-muted">* Možeš dodati još <span class="remaining-slots">{{ 10 - $service->serviceImages->count() }}</span> slika.</small>
                 <small class="text-muted text-center">* Preporučena rezolucija: 1920x1080 px. Formati: JPG, JPEG, PNG, GIF.</small>
                 <small class="text-muted">* Dozvoljena maksimalna veličina slike 2MB</small>
+            </div>
+
+            <!-- Mobile -->
+            <div class="d-flex d-md-none flex-column w-100">
+                <small class="text-muted ml-2">* Možeš dodati još <span>{{ 10 - $service->serviceImages->count() }}</span> slika.</small>
+                <small class="text-muted ml-2">* Preporučena rezolucija: 1920x1080 px.</small>
+                <small class="text-muted ml-2">* Formati: JPG, JPEG, PNG, GIF.</small>
+                <small class="text-muted ml-2">* Dozvoljena maksimalna veličina slike 2MB</small>
             </div>
         </div>
 

@@ -50,8 +50,15 @@
 </style>
 
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center">
+    <!-- Desktop  -->
+    <div class="d-none d-md-flex justify-content-between align-items-center">
         <h4><i class="fas fa-file-signature"></i> Dodaj ponudu</h4>
+        <a href="{{ route('services.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Nazad</a>
+    </div>
+
+    <!-- Mobile -->
+    <div class="d-flex d-md-none justify-content-between">
+        <h6><i class="fas fa-file-signature"></i> Dodaj ponudu</h6>
         <a href="{{ route('services.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Nazad</a>
     </div>
 
@@ -167,9 +174,18 @@
         <div class="mb-3">
             <label class="form-label">Dodaj slike (maks. 10)</label>
             <input type="file" name="serviceImages[]" class="form-control" multiple accept="image/*">
-            <div class="d-flex">
-                <small class="text-muted">* Preporučena rezolucija: 1920x1080 px. Formati: JPG, JPEG, PNG, GIF.</small>
-                <small class="text-muted ms-auto">* Dozvoljena maksimalna veličina slike 2MB</small>
+
+             <!-- Desktop -->
+            <div class="d-none d-md-flex justify-content-between">
+                <small class="text-muted text-center">* Preporučena rezolucija: 1920x1080 px. Formati: JPG, JPEG, PNG, GIF.</small>
+                <small class="text-muted">* Dozvoljena maksimalna veličina slike 2MB</small>
+            </div>
+
+            <!-- Mobile -->
+            <div class="d-flex d-md-none flex-column w-100">
+                <small class="text-muted ml-2">* Preporučena rezolucija: 1920x1080 px.</small>
+                <small class="text-muted ml-2">* Formati: JPG, JPEG, PNG, GIF.</small>
+                <small class="text-muted ml-2">* Dozvoljena maksimalna veličina slike 2MB</small>
             </div>
         </div>
 
