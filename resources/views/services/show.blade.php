@@ -6,16 +6,40 @@
     <div class="row d-flex">
         <!-- Prikaz poruke sa anchor ID -->
         @if(session('success'))
-            <div id="cart-message" class="alert alert-success text-center">
+            <div id="cart-message" class="alert alert-success text-center mb-4">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('danger'))
-            <div id="cart-message-danger" class="alert alert-danger text-center">
+            <div id="cart-message-danger" class="alert alert-danger text-center mb-4">
                 {{ session('danger') }}
             </div>
         @endif
+
+        <!-- Mobile -->
+        @auth
+            @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
+                <div id="favoriteBtn" class="d-md-none col-12 col-md-8 text-end"> <!-- Ovo gura dugmad na desno -->
+                    @php
+                        $favorite = Auth::user()->favorites->firstWhere('service_id', $service->id);
+                    @endphp
+
+                        @if($favorite)
+                            <form action="{{ route('favorites.destroy', $favorite) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-outline-danger ms-auto btn-sm" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Ukloni <i class="fas fa-heart"></i></button>
+                            </form>
+                        @else
+                            <form action="{{ route('favorites.store', $service) }}" method="POST">
+                                @csrf
+                                <button class="btn btn-outline-success ms-auto btn-sm" data-bs-toggle="tooltip" title="Dodaj u omiljeno">Dodaj <i class="fas fa-heart"></i></button>
+                            </form>
+                        @endif
+                </div>
+            @endif
+        @endauth
 
         <!-- Naslov i osnovne informacije -->
             <h1 class="mb-4">{{ $service->title }}</h1>
@@ -83,9 +107,10 @@
                 </div>
             </div>
 
-             @auth
+            <!-- Dekstop -->
+            @auth
                 @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
-                    <div id="favoriteBtn" class="col-12 col-md-8 text-end"> <!-- Ovo gura dugmad na desno -->
+                    <div id="favoriteBtn" class="d-none d-md-block col-12 col-md-8 text-end"> <!-- Ovo gura dugmad na desno -->
                         @php
                             $favorite = Auth::user()->favorites->firstWhere('service_id', $service->id);
                         @endphp
@@ -220,7 +245,9 @@
 
                     <p class="choos-label">Odaberi</p>
                     <h5 class="card-title mb-4 service-package">Paket</h5>
-                    <div class="row">
+
+                    <!-- Desktop Display - Cards Row for larger screens -->
+                    <div class="row d-none d-md-flex">
                         <!-- Basic paket -->
                         <div class="col-md-4">
                             <div class="card h-100">
@@ -324,6 +351,47 @@
                         @endif
                     </div>
                 </div>
+            </div>
+
+            <!-- Mobile & Tablet Cards -->
+            <div class="d-md-none">
+                @foreach(['basic', 'standard', 'premium'] as $package)
+                    @if (!is_null($service->{$package.'_price'}))
+                        <div class="card mb-3">
+                            <div class="card-body card-text">
+                                <h6 class="card-title text-center package-category">
+                                        <i class="fas fa-{{ $package === 'basic' ? 'box' : ($package === 'standard' ? 'gift' : 'gem') }} text-{{ $package === 'basic' ? 'primary' : ($package === 'standard' ? 'success' : 'warning') }}"></i>
+                                        {{ ucfirst($package) }}
+                                </h6>
+
+                                <p class="text-center d-flex align-items-center">
+                                        {{ Str::limit($service->{$package.'_inclusions'}, 15) }}
+                                        <i class="fa fa-info-circle ml-2 text-primary mt-1" data-toggle="modal" data-target="#{{ $package }}InclusionsModal" style="cursor: pointer;"></i>
+                                </p>
+
+                                <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->{$package.'_price'}, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
+                                <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->{$package.'_delivery_days'} }} dana</p>
+
+                                @auth
+                                    @if(Auth::user()->role === 'buyer' || Auth::user()->role === 'both')
+                                        @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', ucfirst($package)))
+                                            <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', ucfirst($package))->first()->id ?? 0) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-outline-danger ms-auto w-100" data-bs-toggle="tooltip" title="Ukloni iz korpe"><i class="fas fa-trash"></i> Ukloni iz <i class="fas fa-shopping-cart"></i></button>
+                                                </form>
+                                        @elseif($cartItemCount == 0)
+                                            <form action="{{ route('cart.store', ['service' => $service, 'package' => ucfirst($package)]) }}" method="POST">
+                                                    @csrf
+                                                    <button class="btn btn-service-choose w-100" data-bs-toggle="tooltip" title="Dodaj u korpu"><i class="fas fa-shopping-cart"></i> Dodaj</button>
+                                            </form>
+                                        @endif
+                                    @endif
+                                @endauth
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
             </div>
 
         <!-- Bootstrap Basic Inclusions Modal -->
