@@ -11,6 +11,14 @@
     .blinking-alert {
         animation: blink 1s infinite;
     }
+
+    .form-check-input {
+        border-color: #198754;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754; /* Bootstrap "success" zelena */
+    }
 </style>
 
 <div class="container py-5">
@@ -33,8 +41,40 @@
             <div class="card">
                 <div class="card-header text-center card-header btn-poslovi text-white"><i class="fas fa-euro-sign"></i> Preporuči – Zaradi! </div>
 
-                <div class="card-body">
+                <!-- Desktop -->
+                <div class="d-none d-md-block card-body">
                     <h5 class="text-center">Preporuči prodavca i na poklon dobijaš 70% od njegove prve članarine!</h5>
+                    <span>Uključi se u naš affiliate program i ostvari 70% provizije od prve mesečne članarine svakog prodavca koga preporučiš. Podeli svoj jedinstveni link i gledaj kako tvoja zarada raste!</span><br>
+
+
+                    @if(!Auth::user()->affiliate_accepted)
+                        <form method="POST" action="{{ route('affiliate-activate') }}" >
+                            @csrf
+                            <!-- Prihvatam uslove -->
+                            <div class="form-check mb-3 mt-5">
+                                <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    Prihvatam uslove <a href="{{ route('affiliate-contract') }}" target="_blank">affiliate programa</a>
+                                </label>
+                                @error('terms')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                        <i class="fa fas fa-power-off me-1"></i> Uključi
+                                                    </button>
+                        </form>
+                    @else
+                        <br><br>
+                        <div class="text-center">
+                            <span class="text-success">Tvoj affiliate status je aktivan, iskoristi mogućnost ovog programa da bi zaradio !</span>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Mobile -->
+                <div class="d-md-none card-body">
+                    <h6 class="text-center">Preporuči prodavca i na poklon dobijaš 70% od njegove prve članarine!</h6>
                     <span>Uključi se u naš affiliate program i ostvari 70% provizije od prve mesečne članarine svakog prodavca koga preporučiš. Podeli svoj jedinstveni link i gledaj kako tvoja zarada raste!</span><br>
 
 
@@ -163,7 +203,8 @@
                             </div>
                         </div>
 
-                        <div class="table-responsive">
+                        <!-- Desktop -->
+                        <div class="d-none d-md-table table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
@@ -219,6 +260,71 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Mobile & Tablet Cards -->
+                        <div class="d-md-none">
+                            @forelse(Auth::user()->referrals as $key => $referral)
+                            <div class="card mb-3 subscription-card" data-id="{{ $referral->id }}">
+                                <div class="card-header btn-poslovi-green text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Referal #{{ $key+1 }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <small class="text-muted">Registrovan</small>
+                                            <div>{{ $referral->created_at->format('d.m.Y.') }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Paket</small>
+                                            <div>
+                                                @if($referral->package)
+                                                    {{ $referral->package->name }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Cena</small>
+                                            <div>
+                                                @if($referral->package)
+                                                    {{ number_format($referral->package->price, 2) }}€
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Zarada</small>
+                                            <div class="text-success fw-bold">
+                                                @php
+                                                    $commission = $referral->referralCommissions->sum('amount');
+                                                @endphp
+                                                {{ $commission ? number_format($commission, 2).'€' : '-' }}
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <small class="text-muted">Aktiviran</small>
+                                            <div>
+                                                <span class="badge {{ $referral->package ? 'bg-success' : 'bg-secondary' }}">
+                                                    {{ $referral->referralCommissions->isNotEmpty() ? $referral->referralCommissions->first()->created_at->format('d.m.Y H:i') : 'Neaktivan' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                            <div class="card mb-3 subscription-card">
+                                <div class="card-body text-center">
+                                    <p class="text-muted">Nema registrovanih korisnika</p>
+                                </div>
+                            </div>
+                            @endforelse
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -238,7 +344,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
-                    <div class="modal-body">
+                    <div class="d-none d-md-table modal-body">
                         <div class="table-responsive">
                             <table class="table table-hover" id="affiliatePayouts-table">
                                 <thead class="table-light">
@@ -305,6 +411,81 @@
                         </div>
 
                     </div>
+
+                    <!-- Mobile & Tablet Cards -->
+                    <div class="d-md-none">
+                        @forelse($payouts as $key => $payout)
+                        <div class="card mb-3 subscription-card" data-id="{{ $payout->id }}">
+                            <div class="card-header btn-poslovi-green text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Isplata #{{ $key+1 }}</span>
+                                    <span class="badge bg-light text-dark">
+                                        @switch($payout->status)
+                                            @case('requested')
+                                                <span class="badge bg-warning">Na čekanju</span>
+                                                @break
+                                            @case('completed')
+                                                <span class="badge bg-success">Završeno</span>
+                                                @break
+                                            @case('rejected')
+                                                <span class="badge bg-danger">Odbijeno</span>
+                                                @break
+                                        @endswitch
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Podnet</small>
+                                        <div>{{ $payout->request_date->format('d.m.Y.') }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Isplaćen</small>
+                                        <div>
+                                            @if ($payout->payed_date)
+                                                {{ \Carbon\Carbon::parse($payout->payed_date)->format('d.m.Y.') }}
+                                            @else
+                                                Nema podataka
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Iznos</small>
+                                        <div class="fw-bold">{{ number_format($payout->amount, 2) }} €</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Način plaćanja</small>
+                                        <div>
+                                            @switch($payout->payment_method)
+                                                @case('paypal')
+                                                    <i class="fab fa-paypal me-2"></i>PayPal
+                                                    @break
+                                                @case('credit_card')
+                                                    <i class="fas fa-credit-card me-2"></i>Kartica
+                                                    @break
+                                                @case('bank_account')
+                                                    <i class="fas fa-university me-2"></i>Bankovni transfer
+                                                    @break
+                                            @endswitch
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <small class="text-muted">Uplata na</small>
+                                        <div>{{ $payout->payment_details }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="card mb-3 subscription-card">
+                            <div class="card-body text-center">
+                                <p class="text-muted">Nema još zahteva za isplatu</p>
+                            </div>
+                        </div>
+                        @endforelse
+                    </div>
+
                 </div>
             </div>
         </div>
