@@ -20,17 +20,19 @@
 
     <div class="d-flex justify-content-between align-items-center">
         <!-- Desktop naslov + info -->
-        <div class="d-none d-md-flex align-items-center gap-3">
+        <div class="d-none d-md-flex align-items-center gap-3 w-100">
             <h4 class="mb-0"><i class="fas fa-handshake"></i> Tvoji poslovi</h4>
-            <h6 class="text-secondary mb-0">
-                <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva:
-                <strong class="text-success">{{ number_format($reserved_amount, 2) }} €</strong>
-            </h6>
+            <div class="ms-auto">
+                <h6 class="text-secondary mb-0">
+                    <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva:
+                    <strong class="text-success">{{ number_format($reserved_amount, 2) }} €</strong>
+                </h6>
+            </div>
         </div>
 
         <!-- Mobile naslov + info -->
         <div class="d-flex d-md-none flex-column text-center w-100">
-            <h5 class="mb-0"><i class="fas fa-handshake"></i> Tvoji poslovi</h5>
+            <h6 class="mb-0"><i class="fas fa-handshake"></i> Tvoji poslovi</h6>
             <h6 class="text-secondary mt-1">
                 <i class="fas fa-credit-card"></i> Ukupna rezervisana sredstva:
                 <strong class="text-success">{{ number_format($reserved_amount, 2) }} €</strong>
@@ -40,7 +42,15 @@
 
 
     @if($projects->isEmpty())
-        <p>Nemaš aktivnih poslova.</p>
+        <!-- Desktop -->
+        <div class="d-none d-md-flex">
+            <p>Nemaš aktivnih poslova.</p>
+        </div>
+
+        <!-- Mobile  -->
+        <div class="d-md-none text-center">
+            <p>Nemaš aktivnih poslova.</p>
+        </div>
     @else
         <table class="table d-none d-md-table">
             <thead>
