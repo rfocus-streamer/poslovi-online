@@ -70,8 +70,17 @@
                             </select>
                         </div>
 
+                        <!-- Mobile  -->
+                        <div class="d-md-none text-center">
+                                <label class="form-label">Odaberi način plaćanja</label>
+                        </div>
+
                         <div class="mb-3 d-flex">
-                            <label class="form-label">Način plaćanja:</label>
+                            <!-- Desktop -->
+                            <div class="d-none d-md-flex">
+                                <label class="form-label">Način plaćanja:</label>
+                            </div>
+
                             <div class="ms-2 d-flex justify-content-center text-center">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal" checked>
@@ -105,7 +114,7 @@
 
                         <div class="mt-4">
                             <button type="submit" id="submit-button" class="btn w-100" style="background-color: #198754">
-                                <span id="button-text" class="text-white">Plati preko PayPal-a</span>
+                                <span id="button-text" class="text-white">Uplati preko PayPal-a</span>
                             </button>
                         </div>
                     </form>
@@ -263,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (stripeRadio.checked) {
             stripeContainer.classList.remove('d-none');
             submitButton.classList.add('text-white');
-            submitButton.innerHTML = 'Plati preko kartice';
+            submitButton.innerHTML = 'Uplati preko kartice';
         }
     });
 
@@ -271,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (paypalRadio.checked) {
             stripeContainer.classList.add('d-none');
             submitButton.classList.add('text-white');
-            submitButton.innerHTML = 'Plati preko PayPal-a';
+            submitButton.innerHTML = 'Uplati preko PayPal-a';
         }
     });
 
