@@ -20,23 +20,47 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center">
-        <!-- Naslov korpe levo -->
-        <h4><i class="fas fa-shopping-cart"></i> Tvoja korpa</h4>
+        <!-- Desktop naslov + info -->
+        <div class="d-none d-md-flex justify-content-between align-items-center mb-1">
+            <!-- Naslov korpe levo -->
+            <h4><i class="fas fa-shopping-cart"></i> Tvoja korpa</h4>
 
-        <!-- Balans korisnika desno -->
-        <h6 class="text-secondary">
-            <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
-        </h6>
-        @if(!$cartItems->isEmpty())
-             <!-- pretraga omiljenih ponuda desno -->
-            <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table">
-        @endif
-    </div>
+            <!-- Balans korisnika desno -->
+            <h6 class="text-secondary">
+                <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
+            </h6>
+            @if(!$cartItems->isEmpty())
+                 <!-- pretraga omiljenih ponuda desno -->
+                <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table">
+            @endif
+        </div>
+
+        <!-- Mobile naslov + info -->
+        <div class="d-flex d-md-none flex-column text-center w-100 mb-1">
+            <!-- Naslov korpe levo -->
+            <h6><i class="fas fa-shopping-cart"></i> Tvoja korpa</h6>
+
+            <!-- Balans korisnika desno -->
+            <h6 class="text-secondary">
+                <i class="fas fa-credit-card"></i> Trenutni depozit: <strong class="text-success">{{ number_format(Auth::user()->deposits, 2) }} <i class="fas fa-euro-sign"></i></strong>
+            </h6>
+            @if(!$cartItems->isEmpty())
+                 <!-- pretraga omiljenih ponuda desno -->
+                <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table">
+            @endif
+        </div>
 
 
     @if($cartItems->isEmpty())
-        <p>Tvoja korpa je prazna.</p>
+        <!-- Desktop -->
+        <div class="d-none d-md-flex">
+            <p>Tvoja korpa je prazna.</p>
+        </div>
+
+        <!-- Mobile  -->
+        <div class="d-md-none text-center">
+            <p>Tvoja korpa je prazna.</p>
+        </div>
     @else
         <table class="table table-bordered align-middle d-none d-md-table">
             <thead>
