@@ -16,18 +16,37 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-1">
-        <!-- Naslov omiljeno levo -->
-        <h4><i class="fas fa-heart"></i> Tvoje omiljene ponude</h4>
-        @if($favoriteServices->isNotEmpty())
-            <!-- pretraga omiljenih ponuda desno -->
-            <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table"">
-        @endif
-    </div>
+        <!-- Desktop naslov + info -->
+        <div class="d-none d-md-flex justify-content-between align-items-center mb-1">
+            <!-- Naslov omiljeno levo -->
+            <h5><i class="fas fa-heart"></i> Tvoje omiljene ponude</h5>
+            @if($favoriteServices->isNotEmpty())
+                <!-- pretraga omiljenih ponuda desno -->
+                <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table"">
+            @endif
+        </div>
+
+        <!-- Mobile naslov + info -->
+        <div class="d-flex d-md-none flex-column text-center w-100 mb-1">
+            <!-- Naslov omiljeno levo -->
+            <h6><i class="fas fa-heart"></i> Tvoje omiljene ponude</h6>
+            @if($favoriteServices->isNotEmpty())
+                <!-- pretraga omiljenih ponuda desno -->
+                <input type="text" id="searchInput" placeholder="Pretraži omiljene ponude..." class="form-control w-25 d-none d-md-table"">
+            @endif
+        </div>
 
 
     @if($favoriteServices->isEmpty())
-        <p>Tvoja omiljena lista je prazna.</p>
+        <!-- Desktop -->
+        <div class="d-none d-md-flex">
+            <p>Tvoja omiljena lista je prazna.</p>
+        </div>
+
+        <!-- Mobile  -->
+        <div class="d-md-none text-center">
+            <p>Tvoja omiljena lista je prazna.</p>
+        </div>
     @else
         <table class="table table-bordered align-middle d-none d-md-table">
             <thead>
@@ -180,28 +199,33 @@ document.addEventListener("DOMContentLoaded", function () {
     // Pretraga tabele
     const searchInput = document.getElementById('searchInput');
     const tableBody = document.querySelector('.table tbody');
-    const rows = tableBody.querySelectorAll('tr');
-
-    searchInput.addEventListener('input', function () {
+    let rows = [];
+    if (tableBody) {
+        rows = tableBody.querySelectorAll('tr');
+        searchInput.addEventListener('input', function () {
         const searchTerm = this.value.toLowerCase();
 
         rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            let match = false;
+                const cells = row.querySelectorAll('td');
+                let match = false;
 
-            cells.forEach(cell => {
-                if (cell.textContent.toLowerCase().includes(searchTerm)) {
-                    match = true;
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                        match = true;
+                    }
+                });
+
+                if (match) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
                 }
             });
-
-            if (match) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
         });
-    });
+    } else {
+        //console.warn("Tabela nije pronađena u DOM-u.");
+    }
+
 
     // Provera hash-a i skrol
     if (window.location.hash === '#cart-message') {
