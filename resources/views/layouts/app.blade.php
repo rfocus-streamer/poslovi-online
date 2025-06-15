@@ -290,7 +290,7 @@ input:not(:checked) + .slider .label-text.right {
                                     <i class="fas fa-user {{ request()->routeIs('deposit.form', 'profile.edit', 'invoices.index', 'affiliate.index','tickets.index') ? 'text-danger' : '' }}"></i> Profil
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="profileDropdown">
-                                    <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Uredi profil</a></li>
                                     @if(!in_array(Auth::user()->role, ['support', 'admin']))
                                         <li><a class="dropdown-item" href="{{ route('deposit.form') }}">Depozit</a></li>
                                         <li><a class="dropdown-item" href="{{ route('invoices.index') }}">Računi</a></li>
@@ -404,7 +404,7 @@ input:not(:checked) + .slider .label-text.right {
                         <ul class="list-group">
                             <li class="list-group-item border-0">
                                 <a class="text-dark" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-user-circle me-2"></i> Profil
+                                    <i class="fas fa-user-circle me-2"></i> Uredi profil
                                 </a>
                             </li>
 

@@ -7,6 +7,13 @@
    /* .subscription-row:hover { cursor: pointer; background: #f8f9fa; }
     .subscription-details { background: #f8f9fa; }
     .details-loading { display: none; }*/
+    .form-check-input {
+        border-color: #198754;
+    }
+
+    .form-check-input:checked {
+        background-color: #198754; /* Bootstrap "success" zelena */
+    }
 </style>
 <div class="container py-5">
     <div class="row">
@@ -24,7 +31,7 @@
                     {{ session('error') }}
                 </div>
             @endif
-            <div class="card">
+            <div class="card mb-1">
                 <div class="card-header text-center card-header text-white" style="background-color: #198754">
                     <i class="fas fa-credit-card"></i> Odaberi pretplatu
                 </div>
@@ -57,8 +64,16 @@
                         </div>
 
                         <!-- Način plaćanja -->
+                        <!-- Mobile  -->
+                        <div class="d-md-none text-center">
+                                <label class="form-label">Odaberi način plaćanja</label>
+                        </div>
                         <div class="mb-3 d-flex">
-                            <label class="form-label">Način plaćanja:</label>
+                            <!-- Desktop -->
+                            <div class="d-none d-md-flex">
+                                <label class="form-label">Način plaćanja:</label>
+                            </div>
+
                             <div class="ms-2 d-flex justify-content-center text-center">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal" checked>
@@ -135,8 +150,8 @@
                     <div class="card-header btn-poslovi text-white text-center">
                         Tvoje pretplate
                     </div>
-                    <div class="card-body">
-                        <table class="table table-bordered align-middle d-none d-md-block">
+                    <div class="card-body d-none d-md-table">
+                        <table class="table table-bordered align-middle">
                             <thead>
                                 <tr>
                                     <th>Paket</th>
@@ -222,13 +237,20 @@
                             </tbody>
                         </table>
 
-                         <!-- Mobile & Tablet cards -->
-                        <div class="d-md-none">
-                            @foreach($subscriptions as $subscription)
-                            <div class="card mb-3 subscription-card" data-id="{{ $subscription->id }}">
-                                <div class="card-header btn-poslovi-green text-white">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>{{ $subscription->package->name ?? 'Nepoznat paket' }}</span>
+                        <!-- Navigacija za strane -->
+                        <div class="mt-4 pagination-buttons text-center">
+                            {{ $subscriptions->links() }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile & Tablet cards -->
+                <div class="d-md-none mt-2">
+                    @foreach($subscriptions as $subscription)
+                        <div class="card mb-3 subscription-card" data-id="{{ $subscription->id }}">
+                            <div class="card-header btn-poslovi-green text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ $subscription->package->name ?? 'Nepoznat paket' }}</span>
                                         <span class="badge bg-light text-dark">
                                             @php
                                                 $status = strtolower($subscription->status);
@@ -241,79 +263,75 @@
                                                 };
                                             @endphp
                                             {{ $statusText }}
-                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Početak</small>
+                                        <div>{{ $subscription->created_at ? Carbon::parse($subscription->created_at)->format('d.m.Y') : '-' }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Kraj</small>
+                                        <div>{{ $subscription->ends_at ? Carbon::parse($subscription->ends_at)->format('d.m.Y') : '-' }}</div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <small class="text-muted">Početak</small>
-                                            <div>{{ $subscription->created_at ? Carbon::parse($subscription->created_at)->format('d.m.Y') : '-' }}</div>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Kraj</small>
-                                            <div>{{ $subscription->ends_at ? Carbon::parse($subscription->ends_at)->format('d.m.Y') : '-' }}</div>
+
+                                <div class="row mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Način plaćanja</small>
+                                        <div>
+                                            @if($subscription->gateway === 'stripe')
+                                                Kreditna kartica
+                                            @elseif($subscription->gateway === 'paypal')
+                                                PayPal
+                                            @else
+                                                {{ ucfirst($subscription->gateway) ?? '-' }}
+                                            @endif
                                         </div>
                                     </div>
 
-                                    <div class="row mt-2">
-                                        <div class="col-6">
-                                            <small class="text-muted">Način plaćanja</small>
-                                            <div>
-                                                @if($subscription->gateway === 'stripe')
-                                                    Kreditna kartica
-                                                @elseif($subscription->gateway === 'paypal')
-                                                    PayPal
-                                                @else
-                                                    {{ ucfirst($subscription->gateway) ?? '-' }}
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Cena</small>
-                                            <div>{{ $subscription->package->price ?? '' }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-2">
-                                        <small class="text-muted">Subscription ID</small>
-                                        <div class="text-truncate">
-                                            {{ $subscription->subscription_id ?? '-' }}
-                                        </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Cena</small>
+                                        <div>{{ $subscription->package->price ?? '' }}</div>
                                     </div>
                                 </div>
-                                <div class="card-footer bg-white">
-                                    @if($subscription->status === 'active')
-                                        <form method="POST" action="{{ $subscription->gateway === 'stripe' ? route('subscription.stripe.cancel', $subscription->id) : route('subscription.paypal.cancel', $subscription->id) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-danger w-100" onclick="return confirm('Da li ste sigurni da želite da otkažete pretplatu?')">
+
+                                <div class="mt-2">
+                                    <small class="text-muted">Subscription ID</small>
+                                    <div class="text-truncate">
+                                        {{ $subscription->subscription_id ?? '-' }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer bg-white">
+                                @if($subscription->status === 'active')
+                                    <form method="POST" action="{{ $subscription->gateway === 'stripe' ? route('subscription.stripe.cancel', $subscription->id) : route('subscription.paypal.cancel', $subscription->id) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-danger w-100" onclick="return confirm('Da li ste sigurni da želite da otkažete pretplatu?')">
                                                 Otkaži pretplatu
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
+                        </div>
 
-                            <!-- Details card for mobile (initially hidden) -->
-                            <div class="subscription-details-mobile collapse" id="details-mobile-{{ $subscription->id }}">
-                                <div class="card card-body bg-light">
-                                    <div class="details-loading text-center py-2">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
+                        <!-- Details card for mobile (initially hidden) -->
+                        <div class="subscription-details-mobile collapse" id="details-mobile-{{ $subscription->id }}">
+                            <div class="card card-body bg-light">
+                                <div class="details-loading text-center py-2">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
                                     </div>
-                                    <div class="details-content"></div>
                                 </div>
+                                <div class="details-content"></div>
                             </div>
-                            @endforeach
                         </div>
-
-                        <!-- Navigacija za strane -->
-                        <div class="mt-4 pagination-buttons text-center">
-                            {{ $subscriptions->links() }}
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             @else
                 <div class="alert alert-info text-center mt-4">
