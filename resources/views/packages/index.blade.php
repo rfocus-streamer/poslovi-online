@@ -44,8 +44,8 @@
                 <small class="text-secondary">Ponudi. Poveži se. Zaradi.</small>
             </div>
 
-
-            <div class="card mb-1">
+           <!--  Dekstop -->
+            <div class="card d-none d-md-flex mb-1">
                 <div class="card-body">
                     <div class="row">
 
@@ -141,9 +141,103 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
+
+        <!-- Mobile -->
+        <div class="d-md-none mb-1">
+             <div class="card mb-3">
+                <small class="ml-2"><i class="fas fa-info-circle"></i> Promena godišnje ili mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
+            </div>
+            @foreach($packages as $key => $package)
+                <div class="mb-4">  <!-- Dodajemo mb-4 za razmak između redova -->
+                    <div class="card position-relative">
+                        <!-- Ukoso u gornjem levom uglu - Godisnji popust -->
+                        @if($package->duration == 'yearly')
+                            <div class="position-absolute top-0 start-0 p-1 bg-danger text-white" style="transform: rotate(-45deg); transform-origin: top left; font-size: 0.75rem; margin-top: 35px; margin-left: -10px;">
+                                        <strong>20% popust</strong>
+                            </div>
+                        @endif
+
+                        <div class="card-body card-text mb-1">
+                            <form method="POST" action="{{ route('package.activate', $package) }}" enctype="multipart/form-data">
+                                @csrf
+                                @method('PATCH') <!-- Dodajemo PATCH metod jer forma koristi POST -->
+                                    <!-- Ikona i naziv paketa -->
+                                    <h6 class="card-title text-center package-category">
+                                            <i class="
+                                                @if($key % 3 == 0)
+                                                    fas fa-box text-primary
+                                                @elseif($key % 3 == 1)
+                                                    fas fa-gift text-success
+                                                @else
+                                                    fas fa-gem text-warning
+                                                @endif
+                                            "></i>
+                                            {{$package->name}}
+                                    </h6>
+                                    <div class="text-center mb-5">
+                                            <p>{{$package->description}}</p>
+                                            <p>Plan:
+                                                @if($package->duration == 'monthly')
+                                                    Mesečni
+                                                @elseif($package->duration == 'yearly')
+                                                    Godišnji
+                                                @endif
+                                            </p>
+                                            <p><strong>Cena: </strong>{{$package->price}} <i class="fas fa-euro-sign"></i></p>
+                                    </div>
+
+                                    @if(Auth::user()->deposits >= $package->price)
+                                        @if(Auth::user()->package)
+                                            @if(Auth::user()->package->price < $package->price)
+                                                <!-- Submit Button -->
+                                                <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                        <i class="fa fas fa-shopping-cart me-1"></i> Kupi
+                                                </button>
+                                            @endif
+
+                                            @if(Auth::user()->package->id === $package->id)
+                                                <button type="button" class="btn text-white w-100 btn-secondary">
+                                                        <i class="fa fa-check-circle me-1"></i> Kupljen
+                                                </button>
+                                            @endif
+                                        @else
+                                            <!-- Submit Button -->
+                                            <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                    <i class="fa fas fa-shopping-cart me-1"></i> Kupi
+                                            </button>
+                                        @endif
+                                    @else
+                                        @if(Auth::user()->package)
+                                            @if(Auth::user()->deposits >= $package->price)
+                                                <!-- Submit Button -->
+                                                <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                        <i class="fa fas fa-shopping-cart me-1"></i> Kupi
+                                                </button>
+                                            @elseif(Auth::user()->package->price <= $package->price and Auth::user()->package->id != $package->id)
+                                                <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}"    class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
+                                                        <i class="fas fa-credit-card"></i> Pretplati se
+                                                </a>
+                                            @endif
+
+                                            @if(Auth::user()->package->id === $package->id)
+                                                <button type="button" class="btn text-white w-100 btn-secondary">
+                                                        <i class="fa fa-check-circle me-1"></i> Kupljen
+                                                </button>
+                                            @endif
+                                        @else
+                                            <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}" class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
+                                                        <i class="fas fa-credit-card"></i> Pretplati se
+                                                </a>
+                                        @endif
+                                    @endif
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+        </div>
+
 
         <div class="col-md-4">
             <div class="card mb-3">
