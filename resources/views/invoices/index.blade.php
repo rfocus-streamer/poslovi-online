@@ -31,6 +31,18 @@
         </div>
     @endif
 
+    <div class="d-flex justify-content-between align-items-center">
+        <!-- Desktop naslov + info -->
+        <div class="d-none d-md-flex align-items-center gap-3 w-100">
+            <h4 class="mb-0"><i class="fas fa-file-invoice"></i> Tvoji računi</h4>
+        </div>
+
+        <!-- Mobile naslov + info -->
+        <div class="d-flex d-md-none flex-column text-center w-100">
+            <h6 class="mb-0"><i class="fas fa-file-invoice"></i> Tvoji računi</h6>
+        </div>
+    </div>
+
 
     @if($invoices->isEmpty())
         <p>Nemaš generisanih računa.</p>
@@ -90,7 +102,7 @@
     </div>
 
     <!-- Mobile & Tablet kartice -->
-    <div class="d-md-none">
+    <div class="d-md-none mt-2">
         <div class="invoice-cards-container" style="overflow-x: auto; white-space: nowrap;">
             @foreach($invoices as $invoice)
                 @foreach($invoice->items as $item)
