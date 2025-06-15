@@ -49,7 +49,7 @@
     @if(empty($projects))
         <p>Nemaš aktivnih poslova.</p>
     @else
-        <table class="table d-none d-md-block">
+        <table class="table d-none d-md-table">
             <thead>
                 <tr>
                     <th>#</th>
