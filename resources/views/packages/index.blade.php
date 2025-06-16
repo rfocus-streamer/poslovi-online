@@ -49,6 +49,10 @@
                 <div class="card-body">
                     <div class="row">
 
+                    @php
+                        $packageExpired = \Carbon\Carbon::parse(Auth::user()->package_expires_at)->isPast();
+                    @endphp
+
                     @foreach($packages as $key => $package)
                         <div class="col-md-4 mb-4">  <!-- Dodajemo mb-4 za razmak između redova -->
                             <div class="card h-100 position-relative">
@@ -89,7 +93,7 @@
                                         </div>
 
                                         @if(Auth::user()->deposits >= $package->price)
-                                            @if(Auth::user()->package)
+                                            @if(Auth::user()->package and !$packageExpired)
                                                 @if(Auth::user()->package->price < $package->price)
                                                     <!-- Submit Button -->
                                                     <button type="submit" class="btn text-white w-100" style="background-color: #198754">
@@ -255,7 +259,7 @@
                             $sellerLevelName = $sellerLevels[Auth::user()->seller_level] ?? 'Nepoznat nivo';
                         @endphp
 
-                        @if(Auth::user()->package)
+                        @if(Auth::user()->package and !$packageExpired)
                             <div class="package">
                                 <h6 class="text-secondary">
                                     @if(Auth::user()->package->duration  === 'yearly')

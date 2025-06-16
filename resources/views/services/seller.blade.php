@@ -32,7 +32,11 @@
         <div class="d-none d-md-flex justify-content-between gap-3 mb-2">
             <h4><i class="fas fa-file-signature"></i> Tvoje ponude</h4>
 
-            @if(Auth::user()->package)
+            @php
+                $packageExpired = \Carbon\Carbon::parse(Auth::user()->package_expires_at)->isPast();
+            @endphp
+
+            @if(Auth::user()->package and !$packageExpired)
                 @if($seller['countPublicService'] < Auth::user()->package->quantity)
                     <div class="text-secondary text-center">
                         <span class="blinking-alert"></span> <i class="fa fa-eye text-success" title="Javno vidljivo"></i> Iskoristio si {{$seller['countPublicService']}} od {{Auth::user()->package->quantity}} javnih ponuda u okviru tvog plana !

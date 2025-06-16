@@ -196,7 +196,11 @@
             </div>
         </div>
 
-        @if(Auth::user()->package)
+        @php
+            $packageExpired = \Carbon\Carbon::parse(Auth::user()->package_expires_at)->isPast();
+        @endphp
+
+        @if(Auth::user()->package and !$packageExpired)
             @if($seller['countPublicService'] < Auth::user()->package->quantity)
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-success flex-fill" id="submitBtn" style="background-color: #198754">

@@ -164,9 +164,10 @@
                                 ];
 
                                 $sellerLevelName = $sellerLevels[Auth::user()->seller_level] ?? 'Nepoznat nivo';
+                                $packageExpired = \Carbon\Carbon::parse(Auth::user()->package_expires_at)->isPast();
                             @endphp
 
-                            @if(Auth::user()->package)
+                            @if(Auth::user()->package and !$packageExpired)
                                 <div class="package">
                                     <h6 class="text-secondary">
                                         @if(Auth::user()->package->duration  === 'yearly')
