@@ -71,7 +71,7 @@
         <div class="d-flex d-md-none flex-column text-center w-100">
             <h5 class="mb-0"><i class="fas fa-file-signature"></i> Tvoje ponude</h5>
             <h6 class="text-secondary mt-3">
-                @if(Auth::user()->package)
+                @if(Auth::user()->package and !$packageExpired)
                     @if($seller['countPublicService'] < Auth::user()->package->quantity)
                         <div class="text-secondary mb-2" style="font-size: 0.9rem !important">
                             <span class="blinking-alert"></span> <i class="fa fa-eye text-success" title="Javno vidljivo"></i> Iskoristio si {{$seller['countPublicService']}} od {{Auth::user()->package->quantity}} javnih ponuda u okviru tvog plana

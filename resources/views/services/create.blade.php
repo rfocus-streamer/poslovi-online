@@ -213,10 +213,10 @@
                     @endif
                 </div>
             @else
-                <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Dodaj ponudu</button>
+                <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Sačuvaj ponudu</button>
             @endif
         @else
-            <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Dodaj ponudu</button>
+            <button type="submit" class="btn btn-success w-100" style="background-color: #198754" id="submitBtn"><i class="fa fa-floppy-disk me-1"></i> Sačuvaj ponudu</button>
         @endif
     </form>
 

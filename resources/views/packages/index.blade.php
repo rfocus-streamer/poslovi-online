@@ -192,7 +192,7 @@
                                     </div>
 
                                     @if(Auth::user()->deposits >= $package->price)
-                                        @if(Auth::user()->package)
+                                        @if(Auth::user()->package and !$packageExpired)
                                             @if(Auth::user()->package->price < $package->price)
                                                 <!-- Submit Button -->
                                                 <button type="submit" class="btn text-white w-100" style="background-color: #198754">
