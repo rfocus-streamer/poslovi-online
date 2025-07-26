@@ -21,9 +21,46 @@ class ServiceController extends Controller
     public function index(Request $request)
     {
         // Provera za servise koji su vidljivi i imaju postavljen datum isteka (nije null)
-        $topServices = Service::where('visible', true)
-            ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
-            ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
+        // $topServices = Service::where('visible', true)
+        //     ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
+        //     ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
+        //     ->with([
+        //         'user',
+        //         'category',
+        //         'subcategory',
+        //         'serviceImages',
+        //         'reviews',
+        //         'cartItems'
+        //     ])
+        //     ->take(3)
+        //     ->get();
+
+        // // Dodajemo prosečnu ocenu za svaki servis u kolekciji
+        // $topServices->each(function ($service) {
+        //     $service->average_rating = $service->reviews->count() > 0
+        //         ? round($service->reviews->avg('rating'), 1)
+        //         : 5;
+        // });
+
+        $forcedIds = [13]; // Ovde stavi ID-jeve koje želiš da forsiraš
+
+        // Prvo dohvatamo forsirane servise
+        $forcedTopServices = Service::with([
+                'user',
+                'category',
+                'subcategory',
+                'serviceImages',
+                'reviews',
+                'cartItems'
+            ])
+            ->whereIn('id', $forcedIds)
+            ->get();
+
+        // Zatim dohvatamo ostale servise koji ispunjavaju uslove i nisu već forsirani
+        $otherTopServices = Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')
+            ->where('visible_expires_at', '>=', now())
+            ->whereNotIn('id', $forcedIds) // Da ne dupliramo
             ->with([
                 'user',
                 'category',
@@ -32,8 +69,11 @@ class ServiceController extends Controller
                 'reviews',
                 'cartItems'
             ])
-            ->take(3)
+            ->take(3 - $forcedTopServices->count()) // Uzimamo samo koliko nam fali do 3
             ->get();
+
+        // Spajamo kolekcije u jedan set top servisa
+        $topServices = $forcedTopServices->merge($otherTopServices);
 
         // Dodajemo prosečnu ocenu za svaki servis u kolekciji
         $topServices->each(function ($service) {
@@ -41,6 +81,7 @@ class ServiceController extends Controller
                 ? round($service->reviews->avg('rating'), 1)
                 : 5;
         });
+
 
         $selectedCategoryIds = $topServices->pluck('id')->toArray(); // ID-jevi kategorija iz prvog upita
 
