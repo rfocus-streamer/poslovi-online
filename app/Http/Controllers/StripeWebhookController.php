@@ -22,7 +22,23 @@ class StripeWebhookController extends Controller
             Log::warning('Bypassing signature verification in local environment');
             $event = json_decode($payload, false);
         } else {
-            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+             // Loguj podatke pre nego što konstrukcija događaja počne
+            Log::info('Stripe Webhook - Payload:', ['payload' => $payload]);
+            Log::info('Stripe Webhook - Signature Header:', ['signature' => $sigHeader]);
+            Log::info('Stripe Webhook - Webhook Secret:', ['webhook_secret' => $webhookSecret]);
+            //$event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+            try {
+                // Ovdje se procesira stvarni događaj
+                $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+            } catch (\Exception $e) {
+                // Ako dođe do greške u validaciji Webhook-a
+                Log::error('Stripe Webhook - Error constructing event', [
+                    'exception_message' => $e->getMessage(),
+                    'payload' => $payload,
+                    'signature' => $sigHeader
+                ]);
+                throw $e; // Onda prosledi grešku dalje, ili obradi po tvojoj logici
+            }
         }
         //$event = json_decode($payload); // ovo nam sluzi samo za test preko postman-a
 
