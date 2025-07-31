@@ -160,7 +160,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Naziv</th>
-                                        <th>Cena</th>
+                                        <th>Autor</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -169,8 +169,8 @@
                                     <tr>
                                         <td>{{ $service->id }}</td>
                                         <td>{{ $service->title }}</td>
-                                        <td>{{ $service->price }}</td>
-                                        <td>{{ $service->status }}</td>
+                                        <td>{{ $service->user->firstname }} {{$service->user->lastname}}</td>
+                                        <td>{{ $service->visible }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>

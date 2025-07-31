@@ -42,7 +42,7 @@ class ServiceController extends Controller
         //         : 5;
         // });
 
-        $forcedIds = [13]; // Ovde stavi ID-jeve koje želiš da forsiraš
+        $forcedIds = [13,9,10]; // Ovde stavi ID-jeve koje želiš da forsiraš
 
         // Prvo dohvatamo forsirane servise
         $forcedTopServices = Service::with([
