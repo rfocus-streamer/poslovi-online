@@ -35,6 +35,61 @@
         .nav-link:hover { transform: translateX(5px); }
         .table-hover tr:hover { transform: translateY(-2px); }
         .table a:hover { opacity: 0.8; transform: scale(1.1); }
+
+        /* Stilovi za pretragu istaknutih ponuda */
+        .select-with-search {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            width: 100%;
+        }
+
+        .select-with-search option {
+            padding: 6px 10px;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .select-with-search option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-service {
+            border-radius: 0.375rem 0 0 0.375rem !important;
+        }
+
+        .input-group {
+            margin-bottom: 0.5rem !important;
+        }
+
+        /* Stilovi za linkove autora */
+        .table-hover tr:hover td a {
+            text-decoration: underline;
+        }
+
+        /* Stilovi za statuse */
+        .badge {
+            font-size: 0.9em;
+            padding: 0.35em 0.65em;
+            font-weight: 500;
+        }
+
+        .bg-success {
+            background-color: #198754 !important;
+        }
+
+        .bg-danger {
+            background-color: #dc3545 !important;
+        }
+
+        /* Responsivne prilagodbe */
+        @media (max-width: 768px) {
+            .col-md-4 {
+                margin-bottom: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -54,6 +109,11 @@
                            data-bs-toggle="tab"
                            href="#services">
                            <i class="fas fa-file-signature "></i> Ponude
+                        </a>
+                        <a class="nav-link text-white {{ $activeTab === 'forcedservices' ? 'active' : '' }}"
+                           data-bs-toggle="tab"
+                           href="#forcedservices">
+                           <i class="fas fa-star"></i> Istaknute ponude
                         </a>
                         <a class="nav-link text-white {{ $activeTab === 'projects' ? 'active' : '' }}"
                            data-bs-toggle="tab"
@@ -92,7 +152,31 @@
 
                     <!-- Users Tab -->
                     <div class="tab-pane fade {{ $activeTab === 'users' ? 'show active' : '' }}" id="users">
-                        <h2 class="mb-4">Korisnici</h2>
+                        <h2 class="mb-4">Korisnici ({{ count($users) }})</h2>
+
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <form method="GET" action="">
+                                    <input type="hidden" name="tab" value="users">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               class="form-control"
+                                               name="users_search"
+                                               placeholder="Pretraži korisnike (ime, prezime, email, ID)..."
+                                               value="{{ request('users_search') }}">
+                                        <button class="btn btn-outline-secondary" type="submit">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                        @if(request('users_search'))
+                                            <a href="?tab=users" class="btn btn-outline-danger">
+                                                <i class="fas fa-times"></i> Reset
+                                            </a>
+                                        @endif
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead class="table-dark">
@@ -153,7 +237,32 @@
 
                     <!-- Services Tab -->
                     <div class="tab-pane fade {{ $activeTab === 'services' ? 'show active' : '' }}" id="services">
-                        <h2 class="mb-4">Ponude</h2>
+                        <h2 class="mb-4">Ponude ({{ count($services) }})</h2>
+
+                        <!-- Pretraga -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <form method="GET" action="">
+                                    <input type="hidden" name="tab" value="services">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               class="form-control"
+                                               name="services_search"
+                                               placeholder="Pretraži ponude (naziv, ID, autor)..."
+                                               value="{{ request('services_search') }}">
+                                        <button class="btn btn-outline-secondary" type="submit">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                        @if(request('services_search'))
+                                            <a href="?tab=services" class="btn btn-outline-danger">
+                                                <i class="fas fa-times"></i> Reset
+                                            </a>
+                                        @endif
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead class="table-dark">
@@ -162,22 +271,95 @@
                                         <th>Naziv</th>
                                         <th>Autor</th>
                                         <th>Status</th>
+                                        <th>Javne do</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($services as $service)
                                     <tr>
                                         <td>{{ $service->id }}</td>
-                                        <td>{{ $service->title }}</td>
-                                        <td>{{ $service->user->firstname }} {{$service->user->lastname}}</td>
-                                        <td>{{ $service->visible }}</td>
+                                        <td>
+                                            <a target="_blank" href="{{ route('services.show', $service->id) }}" class="btn">
+                                                {{ $service->title }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="?tab=users&users_search={{ urlencode($service->user->email) }}"
+                                               class="text-decoration-none"
+                                               title="Prikaži korisnika">
+                                               <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
+                                         alt="Avatar" width="30" height="30">
+                                                {{ $service->user->firstname }} {{ $service->user->lastname }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @if($service->visible)
+                                                <span class="badge bg-success">Aktivna</span>
+                                            @else
+                                                <span class="badge bg-danger">Neaktivna</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $service->visible_expires_at }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
-                                <div class="mt-3 d-flex justify-content-center">
-                                    {{ $services->onEachSide(1)->appends(['tab' => 'services'])->links('pagination::bootstrap-5') }}
-                                </div>
+                            <div class="mt-3 d-flex justify-content-center">
+                                {{ $services->onEachSide(1)->appends([
+                                    'tab' => 'services',
+                                    'services_search' => request('services_search')
+                                ])->links('pagination::bootstrap-5') }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Istaknute ponude Tab -->
+                    <!-- Forced Services Tab -->
+                    <div class="tab-pane fade {{ $activeTab === 'forcedservices' ? 'show active' : '' }}" id="forcedservices">
+                        <h2 class="mb-4">Istaknute ponude</h2>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Upravljanje istaknutim ponudama</h5>
+                                <p class="card-text">Možeš postaviti do 3 ponude koje će biti prikazane na početnoj strani.</p>
+
+                                <form id="forcedServicesForm" method="POST" action="{{ route('dashboard.forced-services.update') }}">
+                                    @csrf
+                                    <div class="row mb-3">
+                                        @for($i = 0; $i < 3; $i++)
+                                            <div class="col-md-4">
+                                                <label for="service_id_{{ $i+1 }}" class="form-label">Ponuda #{{ $i+1 }}</label>
+                                                <div class="input-group mb-2">
+                                                    <input type="text" class="form-control search-service"
+                                                           placeholder="Pretraži ponude..."
+                                                           data-target="service_id_{{ $i+1 }}"
+                                                           onkeydown="return event.key !== 'Enter';">
+                                                    <button class="btn btn-outline-secondary" type="button">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                                <select class="form-select select-with-search"
+                                                        id="service_id_{{ $i+1 }}"
+                                                        name="forced_services[]"
+                                                        size="5" <!-- Smanjena visina -->
+                                                        style="overflow-y: auto;">
+                                                    <option value="">-- Izaberi ponudu --</option>
+                                                    @foreach($allServices as $service)
+                                                        <option value="{{ $service->id }}"
+                                                            {{ isset($currentForcedServices[$i]) && $currentForcedServices[$i] == $service->id ? 'selected' : '' }}>
+                                                            #{{ $service->id }} - {{ $service->title }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endfor
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Sačuvaj izmene
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
@@ -454,6 +636,119 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 500);  // 500ms čekanja
     }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('forcedServicesForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selects = form.querySelectorAll('select[name="forced_services[]"]');
+            const selectedValues = [];
+            let hasDuplicates = false;
+
+            selects.forEach(select => {
+                if (select.value) {
+                    if (selectedValues.includes(select.value)) {
+                        hasDuplicates = true;
+                    }
+                    selectedValues.push(select.value);
+                }
+            });
+
+            if (hasDuplicates) {
+                e.preventDefault();
+                alert('Ne možete izabrati istu ponudu više puta. Molimo proverite izbore.');
+            }
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Onemogući Enter u poljima za pretragu
+    document.querySelectorAll('.search-service').forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+
+    // Funkcija za pretragu ponuda unutar istaknutih (tab)
+    function setupSearch() {
+        document.querySelectorAll('.search-service').forEach(input => {
+            input.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const targetSelectId = this.getAttribute('data-target');
+                const select = document.getElementById(targetSelectId);
+
+                Array.from(select.options).forEach(option => {
+                    const text = option.text.toLowerCase();
+                    option.style.display = text.includes(searchTerm) || option.value === "" ? '' : 'none';
+                });
+            });
+        });
+    }
+
+    // Validacija duplikata
+    const form = document.getElementById('forcedServicesForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selects = form.querySelectorAll('select[name="forced_services[]"]');
+            const selectedValues = [];
+            let hasDuplicates = false;
+
+            selects.forEach(select => {
+                if (select.value) {
+                    if (selectedValues.includes(select.value)) {
+                        hasDuplicates = true;
+                        select.classList.add('is-invalid');
+                    } else {
+                        selectedValues.push(select.value);
+                        select.classList.remove('is-invalid');
+                    }
+                }
+            });
+
+            if (hasDuplicates) {
+                e.preventDefault();
+                alert('Ne možete izabrati istu ponudu više puta. Molimo proverite izbore.');
+            }
+        });
+    }
+
+    setupSearch();
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Onemogući Enter u polju za pretragu korisnika
+    const userSearchInput = document.querySelector('input[name="users_search"]');
+    if (userSearchInput) {
+        userSearchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.form.submit();
+            }
+        });
+    }
+
+    // Fokusiraj polje za pretragu kada se otvori tab
+    document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            if (e.target.getAttribute('href') === '#users') {
+                const searchInput = document.querySelector('input[name="users_search"]');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>

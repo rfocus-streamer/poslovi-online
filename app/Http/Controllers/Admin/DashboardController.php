@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Service;
+use App\Models\ForcedService;
 use App\Models\ServiceImage;
 use App\Models\Project;
 use App\Models\Package;
@@ -31,13 +32,64 @@ class DashboardController extends Controller
 
         $activeTab = request()->input('tab', 'users');
 
-        $users = User::paginate(10, ['*'], 'page', $request->input('users_page', 1))
-            ->setPageName('users_page')
-            ->appends(['tab' => 'users']);
+        // Pretraga korisnika sa sortiranjem
+        $usersQuery = User::orderBy('last_seen_at', 'DESC'); // Dodajte ovu liniju
 
-        $services = Service::paginate(10, ['*'], 'page', $request->input('services_page', 1))
+        if ($request->has('users_search') && !empty($request->users_search)) {
+            $searchTerm = $request->users_search;
+            $usersQuery->where(function($query) use ($searchTerm) {
+                $query->where('firstname', 'like', "%{$searchTerm}%")
+                      ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                      ->orWhere('email', 'like', "%{$searchTerm}%")
+                      ->orWhere('id', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $users = $usersQuery->paginate(10, ['*'], 'page', $request->input('users_page', 1))
+            ->setPageName('users_page')
+            ->appends([
+                'tab' => 'users',
+                'users_search' => $request->users_search
+            ]);
+
+
+        // Pretraga ponuda
+        $servicesQuery = Service::with('user')->orderBy('visible_expires_at', 'DESC');
+
+        if ($request->has('services_search') && !empty($request->services_search)) {
+            $searchTerm = $request->services_search;
+
+            // Provera za ključne reči "aktivne" i "neaktivne"
+            if (strtolower($searchTerm) === 'aktivne') {
+                $servicesQuery->where('visible', true);
+            } elseif (strtolower($searchTerm) === 'neaktivne') {
+                $servicesQuery->where('visible', null);
+            } else {
+                // Standardna pretraga
+                $servicesQuery->where(function($query) use ($searchTerm) {
+                    $query->where('title', 'like', "%{$searchTerm}%")
+                          ->orWhere('id', 'like', "%{$searchTerm}%")
+                          ->orWhereHas('user', function($q) use ($searchTerm) {
+                              $q->where('firstname', 'like', "%{$searchTerm}%")
+                                ->orWhere('lastname', 'like', "%{$searchTerm}%");
+                          });
+                });
+            }
+        }
+
+        $services = $servicesQuery->paginate(10, ['*'], 'page', $request->input('services_page', 1))
             ->setPageName('services_page')
-            ->appends(['tab' => 'services']);
+            ->appends([
+                'tab' => 'services',
+                'services_search' => $request->services_search
+            ]);
+
+
+        $currentForcedServices = ForcedService::orderBy('priority')->pluck('service_id')->toArray();
+        $allServices = Service::where('visible', true)
+                         ->with('user') // Učitajte relacije ako su potrebne
+                         ->orderBy('title')
+                         ->get();
 
         $projects = Project::paginate(10, ['*'], 'page', $request->input('projects_page', 1))
             ->setPageName('projects_page')
@@ -83,11 +135,39 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'users',
             'services',
+            'currentForcedServices',
+            'allServices',
             'projects',
             'packages',
             'activeTab',
             'unusedFiles',
         ));
+    }
+
+    // metoda za ažuriranje
+    public function updateForcedServices(Request $request)
+    {
+        $request->validate([
+            'forced_services' => 'array|max:3',
+            'forced_services.*' => 'nullable|exists:services,id'
+        ]);
+
+        // Obriši postojeće
+        ForcedService::truncate();
+
+        // Dodaj nove sa prioritetom
+        if ($request->filled('forced_services')) {
+            foreach ($request->forced_services as $index => $serviceId) {
+                if ($serviceId) {
+                    ForcedService::create([
+                        'service_id' => $serviceId,
+                        'priority' => $index + 1
+                    ]);
+                }
+            }
+        }
+
+        return back()->with('success', 'Istaknute ponude su uspešno ažurirane.');
     }
 
     public function profile(User $user)

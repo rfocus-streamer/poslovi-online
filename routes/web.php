@@ -162,6 +162,11 @@ Route::middleware('auth')->group(function () {
 
     // Admin route
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('forced-services', [ForcedServiceController::class, 'index'])
+        ->name('admin.forced-services.index');
+
+    Route::post('forced-services/update', [DashboardController::class, 'updateForcedServices'])
+        ->name('dashboard.forced-services.update');
 
 });
 

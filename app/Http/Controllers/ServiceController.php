@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Service;
+use App\Models\ForcedService;
 use App\Models\ServiceImage;
 use App\Models\Category;
 use App\Models\Favorite;
@@ -20,29 +21,10 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        // Provera za servise koji su vidljivi i imaju postavljen datum isteka (nije null)
-        // $topServices = Service::where('visible', true)
-        //     ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
-        //     ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
-        //     ->with([
-        //         'user',
-        //         'category',
-        //         'subcategory',
-        //         'serviceImages',
-        //         'reviews',
-        //         'cartItems'
-        //     ])
-        //     ->take(3)
-        //     ->get();
-
-        // // Dodajemo prosečnu ocenu za svaki servis u kolekciji
-        // $topServices->each(function ($service) {
-        //     $service->average_rating = $service->reviews->count() > 0
-        //         ? round($service->reviews->avg('rating'), 1)
-        //         : 5;
-        // });
-
-        $forcedIds = [13,9,10]; // Ovde stavi ID-jeve koje želiš da forsiraš
+        $forcedIds = ForcedService::orderBy('priority')
+            ->pluck('service_id')
+            ->take(3)
+            ->toArray();
 
         // Prvo dohvatamo forsirane servise
         $forcedTopServices = Service::with([
