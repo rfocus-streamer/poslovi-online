@@ -223,10 +223,42 @@
 </div>
 
 <script>
-    document.getElementById('saveAndPublishBtn')?.addEventListener('click', function() {
-        e.preventDefault();
+    document.getElementById('saveAndPublishBtn')?.addEventListener('click', async function(e) {
+        e.preventDefault(); // Dodajemo 'e' kao parametar funkciji
+
         document.getElementById('visiblee').checked = true;
-        const form = e.currentTarget;
+
+        // Proveriti da li form postoji i je validna
+        const form = e.currentTarget.form || document.getElementById('myForm'); // Preko 'form' ako je inside form, ili explicitni ID
+        if (!form) {
+            showError("Forma nije pronađena!");
+            return;
+        }
+
+        // Prvo proveravamo da li je kategorija selektovana
+        const category = document.getElementById('category');
+        const subcategory = document.getElementById('subcategory');
+
+        // Proveravamo da li je kategorija selektovana
+        if (!category.value) {
+            showError('Morate odabrati kategoriju!');
+            return; // Prekidamo dalje izvršavanje ako nije selektovana kategorija
+        }
+
+        // Ako je kategorija selektovana, proveravamo da li je podkategorija selektovana
+        if (!subcategory.value) {
+            showError('Morate odabrati podkategoriju!');
+            return; // Prekidamo dalje izvršavanje ako nije selektovana podkategorija
+        }
+
+        // Provera da li je barem jedna slika dodata
+        const fileInput = form.querySelector('input[name="serviceImages[]"]');
+        const files = fileInput.files;
+        if (files.length === 0) {
+            showError('Morate dodati barem jednu sliku!');
+            return; // Prekidamo dalje izvršavanje ako nisu dodate slike
+        }
+
         const submitBtn = document.getElementById('submitBtn');
         const progressBar = document.querySelector('.progress-bar');
         const progressText = document.querySelector('.progress-text');
@@ -268,7 +300,7 @@
                 }
             }
 
-            const response = fetch(form.action, {
+            const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -278,7 +310,7 @@
             });
 
             if (!response.ok) {
-                const errorData = response.json();
+                const errorData = await response.json();
                 if (response.status === 422) {
                     showError('Jedna ili više slika premašuje maksimalnu dozvoljenu veličinu od 2MB');
                     return;
@@ -291,7 +323,7 @@
             let chunks = [];
 
             while(true) {
-                const {done, value} = reader.read();
+                const {done, value} = await reader.read();
 
                 if(done) {
                     break;
@@ -432,12 +464,37 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 document.getElementById('serviceForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+
     const form = e.currentTarget;
     const submitBtn = document.getElementById('submitBtn');
     const progressBar = document.querySelector('.progress-bar');
     const progressText = document.querySelector('.progress-text');
     const progressContainer = document.querySelector('.upload-progress');
     const statusMessage = document.getElementById('statusMessage');
+
+    // Prvo proveravamo da li je kategorija selektovana
+    const category = document.getElementById('category');
+    const subcategory = document.getElementById('subcategory');
+
+    // Proveravamo da li je kategorija selektovana
+    if (!category.value) {
+        showError('Morate odabrati kategoriju!');
+        return; // Prekidamo dalje izvršavanje ako nije selektovana kategorija
+    }
+
+    // Ako je kategorija selektovana, proveravamo da li je podkategorija selektovana
+    if (!subcategory.value) {
+        showError('Morate odabrati podkategoriju!');
+        return; // Prekidamo dalje izvršavanje ako nije selektovana podkategorija
+    }
+
+    // Provera da li je barem jedna slika dodata
+    const fileInput = form.querySelector('input[name="serviceImages[]"]');
+    const files = fileInput.files;
+    if (files.length === 0) {
+        showError('Morate dodati barem jednu sliku!');
+        return; // Prekidamo dalje izvršavanje ako nisu dodate slike
+    }
 
     // Prikaži progress bar
     progressContainer.style.display = 'block';
