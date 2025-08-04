@@ -279,72 +279,67 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('infinite-scroll-container');
     const spinner = document.getElementById('loading-spinner');
     const noMoreResults = document.getElementById('no-more-results');
-    const footer = document.querySelector('footer'); // Dodali smo selektor za footer
+    const footer = document.querySelector('footer');
+    const loadDelay = 1800; // 1.8 sekundi delay
+    let lastScrollPosition = 0;
 
-    // Pomocna funkcija za generisanje HTML kartice za servis
-    function createServiceCard(service) {
-        return `
-            <div class="col-md-4 mb-4 service-card"
-                 data-category="${service.category}"
-                 data-subcategory="${service.subcategory}">
-                <div class="card h-100 shadow">
-                    <a href="${service.details_url}">
-                        <img src="${service.image_url}"
-                             class="card-img-top service-image"
-                             alt="${service.title}"
-                             onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250';">
-                    </a>
-
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="service-category">${service.category}</h6>
-                        <h5 class="card-title">${service.title}</h5>
-                        <p class="card-text flex-grow-1">${service.description}</p>
-
-                        <div class="d-flex align-items-center mb-2">
-                            <img src="${service.user.avatar}"
-                                 alt="Avatar" class="rounded-circle avatar-img" width="30" height="30">
-                            &nbsp; ${service.user.name} &nbsp;
-                            <div class="text-warning ms-auto">
-                                ${generateRatingStars(service.average_rating)}
-                            </div>
-                            <small class="ms-2">(${service.average_rating.toFixed(1)})</small>
+    // Helper functions
+    const createServiceCard = (service) => `
+        <div class="col-md-4 mb-4 service-card"
+             data-category="${service.category}"
+             data-subcategory="${service.subcategory}">
+            <div class="card h-100 shadow">
+                <a href="${service.details_url}">
+                    <img src="${service.image_url}"
+                         class="card-img-top service-image"
+                         alt="${service.title}"
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250';">
+                </a>
+                <div class="card-body d-flex flex-column">
+                    <h6 class="service-category">${service.category}</h6>
+                    <h5 class="card-title">${service.title}</h5>
+                    <p class="card-text flex-grow-1">${service.description}</p>
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="${service.user.avatar}"
+                             alt="Avatar" class="rounded-circle avatar-img" width="30" height="30">
+                        &nbsp; ${service.user.name} &nbsp;
+                        <div class="text-warning ms-auto">
+                            ${generateRatingStars(service.average_rating)}
                         </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="service-price">
-                                <p class="card-text">
-                                    <strong>Cena od:</strong> ${service.basic_price} <i class="fas fa-euro-sign"></i>
-                                </p>
-                            </div>
-                            <a href="${service.details_url}"
-                               class="btn btn-service-details">
-                                Detaljnije
-                            </a>
+                        <small class="ms-2">(${service.average_rating.toFixed(1)})</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="service-price">
+                            <p class="card-text">
+                                <strong>Cena od:</strong> ${service.basic_price} <i class="fas fa-euro-sign"></i>
+                            </p>
                         </div>
+                        <a href="${service.details_url}"
+                           class="btn btn-service-details">
+                            Detaljnije
+                        </a>
                     </div>
                 </div>
             </div>
-        `;
-    }
+        </div>`;
 
-    function generateRatingStars(rating) {
+    const generateRatingStars = (rating) => {
         let stars = '';
         for (let i = 1; i <= 5; i++) {
-            stars += i <= rating
-                ? '<i class="fas fa-star"></i>'
-                : '<i class="far fa-star"></i>';
+            stars += i <= rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
         }
         return stars;
-    }
+    };
 
     async function loadMoreServices() {
         if (loading) return;
 
-        console.log('Loading page:', page);
         loading = true;
         spinner.style.display = 'block';
 
         try {
+            await new Promise(resolve => setTimeout(resolve, loadDelay));
+
             const response = await fetch(`/api/load-more-services?page=${page}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -352,68 +347,100 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json();
-            console.log('Response data:', data);
 
-            if (data.services && data.services.length > 0) {
-                const servicesCount = container.querySelectorAll('.service-card').length;
+            if (data.services?.length) {
+                const existingCards = container.querySelectorAll('.service-card').length;
                 let currentRow = container.querySelector('.row:last-child');
 
-                // Ako nema redova ili je poslednji red pun (3 kartice), kreiramo novi red
-                if (!currentRow || currentRow.querySelectorAll('.service-card').length >= 3) {
+                // Kreiraj novi red ako je potrebno
+                if (!currentRow || existingCards % 3 === 0) {
                     currentRow = document.createElement('div');
                     currentRow.className = 'row';
                     container.appendChild(currentRow);
                 }
 
-                const html = data.services.map(service => createServiceCard(service)).join('');
-                currentRow.insertAdjacentHTML('beforeend', html);
+                // Dodaj nove kartice
+                data.services.forEach(service => {
+                    currentRow.insertAdjacentHTML('beforeend', createServiceCard(service));
+                });
 
                 page = data.next_page || page + 1;
 
                 if (!data.next_page) {
-                    noMoreResults.style.display = 'block';
+                    //noMoreResults.style.display = 'block';
                     window.removeEventListener('scroll', handleScroll);
                 }
             } else {
-                noMoreResults.style.display = 'block';
+                //noMoreResults.style.display = 'block';
                 window.removeEventListener('scroll', handleScroll);
             }
         } catch (error) {
             console.error('Fetch error:', error);
-            noMoreResults.style.display = 'block';
+            //noMoreResults.style.display = 'block';
         } finally {
             loading = false;
             spinner.style.display = 'none';
         }
     }
 
+    function isFooterVisible() {
+        const rect = footer.getBoundingClientRect();
+        return (
+            rect.top <= window.innerHeight &&
+            rect.bottom >= 0 &&
+            rect.height > 0
+        );
+    }
+
     function handleScroll() {
         if (loading) return;
 
-        // Proveravamo da li je footer vidljiv na ekranu
-        const footerRect = footer.getBoundingClientRect();
-        const footerVisible = footerRect.top <= window.innerHeight;
+        const currentScrollPosition = window.scrollY;
+        const scrollingDown = currentScrollPosition > lastScrollPosition;
+        lastScrollPosition = currentScrollPosition;
 
-        // Ako je footer vidljiv ili smo blizu dna stranice
-        if (footerVisible || (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        // Proveravamo samo pri skrolovanju nadole
+        if (!scrollingDown) return;
+
+        // Preciznija provera vidljivosti footera
+        if (isFooterVisible()) {
             loadMoreServices();
         }
     }
 
-    // Initial load
+    // Initial setup
     if (container) {
         const initialRow = document.createElement('div');
         initialRow.className = 'row';
         container.appendChild(initialRow);
 
-        loadMoreServices();
-        window.addEventListener('scroll', handleScroll);
+        // Optimizovani scroll handler sa IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !loading) {
+                    loadMoreServices();
+                }
+            });
+        }, {
+            threshold: 0.1 // Aktivira kada je 10% footera vidljivo
+        });
+
+        if (footer) {
+            observer.observe(footer);
+        }
+
+        // Fallback za starije browsere
+        window.addEventListener('scroll', () => {
+            if (!('IntersectionObserver' in window)) {
+                handleScroll();
+            }
+        });
+
+        // Initial load
+        //loadMoreServices();
     }
 });
 </script>

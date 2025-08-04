@@ -150,14 +150,69 @@ class ServiceController extends Controller
     {
         $page = $request->input('page', 1);
 
+        // Dohvatamo ID-jeve svih top i last servisa
+        $topServicesIds = $this->getTopServices()->pluck('id')->toArray();
+        $lastServicesIds = $this->getLastServices()->pluck('id')->toArray();
+        $excludedIds = array_merge($topServicesIds, $lastServicesIds);
+
+        // Dodajemo mali delay za UX (samo za strane > 1)
+        //if ($page > 1) {
+           // sleep(1);
+        //}
+
+        // Dohvatamo servise sa paginacijom, isključujući već prikazane
         $moreServices = Service::where('visible', true)
             ->whereNotNull('visible_expires_at')
             ->where('visible_expires_at', '>=', now())
+            ->whereNotIn('id', $excludedIds)
             ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
             ->orderBy('created_at', 'desc')
-            ->paginate(6);
+            ->paginate(3, ['*'], 'page', $page); // 3 servisa po strani
 
-        $servicesData = $moreServices->map(function ($service) {
+        return response()->json([
+            'services' => $this->formatServices($moreServices),
+            'next_page' => $moreServices->hasMorePages() ? $moreServices->currentPage() + 1 : null,
+            'total' => $moreServices->total()
+        ]);
+    }
+
+    // Pomocne metode za dobijanje top i last servisa
+    private function getTopServices()
+    {
+        $forcedIds = ForcedService::orderBy('priority')->pluck('service_id')->take(3)->toArray();
+
+        $forcedTopServices = Service::whereIn('id', $forcedIds)
+            ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
+            ->get();
+
+        $otherTopServices = Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')
+            ->where('visible_expires_at', '>=', now())
+            ->whereNotIn('id', $forcedIds)
+            ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
+            ->take(3 - $forcedTopServices->count())
+            ->get();
+
+        return $forcedTopServices->merge($otherTopServices);
+    }
+
+    private function getLastServices()
+    {
+        $topServicesIds = $this->getTopServices()->pluck('id')->toArray();
+
+        return Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')
+            ->where('visible_expires_at', '>=', now())
+            ->whereNotIn('id', $topServicesIds)
+            ->with(['user', 'category', 'subcategory', 'serviceImages', 'cartItems', 'reviews'])
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
+    }
+
+    private function formatServices($services)
+    {
+        return $services->map(function ($service) {
             return [
                 'id' => $service->id,
                 'title' => $service->title,
@@ -176,12 +231,6 @@ class ServiceController extends Controller
                 'details_url' => route('services.show', $service->id)
             ];
         });
-
-        return response()->json([
-            'services' => $servicesData,
-            'next_page' => $moreServices->hasMorePages() ? $moreServices->currentPage() + 1 : null,
-            'total' => $moreServices->total()
-        ]);
     }
 
     /**
