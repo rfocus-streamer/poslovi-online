@@ -2,6 +2,28 @@
 @extends('layouts.app')
 
 <link href="{{ asset('css/index.css') }}" rel="stylesheet">
+<style type="text/css">
+/* Stil za loading spinner */
+#loading-spinner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+}
+
+/* Stil za "nema više rezultata" */
+#no-more-results {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+</style>
 
 @section('content')
 
@@ -233,6 +255,171 @@
     </div>
 </div>
 @endisset
+
+<!-- Infinite scroll container -->
+<div id="infinite-scroll-container" class="container mt-1"></div>
+
+<!-- Loading spinner -->
+<div id="loading-spinner" class="text-center my-5" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Učitavanje još usluga...</p>
+</div>
+
+<!-- No more results -->
+<div id="no-more-results" class="text-center my-5" style="display: none;">
+    <p>Nema više usluga za prikaz</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let page = 1;
+    let loading = false;
+    const container = document.getElementById('infinite-scroll-container');
+    const spinner = document.getElementById('loading-spinner');
+    const noMoreResults = document.getElementById('no-more-results');
+    const footer = document.querySelector('footer'); // Dodali smo selektor za footer
+
+    // Pomocna funkcija za generisanje HTML kartice za servis
+    function createServiceCard(service) {
+        return `
+            <div class="col-md-4 mb-4 service-card"
+                 data-category="${service.category}"
+                 data-subcategory="${service.subcategory}">
+                <div class="card h-100 shadow">
+                    <a href="${service.details_url}">
+                        <img src="${service.image_url}"
+                             class="card-img-top service-image"
+                             alt="${service.title}"
+                             onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250';">
+                    </a>
+
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="service-category">${service.category}</h6>
+                        <h5 class="card-title">${service.title}</h5>
+                        <p class="card-text flex-grow-1">${service.description}</p>
+
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="${service.user.avatar}"
+                                 alt="Avatar" class="rounded-circle avatar-img" width="30" height="30">
+                            &nbsp; ${service.user.name} &nbsp;
+                            <div class="text-warning ms-auto">
+                                ${generateRatingStars(service.average_rating)}
+                            </div>
+                            <small class="ms-2">(${service.average_rating.toFixed(1)})</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="service-price">
+                                <p class="card-text">
+                                    <strong>Cena od:</strong> ${service.basic_price} <i class="fas fa-euro-sign"></i>
+                                </p>
+                            </div>
+                            <a href="${service.details_url}"
+                               class="btn btn-service-details">
+                                Detaljnije
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateRatingStars(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            stars += i <= rating
+                ? '<i class="fas fa-star"></i>'
+                : '<i class="far fa-star"></i>';
+        }
+        return stars;
+    }
+
+    async function loadMoreServices() {
+        if (loading) return;
+
+        console.log('Loading page:', page);
+        loading = true;
+        spinner.style.display = 'block';
+
+        try {
+            const response = await fetch(`/api/load-more-services?page=${page}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (data.services && data.services.length > 0) {
+                const servicesCount = container.querySelectorAll('.service-card').length;
+                let currentRow = container.querySelector('.row:last-child');
+
+                // Ako nema redova ili je poslednji red pun (3 kartice), kreiramo novi red
+                if (!currentRow || currentRow.querySelectorAll('.service-card').length >= 3) {
+                    currentRow = document.createElement('div');
+                    currentRow.className = 'row';
+                    container.appendChild(currentRow);
+                }
+
+                const html = data.services.map(service => createServiceCard(service)).join('');
+                currentRow.insertAdjacentHTML('beforeend', html);
+
+                page = data.next_page || page + 1;
+
+                if (!data.next_page) {
+                    noMoreResults.style.display = 'block';
+                    window.removeEventListener('scroll', handleScroll);
+                }
+            } else {
+                noMoreResults.style.display = 'block';
+                window.removeEventListener('scroll', handleScroll);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            noMoreResults.style.display = 'block';
+        } finally {
+            loading = false;
+            spinner.style.display = 'none';
+        }
+    }
+
+    function handleScroll() {
+        if (loading) return;
+
+        // Proveravamo da li je footer vidljiv na ekranu
+        const footerRect = footer.getBoundingClientRect();
+        const footerVisible = footerRect.top <= window.innerHeight;
+
+        // Ako je footer vidljiv ili smo blizu dna stranice
+        if (footerVisible || (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+            loadMoreServices();
+        }
+    }
+
+    // Initial load
+    if (container) {
+        const initialRow = document.createElement('div');
+        initialRow.className = 'row';
+        container.appendChild(initialRow);
+
+        loadMoreServices();
+        window.addEventListener('scroll', handleScroll);
+    }
+});
+</script>
+
+@section('scripts')
+@endsection
 
 <!-- <script>
     document.addEventListener('DOMContentLoaded', function() {

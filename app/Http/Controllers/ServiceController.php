@@ -13,6 +13,7 @@ use App\Models\Project;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
@@ -143,6 +144,44 @@ class ServiceController extends Controller
             'topServices',
             'lastServices'
         ));
+    }
+
+    public function loadMoreServices(Request $request)
+    {
+        $page = $request->input('page', 1);
+
+        $moreServices = Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')
+            ->where('visible_expires_at', '>=', now())
+            ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(6);
+
+        $servicesData = $moreServices->map(function ($service) {
+            return [
+                'id' => $service->id,
+                'title' => $service->title,
+                'description' => Str::limit($service->description, 100),
+                'basic_price' => number_format($service->basic_price, 0, ',', '.'),
+                'average_rating' => $service->reviews->avg('rating') ?? 5,
+                'image_url' => $service->serviceImages->count()
+                    ? asset('storage/services/' . $service->serviceImages[0]['image_path'])
+                    : 'https://via.placeholder.com/400x250',
+                'category' => $service->category->name,
+                'subcategory' => $service->subcategory?->name ?? 'Nema podkategorije',
+                'user' => [
+                    'name' => $service->user->firstname . ' ' . $service->user->lastname,
+                    'avatar' => Storage::url('user/' . $service->user->avatar)
+                ],
+                'details_url' => route('services.show', $service->id)
+            ];
+        });
+
+        return response()->json([
+            'services' => $servicesData,
+            'next_page' => $moreServices->hasMorePages() ? $moreServices->currentPage() + 1 : null,
+            'total' => $moreServices->total()
+        ]);
     }
 
     /**
