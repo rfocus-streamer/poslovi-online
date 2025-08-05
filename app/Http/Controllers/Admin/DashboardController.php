@@ -25,15 +25,25 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // Proveri da li je korisnik autentifikovan i da li ima rolu 'admin'
+        // Provera admin privilegija
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Access denied');
         }
 
         $activeTab = request()->input('tab', 'users');
 
-        // Pretraga korisnika sa sortiranjem
-        $usersQuery = User::orderBy('last_seen_at', 'DESC'); // Dodajte ovu liniju
+        // KORISNICI =============================================================
+        $usersSortColumn = $request->input('users_sort_column', 'id');
+        $usersSortDirection = $request->input('users_sort_direction', 'asc');
+
+        // Provera validnosti parametara za sortiranje
+        $allowedUserColumns = ['id', 'firstname', 'lastname', 'email', 'created_at', 'last_seen_at'];
+        if (!in_array($usersSortColumn, $allowedUserColumns)) {
+            $usersSortColumn = 'id';
+            $usersSortDirection = 'asc';
+        }
+
+        $usersQuery = User::orderBy($usersSortColumn, $usersSortDirection);
 
         if ($request->has('users_search') && !empty($request->users_search)) {
             $searchTerm = $request->users_search;
@@ -49,21 +59,36 @@ class DashboardController extends Controller
             ->setPageName('users_page')
             ->appends([
                 'tab' => 'users',
-                'users_search' => $request->users_search
+                'users_search' => $request->users_search,
+                'users_sort_column' => $usersSortColumn,
+                'users_sort_direction' => $usersSortDirection
             ]);
 
+        // PONUDE ================================================================
+        $servicesSortColumn = $request->input('services_sort_column', 'id');
+        $servicesSortDirection = $request->input('services_sort_direction', 'asc');
 
-        // Pretraga ponuda
-        $servicesQuery = Service::with('user')->orderBy('visible_expires_at', 'DESC');
+        $allowedServiceColumns = ['id', 'title', 'created_at', 'visible_expires_at', 'visible'];
+        if (!in_array($servicesSortColumn, $allowedServiceColumns)) {
+            $servicesSortColumn = 'id';
+            $servicesSortDirection = 'asc';
+        }
+
+        $servicesQuery = Service::with('user')->orderBy($servicesSortColumn, $servicesSortDirection);
 
         if ($request->has('services_search') && !empty($request->services_search)) {
             $searchTerm = $request->services_search;
 
-            // Provera za ključne reči "aktivne" i "neaktivne"
+            // Specijalni filteri za status
             if (strtolower($searchTerm) === 'aktivne') {
-                $servicesQuery->where('visible', true);
+                $servicesQuery->where('visible', true)
+                             ->where('visible_expires_at', '>=', now());
             } elseif (strtolower($searchTerm) === 'neaktivne') {
-                $servicesQuery->where('visible', null);
+                $servicesQuery->where(function($query) {
+                    $query->where('visible', false)
+                          ->orWhereNull('visible')
+                          ->orWhere('visible_expires_at', '<', now());
+                });
             } else {
                 // Standardna pretraga
                 $servicesQuery->where(function($query) use ($searchTerm) {
@@ -81,56 +106,57 @@ class DashboardController extends Controller
             ->setPageName('services_page')
             ->appends([
                 'tab' => 'services',
-                'services_search' => $request->services_search
+                'services_search' => $request->services_search,
+                'services_sort_column' => $servicesSortColumn,
+                'services_sort_direction' => $servicesSortDirection
             ]);
 
-
+        // ISTAKNUTE PONUDE ======================================================
         $currentForcedServices = ForcedService::orderBy('priority')->pluck('service_id')->toArray();
         $allServices = Service::where('visible', true)
-                         ->with('user') // Učitajte relacije ako su potrebne
+                         ->with('user')
                          ->orderBy('title')
                          ->get();
 
-        $projects = Project::paginate(10, ['*'], 'page', $request->input('projects_page', 1))
+        // PROJEKTI ==============================================================
+        $projects = Project::orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'page', $request->input('projects_page', 1))
             ->setPageName('projects_page')
             ->appends(['tab' => 'projects']);
 
-        $packages = Package::paginate(10, ['*'], 'page', $request->input('packages_page', 1))
+        // PAKETI ================================================================
+        $packages = Package::orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'page', $request->input('packages_page', 1))
             ->setPageName('packages_page')
             ->appends(['tab' => 'packages']);
 
-        // FOLDER => [Model, kolona]
-            $folderMap = [
-                'attachments' => [Ticket::class, 'attachment'],
-                'complaints' => [Complaint::class, 'attachment'],
-                'project_files' => [ProjectFile::class, 'file_path'],
-                'services' => [ServiceImage::class, 'image_path'],
-                'user' => [User::class, 'avatar'],
-                'response-attachments' => [TicketResponse::class, 'attachment'],
-            ];
+        // NEPOTREBNI FAJLOVI ===================================================
+        $folderMap = [
+            'attachments' => [Ticket::class, 'attachment'],
+            'complaints' => [Complaint::class, 'attachment'],
+            'project_files' => [ProjectFile::class, 'file_path'],
+            'services' => [ServiceImage::class, 'image_path'],
+            'user' => [User::class, 'avatar'],
+            'response-attachments' => [TicketResponse::class, 'attachment'],
+        ];
 
-            $allFiles = [];
-            $unusedFiles = [];
+        $allFiles = [];
+        $unusedFiles = [];
 
-            foreach ($folderMap as $folder => [$model, $column]) {
-                $files = Storage::disk('public')->files($folder); // npr. tickets/file1.pdf
+        foreach ($folderMap as $folder => [$model, $column]) {
+            $files = Storage::disk('public')->files($folder);
+            $dbValues = $model::pluck($column)->filter()->toArray();
+            $usedFilenames = array_map('basename', $dbValues);
 
-                // Učitaj sve vrednosti iz baze za odgovarajuću kolonu
-                $dbValues = $model::pluck($column)->filter()->toArray(); // filter() uklanja null
+            foreach ($files as $filePath) {
+                $allFiles[] = $filePath;
+                $filename = basename($filePath);
 
-                // Izvuci samo ime fajla radi sigurnosti (ako je u bazi samo ime ili puna putanja)
-                $usedFilenames = array_map('basename', $dbValues);
-
-                foreach ($files as $filePath) {
-                    $allFiles[] = $filePath;
-
-                    $filename = basename($filePath);
-
-                    if (!in_array($filename, $usedFilenames)) {
-                        $unusedFiles[] = $filePath;
-                    }
+                if (!in_array($filename, $usedFilenames)) {
+                    $unusedFiles[] = $filePath;
                 }
             }
+        }
 
         return view('admin.dashboard', compact(
             'users',
@@ -140,7 +166,7 @@ class DashboardController extends Controller
             'projects',
             'packages',
             'activeTab',
-            'unusedFiles',
+            'unusedFiles'
         ));
     }
 

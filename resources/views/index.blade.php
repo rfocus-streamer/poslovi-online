@@ -371,16 +371,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 page = data.next_page || page + 1;
 
                 if (!data.next_page) {
-                    noMoreResults.style.display = 'block';
+                    //noMoreResults.style.display = 'block';
                     window.removeEventListener('scroll', handleScroll);
                 }
             } else {
-                noMoreResults.style.display = 'block';
+                //noMoreResults.style.display = 'block';
                 window.removeEventListener('scroll', handleScroll);
             }
         } catch (error) {
             console.error('Fetch error:', error);
-            noMoreResults.style.display = 'block';
+            //noMoreResults.style.display = 'block';
         } finally {
             loading = false;
             spinner.style.display = 'none';

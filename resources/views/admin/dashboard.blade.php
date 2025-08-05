@@ -152,8 +152,9 @@
 
                     <!-- Users Tab -->
                     <div class="tab-pane fade {{ $activeTab === 'users' ? 'show active' : '' }}" id="users">
-                        <h2 class="mb-4">Korisnici ({{ count($users) }})</h2>
+                        <h2 class="mb-4">Korisnici</h2>
 
+                        <!-- Search card -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <form method="GET" action="">
@@ -181,11 +182,66 @@
                             <table class="table table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Ime i prezime</th>
-                                        <th>Email</th>
-                                        <th>Registracija</th>
-                                        <th>Aktivan</th>
+                                        <th>
+                                            <a href="?{{ http_build_query(array_merge(request()->except(['users_sort_column', 'users_sort_direction']), [
+                                                'tab' => 'users',
+                                                'users_sort_column' => 'id',
+                                                'users_sort_direction' => request('users_sort_column') == 'id' && request('users_sort_direction') == 'asc' ? 'desc' : 'asc'
+                                            ])) }}" class="text-white text-decoration-none">
+                                                ID
+                                                @if(request('users_sort_column') == 'id')
+                                                    <i class="fas fa-arrow-{{ request('users_sort_direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                                @endif
+                                            </a>
+                                        </th>
+                                        <th>
+                                            <a href="?{{ http_build_query(array_merge(request()->except(['users_sort_column', 'users_sort_direction']), [
+                                                'tab' => 'users',
+                                                'users_sort_column' => 'firstname',
+                                                'users_sort_direction' => request('users_sort_column') == 'firstname' && request('users_sort_direction') == 'asc' ? 'desc' : 'asc'
+                                            ])) }}" class="text-white text-decoration-none">
+                                                Ime i prezime
+                                                @if(request('users_sort_column') == 'firstname')
+                                                    <i class="fas fa-arrow-{{ request('users_sort_direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                                @endif
+                                            </a>
+                                        </th>
+                                        <th>
+                                            <a href="?{{ http_build_query(array_merge(request()->except(['users_sort_column', 'users_sort_direction']), [
+                                                'tab' => 'users',
+                                                'users_sort_column' => 'email',
+                                                'users_sort_direction' => request('users_sort_column') == 'email' && request('users_sort_direction') == 'asc' ? 'desc' : 'asc'
+                                            ])) }}" class="text-white text-decoration-none">
+                                                Email
+                                                @if(request('users_sort_column') == 'email')
+                                                    <i class="fas fa-arrow-{{ request('users_sort_direction') == 'asc' ? 'up' : 'down' }} ms-1"></i>
+                                                @endif
+                                            </a>
+                                        </th>
+                                        <th>
+                                            <a href="?{{ http_build_query(array_merge(request()->except(['users_sort_column', 'users_sort_direction']), [
+                                                'tab' => 'users',
+                                                'users_sort_column' => 'created_at',
+                                                'users_sort_direction' => request('users_sort_column') == 'created_at' && request('users_sort_direction') == 'desc' ? 'asc' : 'desc'
+                                            ])) }}" class="text-white text-decoration-none">
+                                                Registracija
+                                                @if(request('users_sort_column') == 'created_at')
+                                                    <i class="fas fa-arrow-{{ request('users_sort_direction') == 'desc' ? 'down' : 'up' }} ms-1"></i>
+                                                @endif
+                                            </a>
+                                        </th>
+                                        <th>
+                                            <a href="?{{ http_build_query(array_merge(request()->except(['users_sort_column', 'users_sort_direction']), [
+                                                'tab' => 'users',
+                                                'users_sort_column' => 'last_seen_at',
+                                                'users_sort_direction' => request('users_sort_column') == 'last_seen_at' && request('users_sort_direction') == 'desc' ? 'asc' : 'desc'
+                                            ])) }}" class="text-white text-decoration-none">
+                                                Aktivan
+                                                @if(request('users_sort_column') == 'last_seen_at')
+                                                    <i class="fas fa-arrow-{{ request('users_sort_direction') == 'desc' ? 'down' : 'up' }} ms-1"></i>
+                                                @endif
+                                            </a>
+                                        </th>
                                         <th>Akcija</th>
                                     </tr>
                                 </thead>
@@ -206,9 +262,9 @@
                                                     <i class="fas fa-user text-primary"></i>
                                                 </a>
                                                 <a href="#" class="text-decoration-none"
-                                                data-action="deposit"
-                                                data-user-id="{{ $user->id }}"
-                                                title="Depozit">
+                                                    data-action="deposit"
+                                                    data-user-id="{{ $user->id }}"
+                                                    title="Depozit">
                                                     <i class="fas fa-money-bill-wave text-success"></i>
                                                 </a>
                                                 <a href="#" class="text-decoration-none" title="Računi">
@@ -230,7 +286,12 @@
                                 </tbody>
                             </table>
                             <div class="mt-3 d-flex justify-content-center">
-                                {{ $users->onEachSide(1)->appends(['tab' => 'users'])->links('pagination::bootstrap-5') }}
+                                {{ $users->onEachSide(1)->appends([
+                                    'tab' => 'users',
+                                    'users_search' => request('users_search'),
+                                    'users_sort_column' => request('users_sort_column', 'id'),
+                                    'users_sort_direction' => request('users_sort_direction', 'asc')
+                                ])->links('pagination::bootstrap-5') }}
                             </div>
                         </div>
                     </div>
