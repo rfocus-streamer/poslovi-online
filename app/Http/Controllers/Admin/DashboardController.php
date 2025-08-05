@@ -64,33 +64,48 @@ class DashboardController extends Controller
                 'users_sort_direction' => $usersSortDirection
             ]);
 
-        // PONUDE ================================================================
-        $servicesSortColumn = $request->input('services_sort_column', 'id');
-        $servicesSortDirection = $request->input('services_sort_direction', 'asc');
+            // PONUDE ================================================================
+            $servicesQuery = Service::with('user');
 
-        $allowedServiceColumns = ['id', 'title', 'created_at', 'visible_expires_at', 'visible'];
-        if (!in_array($servicesSortColumn, $allowedServiceColumns)) {
-            $servicesSortColumn = 'id';
-            $servicesSortDirection = 'asc';
-        }
+            // Sortiranje
+            $servicesSortColumn = $request->input('services_sort_column', 'id');
+            $servicesSortDirection = $request->input('services_sort_direction', 'asc');
 
-        $servicesQuery = Service::with('user')->orderBy($servicesSortColumn, $servicesSortDirection);
+            $allowedServiceColumns = ['id', 'title', 'created_at', 'visible_expires_at', 'visible'];
+            if (!in_array($servicesSortColumn, $allowedServiceColumns)) {
+                $servicesSortColumn = 'id';
+                $servicesSortDirection = 'asc';
+            }
 
-        if ($request->has('services_search') && !empty($request->services_search)) {
-            $searchTerm = $request->services_search;
+            $servicesQuery->orderBy($servicesSortColumn, $servicesSortDirection);
 
-            // Specijalni filteri za status
-            if (strtolower($searchTerm) === 'aktivne') {
-                $servicesQuery->where('visible', true)
-                             ->where('visible_expires_at', '>=', now());
-            } elseif (strtolower($searchTerm) === 'neaktivne') {
-                $servicesQuery->where(function($query) {
-                    $query->where('visible', false)
-                          ->orWhereNull('visible')
-                          ->orWhere('visible_expires_at', '<', now());
-                });
-            } else {
-                // Standardna pretraga
+            // Filter po statusu
+            if ($request->has('services_status')) {
+                switch ($request->services_status) {
+                    case 'active':
+                        $servicesQuery->where('visible', true)
+                                     ->where('visible_expires_at', '>', now());
+                        break;
+                    case 'inactive':
+                        $servicesQuery->where(function($query) {
+                            $query->where('visible', null)
+                                  ->orWhereNull('visible')
+                                  ->orWhere(function($q) {
+                                      $q->where('visible', true)
+                                        ->where(function($q2) {
+                                            $q2->where('visible_expires_at', '<', now())
+                                               ->orWhereNull('visible_expires_at');
+                                        });
+                                  });
+                        });
+                        break;
+                    // 'all' ne treba nikakav dodatni where
+                }
+            }
+
+            // Tekstualna pretraga
+            if ($request->has('services_search') && !empty($request->services_search)) {
+                $searchTerm = $request->services_search;
                 $servicesQuery->where(function($query) use ($searchTerm) {
                     $query->where('title', 'like', "%{$searchTerm}%")
                           ->orWhere('id', 'like', "%{$searchTerm}%")
@@ -100,16 +115,16 @@ class DashboardController extends Controller
                           });
                 });
             }
-        }
 
-        $services = $servicesQuery->paginate(10, ['*'], 'page', $request->input('services_page', 1))
-            ->setPageName('services_page')
-            ->appends([
-                'tab' => 'services',
-                'services_search' => $request->services_search,
-                'services_sort_column' => $servicesSortColumn,
-                'services_sort_direction' => $servicesSortDirection
-            ]);
+            $services = $servicesQuery->paginate(10, ['*'], 'page', $request->input('services_page', 1))
+                ->setPageName('services_page')
+                ->appends([
+                    'tab' => 'services',
+                    'services_search' => $request->services_search,
+                    'services_status' => $request->services_status,
+                    'services_sort_column' => $servicesSortColumn,
+                    'services_sort_direction' => $servicesSortDirection
+                ]);
 
         // ISTAKNUTE PONUDE ======================================================
         $currentForcedServices = ForcedService::orderBy('priority')->pluck('service_id')->toArray();
