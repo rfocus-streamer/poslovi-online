@@ -280,8 +280,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const spinner = document.getElementById('loading-spinner');
     const noMoreResults = document.getElementById('no-more-results');
     const footer = document.querySelector('footer');
-    const loadDelay = 1800; // 1.8 sekundi delay
+    const loadDelay = 800;
     let lastScrollPosition = 0;
+
+    // Proveravamo da li je u toku pretraga
+    const isSearchActive = window.location.search.includes('search=');
 
     // Helper functions
     const createServiceCard = (service) => `
@@ -332,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     async function loadMoreServices() {
-        if (loading) return;
+        if (loading || isSearchActive) return;
 
         loading = true;
         spinner.style.display = 'block';
@@ -355,14 +358,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const existingCards = container.querySelectorAll('.service-card').length;
                 let currentRow = container.querySelector('.row:last-child');
 
-                // Kreiraj novi red ako je potrebno
                 if (!currentRow || existingCards % 3 === 0) {
                     currentRow = document.createElement('div');
                     currentRow.className = 'row';
                     container.appendChild(currentRow);
                 }
 
-                // Dodaj nove kartice
                 data.services.forEach(service => {
                     currentRow.insertAdjacentHTML('beforeend', createServiceCard(service));
                 });
@@ -370,16 +371,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 page = data.next_page || page + 1;
 
                 if (!data.next_page) {
-                    //noMoreResults.style.display = 'block';
+                    noMoreResults.style.display = 'block';
                     window.removeEventListener('scroll', handleScroll);
                 }
             } else {
-                //noMoreResults.style.display = 'block';
+                noMoreResults.style.display = 'block';
                 window.removeEventListener('scroll', handleScroll);
             }
         } catch (error) {
             console.error('Fetch error:', error);
-            //noMoreResults.style.display = 'block';
+            noMoreResults.style.display = 'block';
         } finally {
             loading = false;
             spinner.style.display = 'none';
@@ -387,6 +388,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function isFooterVisible() {
+        if (isSearchActive) return false;
+
         const rect = footer.getBoundingClientRect();
         return (
             rect.top <= window.innerHeight &&
@@ -396,51 +399,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleScroll() {
-        if (loading) return;
+        if (loading || isSearchActive) return;
 
         const currentScrollPosition = window.scrollY;
         const scrollingDown = currentScrollPosition > lastScrollPosition;
         lastScrollPosition = currentScrollPosition;
 
-        // Proveravamo samo pri skrolovanju nadole
         if (!scrollingDown) return;
 
-        // Preciznija provera vidljivosti footera
         if (isFooterVisible()) {
             loadMoreServices();
         }
     }
 
     // Initial setup
-    if (container) {
+    if (container && !isSearchActive) {
         const initialRow = document.createElement('div');
         initialRow.className = 'row';
         container.appendChild(initialRow);
 
-        // Optimizovani scroll handler sa IntersectionObserver
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting && !loading) {
+                if (entry.isIntersecting && !loading && !isSearchActive) {
                     loadMoreServices();
                 }
             });
         }, {
-            threshold: 0.1 // Aktivira kada je 10% footera vidljivo
+            threshold: 0.1
         });
 
         if (footer) {
             observer.observe(footer);
         }
 
-        // Fallback za starije browsere
         window.addEventListener('scroll', () => {
             if (!('IntersectionObserver' in window)) {
                 handleScroll();
             }
         });
 
-        // Initial load
-        //loadMoreServices();
+        loadMoreServices();
     }
 });
 </script>
