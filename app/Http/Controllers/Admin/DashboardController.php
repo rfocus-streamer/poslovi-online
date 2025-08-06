@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\Subscription;
+use App\Models\Transaction;
 use App\Models\ForcedService;
 use App\Models\ServiceImage;
 use App\Models\Project;
@@ -172,6 +173,52 @@ class DashboardController extends Controller
                 'subscriptions_sort_direction' => $subscriptionsSortDirection
             ]);
 
+        // TRANSAKCIJE =========================================================
+        $transactionsQuery = Transaction::with('user');
+
+        // Sortiranje
+        $transactionsSortColumn = $request->input('transactions_sort_column', 'id');
+        $transactionsSortDirection = $request->input('transactions_sort_direction', 'desc');
+
+        $allowedTransactionColumns = ['id', 'amount', 'user_id', 'payment_method', 'status', 'created_at'];
+        if (!in_array($transactionsSortColumn, $allowedTransactionColumns)) {
+            $transactionsSortColumn = 'id';
+            $transactionsSortDirection = 'desc';
+        }
+
+        $transactionsQuery->orderBy($transactionsSortColumn, $transactionsSortDirection);
+
+        // Filter po statusu
+        if ($request->has('transactions_status') && $request->transactions_status) {
+            $transactionsQuery->where('status', $request->transactions_status);
+        }
+
+        // Tekstualna pretraga
+        if ($request->has('transactions_search') && !empty($request->transactions_search)) {
+            $searchTerm = $request->transactions_search;
+            $transactionsQuery->where(function($query) use ($searchTerm) {
+                $query->where('transaction_id', 'like', "%{$searchTerm}%")
+                      ->orWhere('payment_method', 'like', "%{$searchTerm}%")
+                      ->orWhere('amount', 'like', "%{$searchTerm}%")
+                      ->orWhereHas('user', function($q) use ($searchTerm) {
+                          $q->where('firstname', 'like', "%{$searchTerm}%")
+                            ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                            ->orWhere('email', 'like', "%{$searchTerm}%");
+                      });
+            });
+        }
+
+        $transactions = $transactionsQuery->paginate(10, ['*'], 'page', $request->input('transactions_page', 1))
+            ->setPageName('transactions_page')
+            ->appends([
+                'tab' => 'transactions',
+                'transactions_search' => $request->transactions_search,
+                'transactions_status' => $request->transactions_status,
+                'transactions_sort_column' => $transactionsSortColumn,
+                'transactions_sort_direction' => $transactionsSortDirection
+            ]);
+
+
         // ISTAKNUTE PONUDE ======================================================
         $currentForcedServices = ForcedService::orderBy('priority')->pluck('service_id')->toArray();
         $allServices = Service::where('visible', true)
@@ -228,7 +275,8 @@ class DashboardController extends Controller
             'packages',
             'activeTab',
             'unusedFiles',
-            'subscriptions'
+            'subscriptions',
+            'transactions'
         ));
     }
 
@@ -256,6 +304,25 @@ class DashboardController extends Controller
         }
 
         return back()->with('success', 'Istaknute ponude su uspešno ažurirane.');
+    }
+
+    public function transactionDetails(Transaction $transaction)
+    {
+        return response()->json([
+            'user_name' => $transaction->user->firstname . ' ' . $transaction->user->lastname,
+            'amount' => $transaction->amount,
+            'currency' => $transaction->currency,
+            'payment_method' => $transaction->payment_method,
+            'status' => $transaction->status,
+            'status_color' => [
+                'completed' => 'success',
+                'pending' => 'warning',
+                'failed' => 'danger'
+            ][$transaction->status] ?? 'primary',
+            'created_at' => $transaction->created_at->format('d.m.Y. H:i'),
+            'transaction_id' => $transaction->transaction_id,
+            'payload' => $transaction->payload
+        ]);
     }
 
     public function profile(User $user)

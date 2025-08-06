@@ -168,6 +168,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('forced-services/update', [DashboardController::class, 'updateForcedServices'])
         ->name('dashboard.forced-services.update');
+    Route::get('/admin/transactions/{transaction}/details', [DashboardController::class, 'transactionDetails'])
+    ->name('admin.transactions.details');
 
 });
 
