@@ -511,8 +511,8 @@
                                         </td>
                                         <td>{{ ucfirst($subscription->gateway) }}</td>
                                         <td>
-                                            @if($subscription->ends_at)
-                                                {{ \Carbon\Carbon::parse($subscription->ends_at)->format('d.m.Y. H:i') }}
+                                            @if($subscription->user->package_expires_at)
+                                                {{ \Carbon\Carbon::parse($subscription->user->package_expires_at)->format('d.m.Y. H:i') }}
                                             @else
                                                 Nije aktivirana
                                             @endif
