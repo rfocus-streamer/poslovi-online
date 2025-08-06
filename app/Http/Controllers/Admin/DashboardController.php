@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Service;
+use App\Models\Subscription;
 use App\Models\ForcedService;
 use App\Models\ServiceImage;
 use App\Models\Project;
@@ -126,6 +127,51 @@ class DashboardController extends Controller
                     'services_sort_direction' => $servicesSortDirection
                 ]);
 
+        // PRETPLATE =============================================================
+        $subscriptionsQuery = Subscription::with(['user', 'package']);
+
+        // Sortiranje
+        $subscriptionsSortColumn = $request->input('subscriptions_sort_column', 'id');
+        $subscriptionsSortDirection = $request->input('subscriptions_sort_direction', 'asc');
+
+        $allowedSubscriptionColumns = ['id', 'plan_id', 'amount', 'status', 'gateway', 'ends_at', 'created_at'];
+        if (!in_array($subscriptionsSortColumn, $allowedSubscriptionColumns)) {
+            $subscriptionsSortColumn = 'id';
+            $subscriptionsSortDirection = 'asc';
+        }
+
+        $subscriptionsQuery->orderBy($subscriptionsSortColumn, $subscriptionsSortDirection);
+
+        // Filter po statusu
+        if ($request->has('subscriptions_status') && $request->subscriptions_status) {
+            $subscriptionsQuery->where('status', $request->subscriptions_status);
+        }
+
+        // Tekstualna pretraga
+        if ($request->has('subscriptions_search') && !empty($request->subscriptions_search)) {
+            $searchTerm = $request->subscriptions_search;
+            $subscriptionsQuery->where(function($query) use ($searchTerm) {
+                $query->where('plan_id', 'like', "%{$searchTerm}%")
+                      ->orWhere('gateway', 'like', "%{$searchTerm}%")
+                      ->orWhere('subscription_id', 'like', "%{$searchTerm}%")
+                      ->orWhereHas('user', function($q) use ($searchTerm) {
+                          $q->where('firstname', 'like', "%{$searchTerm}%")
+                            ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                            ->orWhere('email', 'like', "%{$searchTerm}%");
+                      });
+            });
+        }
+
+        $subscriptions = $subscriptionsQuery->paginate(10, ['*'], 'page', $request->input('subscriptions_page', 1))
+            ->setPageName('subscriptions_page')
+            ->appends([
+                'tab' => 'subscriptions',
+                'subscriptions_search' => $request->subscriptions_search,
+                'subscriptions_status' => $request->subscriptions_status,
+                'subscriptions_sort_column' => $subscriptionsSortColumn,
+                'subscriptions_sort_direction' => $subscriptionsSortDirection
+            ]);
+
         // ISTAKNUTE PONUDE ======================================================
         $currentForcedServices = ForcedService::orderBy('priority')->pluck('service_id')->toArray();
         $allServices = Service::where('visible', true)
@@ -181,7 +227,8 @@ class DashboardController extends Controller
             'projects',
             'packages',
             'activeTab',
-            'unusedFiles'
+            'unusedFiles',
+            'subscriptions'
         ));
     }
 

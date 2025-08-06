@@ -31,4 +31,9 @@ class Subscription extends Model
     {
         return $query->where('plan_id', $packageId); // Proverite da li je kolona tačno nazvana
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
