@@ -752,104 +752,133 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        // Funkcija za horizontalni slajder kategorija
-        $(document).ready(function() {
-            // Podaci o kategorijama i podkategorijama
-            const categories = @json($categories->keyBy('id'));
+<script>
+    // Funkcija za horizontalni slajder kategorija
+    $(document).ready(function() {
+        // Podaci o kategorijama i podkategorijama
+        const categories = @json($categories->keyBy('id'));
 
-            // Pročitaj selektovanu kategoriju i podkategoriju iz URL-a
-            const urlParams = new URLSearchParams(window.location.search);
-            const selectedCategoryName = urlParams.get('category');
-            const selectedSubcategoryName = urlParams.get('search');
+        // Pročitaj selektovanu kategoriju i podkategoriju iz URL-a
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedCategoryName = urlParams.get('category');
+        const selectedSubcategoryName = urlParams.get('search');
 
-            // Pronađi i selektuj kategoriju ako postoji u URL-u
-            if (selectedCategoryName) {
-                let foundCategory = false;
+        // Flag da označimo da li je inicijalno učitavanje
+        let initialLoad = true;
 
-                // Prođi kroz sve kategorije
-                $('.category-btn').each(function() {
-                    const categoryId = $(this).data('category-id');
-                    const category = categories[categoryId];
+        // Funkcija za prikaz podkategorija
+        function showSubcategories(categoryId, shouldCenterSubcategory = false) {
+            const category = categories[categoryId];
+            let subcategoriesHtml = '';
 
-                    if (category && category.name === selectedCategoryName) {
-                        foundCategory = true;
-                        $(this).addClass('selected active');
-                        showSubcategories(categoryId);
+            if (category && category.subcategories && category.subcategories.length > 0) {
+                category.subcategories.forEach(subcategory => {
+                    const isSelected = subcategory.name === selectedSubcategoryName &&
+                                     category.name === selectedCategoryName;
 
-                        // Nakon što se podkategorije učitaju, selektuj odgovarajuću
-                        setTimeout(() => {
-                            if (selectedSubcategoryName) {
-                                $('.subcategory-link').each(function() {
-                                    if ($(this).text().trim() === selectedSubcategoryName) {
-                                        $(this).addClass('selected');
-                                    }
-                                });
-                            }
-                        }, 100);
-
-                        return false; // break the loop
-                    }
+                    subcategoriesHtml += `
+                        <a href="{{ route('home') }}?search=${encodeURIComponent(subcategory.name)}&category=${encodeURIComponent(category.name)}"
+                           class="subcategory-link ${isSelected ? 'selected' : ''}">
+                            ${subcategory.name}
+                        </a>
+                    `;
                 });
+                $('#subcategoriesContainer').html(subcategoriesHtml).show();
 
-                // Ako nismo pronašli kategoriju, prikaži podkategorije za prvu kategoriju
-                if (!foundCategory) {
-                    const firstCategoryId = $('.category-btn').first().data('category-id');
-                    $('.category-btn').first().addClass('selected active');
-                    showSubcategories(firstCategoryId);
+                // Centriraj selektovanu podkategoriju samo pri inicijalnom učitavanju
+                if (initialLoad && shouldCenterSubcategory && selectedSubcategoryName) {
+                    setTimeout(() => {
+                        $('.subcategory-link').each(function() {
+                            if ($(this).text().trim() === selectedSubcategoryName) {
+                                $(this).addClass('selected');
+                                centerElement($(this), $('#subcategoriesContainer'));
+                            }
+                        });
+                    }, 100);
                 }
+            } else {
+                $('#subcategoriesContainer').hide();
             }
+        }
 
-            // Klik na kategoriju
-            $('.category-btn').click(function() {
-                $('.category-btn').removeClass('selected active');
-                $(this).addClass('selected active');
+        // Funkcija za centriranje elementa u kontejneru (koristi se samo pri inicijalnom učitavanju)
+        function centerElement(element, container) {
+            const containerWidth = container.width();
+            const elementOffset = element.offset().left - container.offset().left;
+            const elementWidth = element.outerWidth();
+            const scrollPosition = elementOffset - (containerWidth / 2) + (elementWidth / 2);
+
+            container.animate({
+                scrollLeft: scrollPosition
+            }, 300);
+        }
+
+        // Inicijalno postavljanje - centriramo selektovanu kategoriju i podkategoriju
+        if (selectedCategoryName) {
+            let foundCategory = false;
+
+            $('.category-btn').each(function() {
                 const categoryId = $(this).data('category-id');
-                showSubcategories(categoryId);
-
-                // Resetuj selektovanu podkategoriju
-                $('.subcategory-link').removeClass('selected');
-            });
-
-            // Klik na podkategoriju
-            $(document).on('click', '.subcategory-link', function(e) {
-                $('.subcategory-link').removeClass('selected');
-                $(this).addClass('selected');
-            });
-
-            // Funkcija za prikaz podkategorija
-            function showSubcategories(categoryId) {
                 const category = categories[categoryId];
-                let subcategoriesHtml = '';
 
-                if (category && category.subcategories && category.subcategories.length > 0) {
-                    category.subcategories.forEach(subcategory => {
-                        const isSelected = subcategory.name === selectedSubcategoryName &&
-                                         category.name === selectedCategoryName;
+                if (category && category.name === selectedCategoryName) {
+                    foundCategory = true;
+                    $(this).addClass('selected active');
 
-                        subcategoriesHtml += `
-                            <a href="{{ route('home') }}?search=${encodeURIComponent(subcategory.name)}&category=${encodeURIComponent(category.name)}"
-                               class="subcategory-link ${isSelected ? 'selected' : ''}">
-                                ${subcategory.name}
-                            </a>
-                        `;
-                    });
-                    $('#subcategoriesContainer').html(subcategoriesHtml).show();
-                } else {
-                    $('#subcategoriesContainer').hide();
+                    // Centriraj selektovanu kategoriju samo pri inicijalnom učitavanju
+                    setTimeout(() => {
+                        centerElement($(this), $('#categoryContainer'));
+                    }, 50);
+
+                    showSubcategories(categoryId, true);
+                    return false;
                 }
+            });
+
+            if (!foundCategory) {
+                const firstCategoryId = $('.category-btn').first().data('category-id');
+                $('.category-btn').first().addClass('selected active');
+                showSubcategories(firstCategoryId);
             }
+        }
 
-            // Funkcije za skrolovanje slajdera
-            $('.slider-prev').click(function() {
-                $('#categoryContainer').animate({ scrollLeft: '-=150' }, 300);
-            });
+        // Klik na kategoriju - samo dodajemo klasu, ne centriramo
+        $('.category-btn').click(function(e) {
+            // Sprečavamo podrazumevano ponašanje ako je link
+            e.preventDefault();
 
-            $('.slider-next').click(function() {
-                $('#categoryContainer').animate({ scrollLeft: '+=150' }, 300);
-            });
+            $('.category-btn').removeClass('selected active');
+            $(this).addClass('selected active');
+            const categoryId = $(this).data('category-id');
+
+            // Ne centriramo kategoriju, čuvamo trenutnu scroll poziciju
+            showSubcategories(categoryId);
+
+            // Resetujemo selektovanu podkategoriju
+            $('.subcategory-link').removeClass('selected');
         });
-    </script>
+
+        // Klik na podkategoriju - odmah preusmeravamo na novu stranicu
+        $(document).on('click', '.subcategory-link', function(e) {
+            // Ne radimo ništa posebno, koristimo standardno ponašanje linka
+            // Selekcija će se obnoviti nakon učitavanja nove stranice
+        });
+
+        // Nakon inicijalnog učitavanja, postavljamo flag na false
+        setTimeout(() => {
+            initialLoad = false;
+        }, 500);
+
+        // Funkcije za skrolovanje slajdera (ostaju iste)
+        $('.slider-prev').click(function() {
+            $('#categoryContainer').animate({ scrollLeft: '-=150' }, 300);
+        });
+
+        $('.slider-next').click(function() {
+            $('#categoryContainer').animate({ scrollLeft: '+=150' }, 300);
+        });
+    });
+</script>
 
 <script type="text/javascript">
 document.querySelector('.add-service-title').addEventListener('click', function(event) {

@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        loadMoreServices();
+        //loadMoreServices();
     }
 });
 </script>
