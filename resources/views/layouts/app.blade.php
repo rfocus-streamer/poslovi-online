@@ -18,165 +18,271 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
 </head>
 <style>
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 160px;
-    height: 20px;
-    top: -8px !important;
-    cursor: pointer;
-}
+        /* Postojeći stilovi */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 160px;
+            height: 20px;
+            top: -8px !important;
+            cursor: pointer;
+        }
 
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc; /* Osnovna boja pozadine */
-    transition: 0.4s;
-    border-radius: 24px;
-    background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Leva siva, desna zelena */
-    justify-content: space-between;
-}
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+            background: linear-gradient(to right, #ccc 50%, #4CAF50 50%);
+            justify-content: space-between;
+        }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    border-radius: 50%;
-    left: 2px;
-    bottom: 1px;
-    background-color: white;
-    transition: 0.4s;
-}
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            left: 2px;
+            bottom: 1px;
+            background-color: white;
+            transition: 0.4s;
+        }
 
-/* Stilizacija za label-text */
-.label-text {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    font-weight: bold;
-    color: #fff;
-    margin-left: 27px;
-}
+        .label-text {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            margin-left: 27px;
+        }
 
-.label-text.left {
-    left: 12px;
-}
+        .label-text.left {
+            left: 12px;
+        }
 
-.label-text.right {
-    right: 22px;
-}
+        .label-text.right {
+            right: 22px;
+        }
 
-/* Kada je dugme prebačeno na desnu stranu (Kupac neaktivan, Prodavac aktivan) */
-input:checked + .slider {
-    background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Leva polovina siva, desna polovina zelena */
-}
+        input:checked + .slider {
+            background: linear-gradient(to right, #ccc 50%, #4CAF50 50%);
+        }
 
-input:checked + .slider:before {
-    transform: translateX(138px); /* Premesti dugme u desno */
-}
+        input:checked + .slider:before {
+            transform: translateX(138px);
+        }
 
-/* Tekst */
-input:checked + .slider .label-text.left {
-    color: #ccc; /* Disabled tekst za Kupca */
-}
+        input:checked + .slider .label-text.left {
+            color: #ccc;
+        }
 
-input:checked + .slider .label-text.right {
-    color: #fff; /* Aktivna desna strana za Prodavca */
-}
+        input:checked + .slider .label-text.right {
+            color: #fff;
+        }
 
-/* Kada je dugme prebačeno na levu stranu (Prodavac neaktivan, Kupac aktivan) */
-input:not(:checked) + .slider {
-    /*background: linear-gradient(to right, #007bff 50%, #ccc 50%); /* Leva polovina narandžasta, desna polovina siva */
-    background: linear-gradient(to right, #9c1c2c 50%, #ccc 50%);
-}
+        input:not(:checked) + .slider {
+            background: linear-gradient(to right, #9c1c2c 50%, #ccc 50%);
+        }
 
-input:not(:checked) + .slider:before {
-    transform: translateX(0px); /* Premesti dugme u levo */
-}
+        input:not(:checked) + .slider:before {
+            transform: translateX(0px);
+        }
 
-/* Tekst */
-input:not(:checked) + .slider .label-text.left {
-    color: #fff; /* Aktivna leva strana za Kupca */
-}
+        input:not(:checked) + .slider .label-text.left {
+            color: #fff;
+        }
 
-input:not(:checked) + .slider .label-text.right {
-    color: #ccc; /* Disabled tekst za Prodavca */
-}
+        input:not(:checked) + .slider .label-text.right {
+            color: #ccc;
+        }
 
-.add-service-title {
-    color: #9c1c2c;
-    font-weight: bold;
-    position: relative; /* Omogućava pozicioniranje pseudo-elementa */
-    top: 7px;
-    font-size: 0.81rem;
-}
+        .add-service-title {
+            color: #9c1c2c;
+            font-weight: bold;
+            position: relative;
+            top: 7px;
+            font-size: 0.81rem;
+        }
 
-.add-service-title:hover {
-    color: #4CAF50;
-    text-decoration: none;
-}
+        .add-service-title:hover {
+            color: #4CAF50;
+            text-decoration: none;
+        }
 
-.add-service-title mark {
-  background: linear-gradient(120deg, #4CAF50 0%, #45a049 100%);
-  color: white;
-  padding: 0 10px;
-  border-radius: 5px;
-}
+        .add-service-title mark {
+            background: linear-gradient(120deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 0 10px;
+            border-radius: 5px;
+        }
 
-.add-service-title2 {
-    color: #9c1c2c;
-    font-weight: bold;
-    position: relative; /* Omogućava pozicioniranje pseudo-elementa */
-    top: 7px;
-    font-size: 0.81rem;
-}
+        .add-service-title2 {
+            color: #9c1c2c;
+            font-weight: bold;
+            position: relative;
+            top: 7px;
+            font-size: 0.81rem;
+        }
 
-.add-service-title2:hover {
-    color: #4CAF50;
-    text-decoration: none;
-}
+        .add-service-title2:hover {
+            color: #4CAF50;
+            text-decoration: none;
+        }
 
-.add-service-title2 mark {
-  background: linear-gradient(120deg, #4CAF50 0%, #45a049 100%);
-  color: white;
-  padding: 0 10px;
-  border-radius: 5px;
-}
+        .add-service-title2 mark {
+            background: linear-gradient(120deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 0 10px;
+            border-radius: 5px;
+        }
 
-.btn-poslovi
-{
-    color: #fff !important;
-    background-color: #9c1c2c !important;
-    border-color: #9c1c2c !important;
-}
+        .btn-poslovi {
+            color: #fff !important;
+            background-color: #9c1c2c !important;
+            border-color: #9c1c2c !important;
+        }
 
-.btn-poslovi-green
-{
-    color: #fff !important;
-    background-color: #198754 !important;
-    border-color: #198754 !important;
-}
+        .btn-poslovi-green {
+            color: #fff !important;
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+        }
 
-/* Prilagodbe za mobilne uređaje */
-@media (max-width: 767px) {
-    .add-service-title2 {
-        font-size: 0.85rem; /* Veći font za mobilne uređaje */
-        top: -12px !important; /* Ukloni vertikalno pomeranje */
-    }
-}
-</style>
+        /* Prilagodbe za mobilne uređaje */
+        @media (max-width: 767px) {
+            .add-service-title2 {
+                font-size: 0.85rem;
+                top: -12px !important;
+            }
+        }
+
+        /* Novi stilovi za horizontalni slajder kategorija */
+        .mobile-category-slider {
+            position: relative;
+            overflow: hidden;
+            padding: 10px 0;
+            background-color: #f8f9fa;
+        }
+
+        .category-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            padding: 0 15px;
+            gap: 8px;
+        }
+
+        .category-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-btn {
+            flex: 0 0 auto;
+            padding: 3px 16px;
+            background-color: #fff;
+            border: 1px solid #9c1c2c;
+            border-radius: 20px;
+            color: #9c1c2c;
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background-color: #9c1c2c;
+            color: white;
+        }
+
+        .subcategories-container {
+            display: none;
+            padding: 10px 15px;
+            background-color: #e9ecef;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .subcategory-link {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-right: 8px;
+            background-color: #fff;
+            border-radius: 16px;
+            color: #495057;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .subcategory-link:hover {
+            background-color: #9c1c2c;
+            color: white;
+        }
+
+        .slider-controls {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(248, 249, 250, 0.8);
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .slider-prev {
+            left: 0;
+        }
+
+        .slider-next {
+            right: 0;
+        }
+
+        .slider-controls i {
+            color: #9c1c2c;
+            font-size: 1.2rem;
+        }
+
+        .mobile-category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+         /* Dodajemo nove stilove za selektovane elemente */
+        .category-btn.selected {
+            background-color: #9c1c2c;
+            color: white;
+        }
+
+        .subcategory-link.selected {
+            background-color: #9c1c2c;
+            color: white;
+        }
+    </style>
 <body>
     <!-- Dekstop view -->
     <div class="d-none d-md-block">
@@ -555,40 +661,29 @@ input:not(:checked) + .slider .label-text.right {
             </div>
         @endauth
 
-        <!-- Toggler za mobilni prikaz sa FontAwesome ikonicom -->
-        <!-- Mobilni header -->
-        <div class="mobile-category-header d-lg-none mt-2">
-            <span>Kategorije usluga</span>
-            <button class="navbar-toggler custom-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarCategories">
-                    <i class="fas fa-chevron-down"></i>
-            </button>
+        <!-- Novi horizontalni slajder za kategorije -->
+        <div class="mobile-category-slider">
+            <div class="slider-controls slider-prev">
+                <i class="fas fa-chevron-left"></i>
+            </div>
 
-            <!-- Kategorije -->
-            <div class="collapse navbar-collapse justify-content-center" id="navbarCategories">
-                <ul class="navbar-nav">
-                    @foreach ($categories as $category)
-                        <li class="nav-item dropdown mx-2"> <!-- Dodajte horizontalni margin -->
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown{{ $category->id }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ $category->name }}
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ $category->id }}">
-                                @foreach ($category->subcategories as $subcategory)
-                                    <li>
-                                        <a class="dropdown-item"
-                               href="{{ route('home', ['search' => $subcategory->name, 'category' => $category->name]) }}">
-                                {{ $subcategory->name }}
-                            </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </li>
-                    @endforeach
-                </ul>
+            <div class="category-container" id="categoryContainer">
+                @foreach ($categories as $category)
+                    <button class="category-btn" data-category-id="{{ $category->id }}">
+                        {{ $category->name }}
+                    </button>
+                @endforeach
+            </div>
+
+            <div class="slider-controls slider-next">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="subcategories-container" id="subcategoriesContainer">
+                <!-- Podkategorije će se dinamički popuniti -->
             </div>
         </div>
+
     </div>
 
     <!-- Glavni sadržaj -->
@@ -656,6 +751,106 @@ input:not(:checked) + .slider .label-text.right {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Funkcija za horizontalni slajder kategorija
+        $(document).ready(function() {
+            // Podaci o kategorijama i podkategorijama
+            const categories = @json($categories->keyBy('id'));
+
+            // Pročitaj selektovanu kategoriju i podkategoriju iz URL-a
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedCategoryName = urlParams.get('category');
+            const selectedSubcategoryName = urlParams.get('search');
+
+            // Pronađi i selektuj kategoriju ako postoji u URL-u
+            if (selectedCategoryName) {
+                let foundCategory = false;
+
+                // Prođi kroz sve kategorije
+                $('.category-btn').each(function() {
+                    const categoryId = $(this).data('category-id');
+                    const category = categories[categoryId];
+
+                    if (category && category.name === selectedCategoryName) {
+                        foundCategory = true;
+                        $(this).addClass('selected active');
+                        showSubcategories(categoryId);
+
+                        // Nakon što se podkategorije učitaju, selektuj odgovarajuću
+                        setTimeout(() => {
+                            if (selectedSubcategoryName) {
+                                $('.subcategory-link').each(function() {
+                                    if ($(this).text().trim() === selectedSubcategoryName) {
+                                        $(this).addClass('selected');
+                                    }
+                                });
+                            }
+                        }, 100);
+
+                        return false; // break the loop
+                    }
+                });
+
+                // Ako nismo pronašli kategoriju, prikaži podkategorije za prvu kategoriju
+                if (!foundCategory) {
+                    const firstCategoryId = $('.category-btn').first().data('category-id');
+                    $('.category-btn').first().addClass('selected active');
+                    showSubcategories(firstCategoryId);
+                }
+            }
+
+            // Klik na kategoriju
+            $('.category-btn').click(function() {
+                $('.category-btn').removeClass('selected active');
+                $(this).addClass('selected active');
+                const categoryId = $(this).data('category-id');
+                showSubcategories(categoryId);
+
+                // Resetuj selektovanu podkategoriju
+                $('.subcategory-link').removeClass('selected');
+            });
+
+            // Klik na podkategoriju
+            $(document).on('click', '.subcategory-link', function(e) {
+                $('.subcategory-link').removeClass('selected');
+                $(this).addClass('selected');
+            });
+
+            // Funkcija za prikaz podkategorija
+            function showSubcategories(categoryId) {
+                const category = categories[categoryId];
+                let subcategoriesHtml = '';
+
+                if (category && category.subcategories && category.subcategories.length > 0) {
+                    category.subcategories.forEach(subcategory => {
+                        const isSelected = subcategory.name === selectedSubcategoryName &&
+                                         category.name === selectedCategoryName;
+
+                        subcategoriesHtml += `
+                            <a href="{{ route('home') }}?search=${encodeURIComponent(subcategory.name)}&category=${encodeURIComponent(category.name)}"
+                               class="subcategory-link ${isSelected ? 'selected' : ''}">
+                                ${subcategory.name}
+                            </a>
+                        `;
+                    });
+                    $('#subcategoriesContainer').html(subcategoriesHtml).show();
+                } else {
+                    $('#subcategoriesContainer').hide();
+                }
+            }
+
+            // Funkcije za skrolovanje slajdera
+            $('.slider-prev').click(function() {
+                $('#categoryContainer').animate({ scrollLeft: '-=150' }, 300);
+            });
+
+            $('.slider-next').click(function() {
+                $('#categoryContainer').animate({ scrollLeft: '+=150' }, 300);
+            });
+        });
+    </script>
+
 <script type="text/javascript">
 document.querySelector('.add-service-title').addEventListener('click', function(event) {
     event.preventDefault(); // Sprečava default akciju (navigaciju)
