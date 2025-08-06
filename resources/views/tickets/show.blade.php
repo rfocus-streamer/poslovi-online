@@ -56,7 +56,7 @@
                                 </div>
                             </div>
 
-                            <p class="mb-2">{{ nl2br(e($ticket->description)) }}</p>
+                            <p class="mb-2">{!! nl2br(e($ticket->description)) }</p>
 
                             @if($ticket->attachment)
                             <div class="mt-2">
@@ -108,7 +108,7 @@
                                 </div>
                             </div>
 
-                            <p class="mb-2">{{ nl2br(e($response->content)) }}</p>
+                            <p class="mb-2">{!! nl2br(e($response->content)) }</p>
 
                             @if($response->attachment)
                             <div class="mt-2">
@@ -170,7 +170,7 @@
                         </div>
                     </div>
 
-                    <p class="mb-2">{{ nl2br(e($ticket->description)) }}</p>
+                    <p class="mb-2">{!! nl2br(e($ticket->description)) }</p>
 
                     @if($ticket->attachment)
                     <div class="mt-2">
@@ -222,7 +222,7 @@
                         </div>
                     </div>
 
-                    <p class="mb-2">{{ $response->content }}</p>
+                    <p class="mb-2">{!! nl2br(e($response->content)) }</p>
 
                     @if($response->attachment)
                     <div class="mt-2">
