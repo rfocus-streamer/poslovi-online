@@ -8,6 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ContactMail extends Mailable
 {
@@ -48,7 +49,15 @@ class ContactMail extends Mailable
             $mail->with(['resetUrl' => $this->details['resetUrl']]);
         }
 
+        //Proveravamo da li postoji unreadMessages
+        if(isset($this->details['unreadMessages'])){
+            $mail->with([
+                'first_name' => $this->details['first_name'],
+                'last_name' => $this->details['last_name'],
+                'message' => $this->details['message']
+            ]);
+        }
 
-        return $mail;
+        return $mail->with($this->details);
     }
 }

@@ -15,10 +15,15 @@ use App\Models\Ticket;
 use App\Models\TicketResponse;
 use App\Models\Complaint;
 use App\Models\ProjectFile;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Mail\ContactMail;
 
 class DashboardController extends Controller
 {
@@ -226,6 +231,20 @@ class DashboardController extends Controller
                          ->orderBy('title')
                          ->get();
 
+        // Dohvati korisnike sa nepročitanim porukama
+        $usersWithUnreadMessages = User::whereHas('unreadMessages')
+            ->withCount(['unreadMessages as unread_messages_count'])
+            ->get();
+
+        // Dohvati korisnike sa nepročitanim odgovorima na tikete
+        $usersWithUnreadTicketResponses = User::whereHas('unreadTicketResponses')
+            ->withCount(['unreadTicketResponses as unread_responses_count'])
+            ->get();
+
+        // Dohvati dostupne šablone
+        $messageTemplates = $this->getEmailTemplates('messages.*');
+        $ticketTemplates = $this->getEmailTemplates('tickets.*');
+
         // PROJEKTI ==============================================================
         $projects = Project::orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'page', $request->input('projects_page', 1))
@@ -276,7 +295,11 @@ class DashboardController extends Controller
             'activeTab',
             'unusedFiles',
             'subscriptions',
-            'transactions'
+            'transactions',
+            'usersWithUnreadMessages',
+            'usersWithUnreadTicketResponses',
+            'messageTemplates',
+            'ticketTemplates'
         ));
     }
 
@@ -323,6 +346,90 @@ class DashboardController extends Controller
             'transaction_id' => $transaction->transaction_id,
             'payload' => $transaction->payload
         ]);
+    }
+
+    public function sendMessageReminders(Request $request)
+    {
+        $request->validate([
+            'users' => 'required|array',
+            'template' => 'required|string',
+            'subject' => 'required|string',
+            'additional_message' => 'nullable|string'
+        ]);
+
+        $users = User::whereIn('id', $request->users)->get();
+
+        foreach ($users as $user) {
+
+            $templatePath = 'admin.emails.templates.messages.' . $request->template;
+            if (!view()->exists($templatePath)) {
+                return back()->withErrors([
+                    'template' => "Šablon '$templatePath' ne postoji!"
+                ]);
+            }
+
+            $details = [
+                'first_name' => $user->firstname,
+                'last_name' => $user->lastname,
+                'email' => $user->email,
+                'message' =>  $request->additional_message,
+                'template' => $templatePath,
+                'subject' => $request->subject,
+                'from_email' => 'sektormediaofficial@gmail.com',
+                'from' => 'Poslovi Online',
+                'unreadMessages' => true
+            ];
+
+            try {
+                Mail::to($user->email)->send(new ContactMail($details));
+                //return 'Email poslan!';
+            } catch (\Exception $e) {
+                return 'Greška: ' . $e->getMessage();
+            }
+        }
+
+        return back()->with('success', 'Podsjetnici su uspješno poslani ' . count($users) . ' korisnicima!');
+    }
+
+    public function sendTicketReminders(Request $request)
+    {
+        $request->validate([
+            'users' => 'required|array',
+            'template' => 'required|string',
+            'subject' => 'required|string',
+            'additional_message' => 'nullable|string'
+        ]);
+
+        $users = User::whereIn('id', $request->users)->get();
+
+        foreach ($users as $user) {
+            $details = [
+                'first_name' => $user->firstname,
+                'last_name' => $user->lastname,
+                'email' => $user->email,
+                'message' => $request->additional_message,
+                'template' => 'admin.emails.templates.tickets.' . $request->template,
+                'subject' => $request->subject,
+                'from_email' => config('mail.from.address'),
+                'from' => config('mail.from.name'),
+            ];
+
+            Mail::to($user->email)->send(new ContactMail($details));
+        }
+
+        return back()->with('success', 'Podsjetnici su uspješno poslani ' . count($users) . ' korisnicima!');
+    }
+
+    private function getEmailTemplates($pattern)
+    {
+        $files = glob(resource_path('views/admin/emails/templates/' . str_replace('.', '/', $pattern) . '.blade.php'));
+        $templates = [];
+
+        foreach ($files as $file) {
+            $templates[] = basename($file, '.blade.php');
+        }
+
+        return $templates;
     }
 
     public function profile(User $user)

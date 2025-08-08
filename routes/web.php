@@ -171,6 +171,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/transactions/{transaction}/details', [DashboardController::class, 'transactionDetails'])
     ->name('admin.transactions.details');
 
+    Route::post('/admin/send-message-reminders', [DashboardController::class, 'sendMessageReminders'])
+     ->name('admin.send-message-reminders');
+
+    Route::post('/admin/send-ticket-reminders', [DashboardController::class, 'sendTicketReminders'])
+     ->name('admin.send-ticket-reminders');
+
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])

@@ -173,6 +173,16 @@ class User extends Authenticatable
         return $this->blockedUsers()->create(['blocked_user_id' => $userId]);
     }
 
+    public function unreadMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id')->whereNull('read_at');
+    }
+
+    public function unreadTicketResponses()
+    {
+        return $this->hasMany(TicketResponse::class, 'user_id')->whereNull('read_at');
+    }
+
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
