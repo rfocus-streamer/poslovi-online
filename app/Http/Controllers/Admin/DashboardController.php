@@ -375,7 +375,8 @@ class DashboardController extends Controller
                 'message' =>  $request->additional_message,
                 'template' => $templatePath,
                 'subject' => $request->subject,
-                'from_email' => 'sektormediaofficial@gmail.com',
+                //'from_email' => 'sektormediaofficial@gmail.com',
+                'from_email' => 'gligorijesaric@gmail.com',
                 'from' => 'Poslovi Online',
                 'unreadMessages' => true
             ];
