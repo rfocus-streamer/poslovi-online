@@ -58,6 +58,15 @@ class ContactMail extends Mailable
             ]);
         }
 
+        //Proveravamo da li postoji unreadTickets
+        if(isset($this->details['unreadTickets'])){
+            $mail->with([
+                'first_name' => $this->details['first_name'],
+                'last_name' => $this->details['last_name'],
+                'message' => $this->details['message'],
+            ]);
+        }
+
         return $mail->with($this->details);
     }
 }

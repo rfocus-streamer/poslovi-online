@@ -177,6 +177,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/send-ticket-reminders', [DashboardController::class, 'sendTicketReminders'])
      ->name('admin.send-ticket-reminders');
 
+    Route::post('send-subscription-reminders', [DashboardController::class, 'sendSubscriptionReminders'])
+         ->name('admin.send-subscription-reminders');
+
+    Route::post('send-inactive-reminders', [DashboardController::class, 'sendInactiveReminders'])
+         ->name('admin.send-inactive-reminders');
+
+    Route::post('send-custom-email', [DashboardController::class, 'sendCustomEmail'])
+         ->name('admin.send-custom-email');
+
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])

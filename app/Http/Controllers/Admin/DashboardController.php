@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Mail\ContactMail;
 
@@ -231,19 +232,39 @@ class DashboardController extends Controller
                          ->orderBy('title')
                          ->get();
 
+
+        // Email notification tab
         // Dohvati korisnike sa nepročitanim porukama
         $usersWithUnreadMessages = User::whereHas('unreadMessages')
             ->withCount(['unreadMessages as unread_messages_count'])
             ->get();
 
         // Dohvati korisnike sa nepročitanim odgovorima na tikete
-        $usersWithUnreadTicketResponses = User::whereHas('unreadTicketResponses')
-            ->withCount(['unreadTicketResponses as unread_responses_count'])
-            ->get();
+        $usersWithUnreadTicketResponses = User::whereHas('tickets', function($query) {
+                $query->whereHas('responses', function($q) {
+                    $q->whereNull('read_at')
+                      ->whereColumn('ticket_responses.user_id', '!=', 'tickets.user_id');
+                });
+            })->withCount(['tickets as unread_responses_count' => function($query) {
+                $query->whereHas('responses', function($q) {
+                    $q->whereNull('read_at')
+                      ->whereColumn('ticket_responses.user_id', '!=', 'tickets.user_id');
+                });
+            }])->get();
 
         // Dohvati dostupne šablone
         $messageTemplates = $this->getEmailTemplates('messages.*');
         $ticketTemplates = $this->getEmailTemplates('tickets.*');
+        $subscriptionTemplates = $this->getEmailTemplates('subscriptions.*');
+        $inactiveTemplates = $this->getEmailTemplates('inactive.*');
+
+         // Get users with active subscriptions but no services
+        $usersWithSubscriptionsWithoutServices = User::whereHas('subscriptions', function($query) {
+            $query->where('status', 'active');
+        })->whereDoesntHave('services')->get();
+
+        // Get inactive users (last seen > 30 days ago)
+        $inactiveUsers = User::where('last_seen_at', '<', now()->subDays(30))->get();
 
         // PROJEKTI ==============================================================
         $projects = Project::orderBy('created_at', 'desc')
@@ -298,8 +319,12 @@ class DashboardController extends Controller
             'transactions',
             'usersWithUnreadMessages',
             'usersWithUnreadTicketResponses',
+            'usersWithSubscriptionsWithoutServices',
+            'inactiveUsers',
             'messageTemplates',
-            'ticketTemplates'
+            'ticketTemplates',
+            'subscriptionTemplates',
+            'inactiveTemplates'
         ));
     }
 
@@ -376,7 +401,7 @@ class DashboardController extends Controller
                 'template' => $templatePath,
                 'subject' => $request->subject,
                 //'from_email' => 'sektormediaofficial@gmail.com',
-                'from_email' => 'gligorijesaric@gmail.com',
+                'from_email' => config('mail.from.address'),
                 'from' => 'Poslovi Online',
                 'unreadMessages' => true
             ];
@@ -412,7 +437,7 @@ class DashboardController extends Controller
                 'template' => 'admin.emails.templates.tickets.' . $request->template,
                 'subject' => $request->subject,
                 'from_email' => config('mail.from.address'),
-                'from' => config('mail.from.name'),
+                'from' => 'Poslovi Online'
             ];
 
             Mail::to($user->email)->send(new ContactMail($details));
@@ -431,6 +456,136 @@ class DashboardController extends Controller
         }
 
         return $templates;
+    }
+
+    public function sendSubscriptionReminders(Request $request)
+    {
+        $request->validate([
+            'users' => 'required|array',
+            'template' => 'required|string',
+            'subject' => 'required|string',
+            'additional_message' => 'nullable|string'
+        ]);
+
+        $users = User::whereIn('id', $request->users)->get();
+
+        foreach ($users as $user) {
+            $templatePath = 'admin.emails.templates.subscriptions.' . $request->template;
+            if (!view()->exists($templatePath)) {
+                return back()->withErrors(['template' => "Šablon '$templatePath' ne postoji!"]);
+            }
+
+            $details = [
+                'first_name' => $user->firstname,
+                'last_name' => $user->lastname,
+                'email' => $user->email,
+                'message' => $request->additional_message,
+                'template' => $templatePath,
+                'subject' => $request->subject,
+                'from_email' => config('mail.from.address'),
+                'from' => config('mail.from.name'),
+            ];
+
+            Mail::to($user->email)->send(new ContactMail($details));
+        }
+
+        return back()->with('success', 'Podsetnici za pretplate poslati ' . count($users) . ' korisnicima!');
+    }
+
+    public function sendInactiveReminders(Request $request)
+    {
+        $request->validate([
+            'users' => 'required|array',
+            'template' => 'required|string',
+            'subject' => 'required|string',
+            'additional_message' => 'nullable|string'
+        ]);
+
+        $users = User::whereIn('id', $request->users)->get();
+
+        foreach ($users as $user) {
+            $templatePath = 'admin.emails.templates.inactive.' . $request->template;
+            if (!view()->exists($templatePath)) {
+                return back()->withErrors(['template' => "Šablon '$templatePath' ne postoji!"]);
+            }
+
+            $details = [
+                'first_name' => $user->firstname,
+                'last_name' => $user->lastname,
+                'email' => $user->email,
+                'message' => $request->additional_message,
+                'template' => $templatePath,
+                'subject' => $request->subject,
+                'from_email' => config('mail.from.address'),
+                'from' => config('mail.from.name'),
+            ];
+
+            Mail::to($user->email)->send(new ContactMail($details));
+        }
+
+        return back()->with('success', 'Podsetnici za neaktivne korisnike poslati ' . count($users) . ' korisnicima!');
+    }
+
+    public function sendCustomEmail(Request $request)
+    {
+        $request->validate([
+            'recipients' => 'required|array',
+            'subject' => 'required|string',
+            'content' => 'required|string',
+            'emails' => 'nullable|string'
+        ]);
+
+        $recipients = $request->recipients;
+        $customEmails = $request->emails ? array_map('trim', explode(',', $request->emails)) : [];
+        $users = collect();
+
+        // Process recipient groups
+        if (in_array('all', $recipients)) {
+            $users = User::all();
+        } else {
+            if (in_array('active', $recipients)) {
+                $users = $users->merge(User::where('last_seen_at', '>', now()->subDays(30))->get());
+            }
+            if (in_array('inactive', $recipients)) {
+                $users = $users->merge(User::where('last_seen_at', '<', now()->subDays(30))->get());
+            }
+            if (in_array('premium', $recipients)) {
+                $users = $users->merge(User::whereHas('subscriptions', function($q) {
+                    $q->where('status', 'active');
+                })->get());
+            }
+            if (in_array('free', $recipients)) {
+                $users = $users->merge(User::whereDoesntHave('subscriptions')->get());
+            }
+        }
+
+        // Add custom emails
+        foreach ($customEmails as $email) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $users->push(new User(['email' => $email, 'firstname' => '', 'lastname' => '']));
+            }
+        }
+
+        // Remove duplicates
+        $users = $users->unique('email');
+
+        foreach ($users as $user) {
+            $details = [
+                'first_name' => $user->firstname,
+                'last_name' => $user->lastname,
+                'email' => $user->email,
+                'message' => $request->content,
+                'template' => 'admin.emails.templates.custom',
+                'subject' => $request->subject,
+                'from_email' => config('mail.from.address'),
+                'from' => config('mail.from.name'),
+                'is_custom' => true
+            ];
+
+            Mail::to($user->email)->send(new ContactMail($details));
+        }
+
+        return back()->with('success', 'Prilagođeni email poslat ' . $users->count() . ' primaoca!');
     }
 
     public function profile(User $user)
