@@ -145,7 +145,7 @@ class RegisteredUserController extends Controller
             'message' => 'Telo poruke iz kontrolera', // Možete dodati dinamicki tekst
             'template' => 'emails.activate_register', // Predloženi Blade šablon,
             'subject' => 'Potvrda email adrese',
-            'from_email' => 'gligorijesaric@gmail.com',
+            'from_email' => config('mail.from.address'),
             'from' => 'Poslovi Online',
             'verificationUrl' => $verificationUrl,
         ];

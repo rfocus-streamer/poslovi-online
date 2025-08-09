@@ -91,7 +91,7 @@
         <div class="content">
             <h1>Poštovani {{ $first_name }},</h1>
 
-            <p>Primeli smo da ste neko vreme bili odsutni na platformi. U međuvremenu, mnogo se toga desilo, i sada je pravo vreme da se ponovo uključite!</p>
+            <p>Primetili smo da ste neko vreme bili odsutni na platformi. U međuvremenu, mnogo se toga desilo, i sada je pravo vreme da se ponovo uključite!</p>
 
             <div class="benefits">
                 <h3 style="margin-top: 0; color: #2c3e50;">Šta ste propustili dok ste bili odsutni:</h3>

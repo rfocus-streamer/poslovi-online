@@ -75,7 +75,7 @@ class PasswordResetLinkController extends Controller
             'message' => 'Kliknite na link ispod kako biste resetovali svoju lozinku.',
             'template' => 'emails.reset_password', // Predloženi Blade šablon
             'subject' => 'Resetujte vašu lozinku',
-            'from_email' => 'gligorijesaric@gmail.com',
+            'from_email' => config('mail.from.address'),
             'from' => 'Poslovi Online',
             'resetUrl' => $resetUrl, // URL za reset lozinke
         ];
