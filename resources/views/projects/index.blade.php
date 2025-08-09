@@ -95,7 +95,7 @@
                         <td>{{ $project->start_date ? $project->start_date : 'N/A' }}</td>
                         <td>{{ $project->end_date ? $project->end_date : 'N/A' }}</td>
                         <td>{{ number_format($project->reserved_funds, 2) }}</td>
-                        <td class="text-center">{{ $project->commission->buyer_amount }}</td>
+                        <td class="text-center">{{ $project->commission->buyer_amount ?? '' }}</td>
                         <td style="float: right;">
                             @if(Auth::user()->role == 'buyer')
                                 <div class="d-flex gap-2 justify-content-center">
