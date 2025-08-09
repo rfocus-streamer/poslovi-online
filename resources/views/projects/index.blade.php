@@ -162,7 +162,7 @@
             @foreach($projects as $key => $project)
                 @php
                     $price = $project->reserved_funds;
-                    $commission = $project->commission->buyer_amount;
+                    $commission = $project->commission->buyer_amount ?? 0;
                     $encryptedServiceId = Crypt::encrypt($project->service->id);
                     $encryptedUserId = Crypt::encryptString($project->seller->id);
                     $chatUrl = route('messages.index', ['service_id' => $encryptedServiceId, 'seller_id' => $encryptedUserId]);
