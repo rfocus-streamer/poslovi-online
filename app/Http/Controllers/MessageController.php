@@ -357,12 +357,14 @@ class MessageController extends Controller
                         // Pronađi poruku po ID-u
                         $message = Message::find($messageData['message_id']);
                         if ($message) {
-                            // Formatiraj read_at u ispravan timestamp format
-                            $formattedReadAt = Carbon::createFromFormat('d.m.Y. H:i:s', $messageData['read_at'])->format('Y-m-d H:i:s');
+                            if($message->sender_id != $user->id){
+                                // Formatiraj read_at u ispravan timestamp format
+                                $formattedReadAt = Carbon::createFromFormat('d.m.Y. H:i:s', $messageData['read_at'])->format('Y-m-d H:i:s');
 
-                            // Ažuriraj datum kada je poruka pročitana
-                            $message->read_at = $formattedReadAt;
-                            $message->save();
+                                // Ažuriraj datum kada je poruka pročitana
+                                $message->read_at = $formattedReadAt;
+                                $message->save();
+                            }
                         }
                     }
                 }
@@ -401,6 +403,7 @@ class MessageController extends Controller
 
     public function markAsRead(Request $request)
     {
+        $user = Auth::user();
         $unReadMessages = [];
 
         if ($request->has('unreadMessages') && !empty($request->input('unreadMessages'))) {
@@ -415,12 +418,14 @@ class MessageController extends Controller
                     // Pronađi poruku po ID-u
                     $message = Message::find($messageData['message_id']);
                     if ($message) {
-                        // Formatiraj read_at u ispravan timestamp format
-                        $formattedReadAt = Carbon::createFromFormat('d.m.Y. H:i:s', $messageData['read_at'])->format('Y-m-d H:i:s');
+                        if($message->sender_id != $user->id){
+                            // Formatiraj read_at u ispravan timestamp format
+                            $formattedReadAt = Carbon::createFromFormat('d.m.Y. H:i:s', $messageData['read_at'])->format('Y-m-d H:i:s');
 
-                        // Ažuriraj datum kada je poruka pročitana
-                        $message->read_at = $formattedReadAt;
-                        $message->save();
+                            // Ažuriraj datum kada je poruka pročitana
+                            $message->read_at = $formattedReadAt;
+                            $message->save();
+                        }
                     }
                 }
             }
