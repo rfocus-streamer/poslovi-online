@@ -338,6 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxPages = 4; // Možete ovo dinamički proslediti iz PHP-a ako želite
 
     async function loadMoreServices() {
+        //console.log(excludedIds);
         if (loading || isSearchActive) return;
 
         if (page <= maxPages) {
@@ -357,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 url.searchParams.append('excluded_ids[]', id);
             });
 
-            const response = await fetch(`/api/load-more-services?page=${page}`, {
+            const response = await fetch(url, { // Korišćenje 'url' ovde
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'

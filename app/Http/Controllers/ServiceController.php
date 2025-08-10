@@ -153,35 +153,19 @@ class ServiceController extends Controller
             ]);
         }
 
-        $seed = $request->session()->get('services_random_seed', now()->timestamp);
-        $request->session()->put('services_random_seed', $seed);
-
-        $query = Service::where('visible', true)
+          // Dohvatamo servise sa paginacijom, isključujući već prikazane
+        $moreServices = Service::where('visible', true)
             ->whereNotNull('visible_expires_at')
             ->where('visible_expires_at', '>=', now())
             ->whereNotIn('id', $excludedIds)
             ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
-            ->orderByRaw("RAND($seed)");
-
-        $moreServices = $query->paginate(3, ['*'], 'page', $page);
-
-        // Prilagodi redosled da izbegne istog autora u nizu
-        $items = $moreServices->getCollection();
-        if ($items->count() === 3) {
-            $items = $this->rearrangeServices($items);
-        }
-        $moreServices->setCollection($items);
-
-        // Proveri da li je dostignut maksimalni broj stranica
-        $nextPage = $moreServices->hasMorePages() && ($page < $maxPage)
-            ? $page + 1
-            : null;
+            ->orderBy('created_at', 'desc')
+            ->paginate(3, ['*'], 'page', $page); // 3 servisa po strani
 
         return response()->json([
             'services' => $this->formatServices($moreServices),
-            'next_page' => $nextPage,
-            'total' => $moreServices->total(),
-            'excludedIds' => $excludedIds
+            'next_page' => $moreServices->hasMorePages() ? $moreServices->currentPage() + 1 : null,
+            'total' => $moreServices->total()
         ]);
     }
 
