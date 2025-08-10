@@ -66,31 +66,22 @@ class ServiceController extends Controller
         });
 
 
-        $selectedCategoryIds = $topServices->pluck('id')->toArray(); // ID-jevi kategorija iz prvog upita
+        $selectedServiceIds = $topServices->pluck('id')->toArray();
 
-        // Provera za poslednje dodate servise koji imaju postavljen datum isteka (nije null)
-        $lastServices = Service::where('visible', true)
-            ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
-            ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
-            ->with([
-                'user',
-                'category',
-                'subcategory',
-                'serviceImages',
-                'cartItems',
-                'reviews'
-            ])
-            ->whereNotIn('id', $selectedCategoryIds) // Uklanjamo već odabrane kategorije
-            ->orderBy('created_at', 'desc') // Poslednje dodate
-            ->take(3)
-            ->get();
-
-        // Dodajemo prosečnu ocenu za svaki servis u kolekciji
+        // Dohvata poslednje servise sa random redosledom
+        $lastServices = $this->getLastServices($selectedServiceIds);
         $lastServices->each(function ($service) {
             $service->average_rating = $service->reviews->count() > 0
                 ? round($service->reviews->avg('rating'), 1)
                 : 5;
         });
+
+        // Prikuplja sve ID-jeve za isključivanje
+        $excludedIds = array_merge(
+            $topServices->pluck('id')->toArray(),
+            $lastServices->pluck('id')->toArray()
+        );
+
 
         if ($request->has('search')) {
             $searchTerm = $request->input('search');
@@ -136,7 +127,8 @@ class ServiceController extends Controller
                 'searchTerm' => $searchTerm,
                 'topServices' => $topServices,
                 'lastServices' => $lastServices,
-                'searchCategory' => $searchCategory
+                'searchCategory' => $searchCategory,
+                'excludedIds' => $excludedIds // Dodato za loadMore
             ]);
         }
 
@@ -149,31 +141,104 @@ class ServiceController extends Controller
     public function loadMoreServices(Request $request)
     {
         $page = $request->input('page', 1);
+        $excludedIds = $request->input('excluded_ids', []);
 
-        // Dohvatamo ID-jeve svih top i last servisa
-        $topServicesIds = $this->getTopServices()->pluck('id')->toArray();
-        $lastServicesIds = $this->getLastServices()->pluck('id')->toArray();
-        $excludedIds = array_merge($topServicesIds, $lastServicesIds);
+        // Ograničavamo na maksimalno 4 stranice (4 * 3 = 12 servisa)
+        $maxPage = 4;
+        if ($page > $maxPage) {
+            return response()->json([
+                'services' => [],
+                'next_page' => null,
+                'total' => 0
+            ]);
+        }
 
-        // Dodajemo mali delay za UX (samo za strane > 1)
-        //if ($page > 1) {
-           // sleep(1);
-        //}
+        $seed = $request->session()->get('services_random_seed', now()->timestamp);
+        $request->session()->put('services_random_seed', $seed);
 
-        // Dohvatamo servise sa paginacijom, isključujući već prikazane
-        $moreServices = Service::where('visible', true)
+        $query = Service::where('visible', true)
             ->whereNotNull('visible_expires_at')
             ->where('visible_expires_at', '>=', now())
             ->whereNotIn('id', $excludedIds)
             ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(3, ['*'], 'page', $page); // 3 servisa po strani
+            ->orderByRaw("RAND($seed)");
+
+        $moreServices = $query->paginate(3, ['*'], 'page', $page);
+
+        // Prilagodi redosled da izbegne istog autora u nizu
+        $items = $moreServices->getCollection();
+        if ($items->count() === 3) {
+            $items = $this->rearrangeServices($items);
+        }
+        $moreServices->setCollection($items);
+
+        // Proveri da li je dostignut maksimalni broj stranica
+        $nextPage = $moreServices->hasMorePages() && ($page < $maxPage)
+            ? $page + 1
+            : null;
 
         return response()->json([
             'services' => $this->formatServices($moreServices),
-            'next_page' => $moreServices->hasMorePages() ? $moreServices->currentPage() + 1 : null,
+            'next_page' => $nextPage,
             'total' => $moreServices->total()
         ]);
+    }
+
+    private function getLastServices(array $excludedIds)
+    {
+        $services = Service::where('visible', true)
+            ->whereNotNull('visible_expires_at')
+            ->where('visible_expires_at', '>=', now())
+            ->whereNotIn('id', $excludedIds)
+            ->inRandomOrder()
+            ->take(3)
+            ->with([
+                'user',
+                'category',
+                'subcategory',
+                'serviceImages',
+                'cartItems',
+                'reviews'
+            ])
+            ->get();
+
+        return $this->rearrangeServices($services);
+    }
+
+    private function rearrangeServices($services)
+    {
+        if ($services->count() < 3) {
+            return $services;
+        }
+
+        $arranged = [];
+        $services = $services->shuffle();
+        $usedUserIds = [];
+
+        for ($i = 0; $i < 3; $i++) {
+            $found = false;
+
+            // Prvo pokušaj da nađeš servis čiji autor nije korišćen u prethodna dva
+            foreach ($services as $index => $service) {
+                $prev1 = $i > 0 ? $arranged[$i-1]->user_id : null;
+                $prev2 = $i > 1 ? $arranged[$i-2]->user_id : null;
+
+                if ($service->user_id != $prev1 && $service->user_id != $prev2) {
+                    $arranged[] = $service;
+                    $services->forget($index);
+                    $found = true;
+                    break;
+                }
+            }
+
+            // Ako nije pronađen, uzmi bilo koji preostali
+            if (!$found && $services->isNotEmpty()) {
+                $arranged[] = $services->first();
+                $services->shift();
+            }
+        }
+
+        return collect($arranged);
     }
 
     // Pomocne metode za dobijanje top i last servisa
@@ -194,20 +259,6 @@ class ServiceController extends Controller
             ->get();
 
         return $forcedTopServices->merge($otherTopServices);
-    }
-
-    private function getLastServices()
-    {
-        $topServicesIds = $this->getTopServices()->pluck('id')->toArray();
-
-        return Service::where('visible', true)
-            ->whereNotNull('visible_expires_at')
-            ->where('visible_expires_at', '>=', now())
-            ->whereNotIn('id', $topServicesIds)
-            ->with(['user', 'category', 'subcategory', 'serviceImages', 'cartItems', 'reviews'])
-            ->orderBy('created_at', 'desc')
-            ->take(3)
-            ->get();
     }
 
     private function formatServices($services)

@@ -264,12 +264,12 @@
     <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
     </div>
-    <p class="mt-2">Učitavanje još usluga...</p>
+    <p class="mt-2">Učitavanje još ponuda...</p>
 </div>
 
 <!-- No more results -->
 <div id="no-more-results" class="text-center my-5" style="display: none;">
-    <p>Nema više usluga za prikaz</p>
+    <p>Nema više ponuda za prikaz</p>
 </div>
 
 <script>
@@ -334,6 +334,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return stars;
     };
 
+    const excludedIds = @json($excludedIds ?? []);
+
     async function loadMoreServices() {
         if (loading || isSearchActive) return;
 
@@ -342,6 +344,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             await new Promise(resolve => setTimeout(resolve, loadDelay));
+
+            // Dodaj excludedIds u URL kao query parametar
+            const url = new URL(`/api/load-more-services`, window.location.origin);
+            url.searchParams.append('page', page);
+            excludedIds.forEach(id => {
+                url.searchParams.append('excluded_ids[]', id);
+            });
 
             const response = await fetch(`/api/load-more-services?page=${page}`, {
                 headers: {
