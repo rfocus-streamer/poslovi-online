@@ -335,12 +335,17 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const excludedIds = @json($excludedIds ?? []);
+    const maxPages = 4; // Možete ovo dinamički proslediti iz PHP-a ako želite
 
     async function loadMoreServices() {
         if (loading || isSearchActive) return;
 
-        loading = true;
-        spinner.style.display = 'block';
+        if (page <= maxPages) {
+            loading = true;
+            spinner.style.display = 'block';
+        }else{
+            return;
+        }
 
         try {
             await new Promise(resolve => setTimeout(resolve, loadDelay));

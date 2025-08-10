@@ -127,14 +127,14 @@ class ServiceController extends Controller
                 'searchTerm' => $searchTerm,
                 'topServices' => $topServices,
                 'lastServices' => $lastServices,
-                'searchCategory' => $searchCategory,
-                'excludedIds' => $excludedIds // Dodato za loadMore
+                'searchCategory' => $searchCategory
             ]);
         }
 
         return view('index', compact(
             'topServices',
-            'lastServices'
+            'lastServices',
+            'excludedIds'// PROSLEĐIVANJE ID-EVA
         ));
     }
 
@@ -180,7 +180,8 @@ class ServiceController extends Controller
         return response()->json([
             'services' => $this->formatServices($moreServices),
             'next_page' => $nextPage,
-            'total' => $moreServices->total()
+            'total' => $moreServices->total(),
+            'excludedIds' => $excludedIds
         ]);
     }
 
