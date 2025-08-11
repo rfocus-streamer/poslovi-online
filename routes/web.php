@@ -18,6 +18,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\PayPalWebhookController;
+use App\Http\Controllers\FiatPayoutController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Mews\Captcha\Facades\Captcha;
@@ -139,6 +140,8 @@ Route::middleware('auth')->group(function () {
      ->name('tickets.update-status');
     Route::post('/tickets/responses/{response}/mark-as-read', [TicketController::class, 'markAsRead'])
     ->name('tickets.responses.mark-as-read');
+
+    Route::post('/fiat/payout', [FiatPayoutController::class, 'requestPayout'])->name('fiat.payout');
 
     // Subscriptions
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');

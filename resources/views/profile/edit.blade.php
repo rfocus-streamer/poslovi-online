@@ -227,6 +227,13 @@
                                 </a>
                                 <p class="text-center text-secondary">Deponuj novac</p>
                             </div>
+
+                            <div class="text-warning mb-3 modal-header">
+                                <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#RequestsStatsModal">
+                                    <i class="fas fa-money-bill-wave me-1"></i> Tvoje isplate
+                                </button>
+                            </div>
+
                         @endif
 
                         <div class="text-warning mb-4 text-center">
@@ -391,67 +398,178 @@
             </div>
         </div>
 
-        <!-- Payout Affiliate Modal -->
-        <div class="modal fade" id="affiliatePayoutModal" tabindex="-1" aria-labelledby="affiliatePayoutModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+        <!-- Payout Requests Stats Modal -->
+        <div class="modal fade" id="RequestsStatsModal" tabindex="-1" aria-labelledby="RequestsStatsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header text-center">
-                        <h5 class="modal-title" id="affiliatePayoutModalLabel">
-                            <i class="fas fa-money-bill-wave"></i> Zahtev za affiliate isplatu
-                        </h5>
+                    <div class="modal-header">
+                        <div class="w-100 text-center">
+                            <h5 class="modal-title" id="affiliateStatsModalLabel">
+                                <i class="fas fa-money-bill-wave"></i> Tvoje isplate
+                            </h5>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <form id="payoutForm" method="POST" action="{{ route('affiliate.payout') }}">
-                            @csrf
 
-                            <div class="d-flex mb-3">
-                                <h6 class="form-label">
-                                    Dostupno za isplatu: <strong class="text-success">{{ number_format(Auth::user()->affiliate_balance, 2) }} €</strong>
-                                </h6>
-                            </div>
+                    <div class="d-none d-md-table modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="affiliatePayouts-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Podnet</th>
+                                        <th>Isplaćen</th>
+                                        <th>Iznos €</th>
+                                        <th>Način plaćanja</th>
+                                        <th>Uplata na</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                   @forelse($payouts as $key => $payout)
+                                        <tr>
+                                            <td>{{$key+1}}</td>
+                                            <td>{{ $payout->request_date->format('d.m.Y.') }}</td>
+                                            <td>
+                                                @if ($payout->payed_date)
+                                                    {{ \Carbon\Carbon::parse($payout->payed_date)->format('d.m.Y.') }}
+                                                @endif
+                                            </td>
+                                            <td class="fw-bold">{{ number_format($payout->amount, 2) }}</td>
+                                            <td>
+                                                @switch($payout->payment_method)
+                                                    @case('paypal')
+                                                        <i class="fab fa-paypal me-2"></i>PayPal
+                                                        @break
+                                                    @case('card')
+                                                        <i class="fas fa-credit-card me-2"></i>Kartica
+                                                        @break
+                                                    @case('bank')
+                                                        <i class="fas fa-university me-2"></i>Bankovni transfer
+                                                        @break
+                                                @endswitch
+                                            </td>
+                                            <td>
+                                                @if ($payout->payment_method == 'card')
+                                                    {{ substr($payout->card_number, 0, 4) . str_repeat('*', strlen($payout->card_number) - 8) . substr($payout->card_number, -4) }}
+                                                @else
+                                                    {{$payout->payment_details}}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @switch($payout->status)
+                                                    @case('requested')
+                                                        <span class="badge bg-warning">Na čekanju</span>
+                                                        @break
+                                                    @case('completed')
+                                                        <span class="badge bg-success">Završeno</span>
+                                                        @break
+                                                    @case('rejected')
+                                                        <span class="badge bg-danger">Odbijeno</span>
+                                                        @break
+                                                @endswitch
+                                            </td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">Nema još zahteva za isplatu</td>
+                                        </tr>
+                                        @endforelse
+                                </tbody>
+                            </table>
+                        </div>
 
-                            <div class="mb-3">
-                                <label for="payoutAmount" class="form-label">Iznos za isplatu (€)</label>
-                                <input type="number" step="1" min="100" max="1000"
-                                       class="form-control" id="payoutAmount" name="amount" required
-                                       placeholder="Minimalno 100€">
-                            </div>
+                        <div class="d-flex justify-content-center pagination-buttons" id="pagination-links">
+                                {{ $payouts->links() }}
+                        </div>
 
-                            <div class="mb-3">
-                                <label for="paymentMethod" class="form-label">Način isplate</label>
-                                <select class="form-select" id="paymentMethod" name="payment_method" required>
-                                    <option value="">Izaberite način isplate</option>
-                                    <option value="paypal">PayPal</option>
-                                   <!--  <option value="bank">Bankovni transfer</option>
-                                    <option value="crypto">Kriptovaluta</option> -->
-                                </select>
-                            </div>
-
-                            <div class="mb-3" id="paypalEmailField" style="display: none;">
-                                <label for="paypalEmail" class="form-label">PayPal email</label>
-                                <input type="email" class="form-control" id="paypalEmail" name="paypal_email">
-                            </div>
-
-                            <div class="mb-3" id="bankDetailsField" style="display: none;">
-                                <label for="bankAccount" class="form-label">Broj bankovnog računa</label>
-                                <input type="text" class="form-control" id="bankAccount" name="bank_account">
-                            </div>
-
-                            <div id="payoutError" class="alert alert-danger d-none"></div>
-
-                            <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-paper-plane me-2"></i>Pošalji zahtev
-                                </button>
-                            </div>
-                        </form>
                     </div>
+
+                    <!-- Mobile & Tablet Cards -->
+                    <div class="d-md-none">
+                        @forelse($payouts as $key => $payout)
+                        <div class="card mb-3 subscription-card" data-id="{{ $payout->id }}">
+                            <div class="card-header btn-poslovi-green text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Isplata #{{ $key+1 }}</span>
+                                    <span class="badge bg-light text-dark">
+                                        @switch($payout->status)
+                                            @case('requested')
+                                                <span class="badge bg-warning">Na čekanju</span>
+                                                @break
+                                            @case('completed')
+                                                <span class="badge bg-success">Završeno</span>
+                                                @break
+                                            @case('rejected')
+                                                <span class="badge bg-danger">Odbijeno</span>
+                                                @break
+                                        @endswitch
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Podnet</small>
+                                        <div>{{ $payout->request_date->format('d.m.Y.') }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Isplaćen</small>
+                                        <div>
+                                            @if ($payout->payed_date)
+                                                {{ \Carbon\Carbon::parse($payout->payed_date)->format('d.m.Y.') }}
+                                            @else
+                                                Nema podataka
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Iznos</small>
+                                        <div class="fw-bold">{{ number_format($payout->amount, 2) }} €</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Način plaćanja</small>
+                                        <div>
+                                            @switch($payout->payment_method)
+                                                @case('paypal')
+                                                    <i class="fab fa-paypal me-2"></i>PayPal
+                                                    @break
+                                                @case('card')
+                                                    <i class="fas fa-credit-card me-2"></i>Kartica
+                                                    @break
+                                                @case('bank')
+                                                    <i class="fas fa-university me-2"></i>Bankovni transfer
+                                                    @break
+                                            @endswitch
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <small class="text-muted">Uplata na</small>
+                                        <div>
+                                            @if ($payout->payment_method == 'card')
+                                                {{$payout->card_number}}
+                                            @else
+                                                {{$payout->payment_details}}
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="card mb-3 subscription-card">
+                            <div class="card-body text-center">
+                                <p class="text-muted">Nema još zahteva za isplatu</p>
+                            </div>
+                        </div>
+                        @endforelse
+                    </div>
+
                 </div>
             </div>
         </div>
 
-         <!-- Payout Fiat Modal -->
+        <!-- Payout Fiat Modal -->
         <div class="modal fade" id="fiatPayoutModal" tabindex="-1" aria-labelledby="fiatPayoutModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -462,7 +580,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="payoutForm" method="POST" action="{{ route('affiliate.payout') }}">
+                        <form id="payoutForm" method="POST" action="{{ route('fiat.payout') }}">
                             @csrf
 
                             <div class="d-flex mb-3">
@@ -473,18 +591,18 @@
 
                             <div class="mb-3">
                                 <label for="payoutAmount" class="form-label">Iznos za isplatu (€)</label>
-                                <input type="number" step="1" min="100" max="1000"
+                                <input type="number" step="1" min="10" max="1000"
                                        class="form-control" id="payoutAmount" name="amount" required
-                                       placeholder="Minimalno 100€">
+                                       placeholder="Minimalno 10€">
                             </div>
 
                             <div class="mb-3">
                                 <label for="paymentMethod" class="form-label">Način isplate</label>
                                 <select class="form-select" id="paymentMethod" name="payment_method" required>
                                     <option value="">Izaberite način isplate</option>
-                                    <option value="paypal">PayPal</option>
-                                   <!--  <option value="bank">Bankovni transfer</option>
-                                    <option value="crypto">Kriptovaluta</option> -->
+                                    <option value="paypal"><i class="fab fa-paypal"></i> PayPal</option>
+                                    <option value="bank"><i class="fas fa-university"></i> Bankovni transfer</option>
+                                    <option value="card"><i class="fas fa-credit-card"></i> Kartični transfer</option>
                                 </select>
                             </div>
 
@@ -498,11 +616,28 @@
                                 <input type="text" class="form-control" id="bankAccount" name="bank_account">
                             </div>
 
+                            <!-- Kartični transfer -->
+                            <div class="mb-3" id="cardDetailsField" style="display: none;">
+                                <label for="cardNumber" class="form-label">Broj kartice</label>
+                                <input type="text" class="form-control" id="cardNumber" name="card_number" placeholder="XXXX XXXX XXXX XXXX">
+                            </div>
+
+                            <div class="mb-3" id="cardHolderField" style="display: none;">
+                                <label for="cardHolder" class="form-label">Ime vlasnika kartice</label>
+                                <input type="text" class="form-control" id="cardHolder" name="card_holder" placeholder="Ime Prezime">
+                            </div>
+
+                            <div class="mb-3" id="cardExpiryField" style="display: none;">
+                                <label for="cardExpiry" class="form-label">Datum isteka kartice (MM/YY)</label>
+                                <input type="text" class="form-control" id="cardExpiry" name="card_expiry" placeholder="MM/YY">
+                            </div>
+
                             <div id="payoutError" class="alert alert-danger d-none"></div>
+                            <div id="payoutSuccess" class="alert alert-success d-none text-center"></div>
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-paper-plane me-2"></i>Pošalji zahtev
+                                    <i class="fas fa-paper-plane me-2"></i>Pošaljite zahtev
                                 </button>
                             </div>
                         </form>
@@ -520,6 +655,16 @@
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Payout Success Toast -->
+        <div id="payoutSuccessToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i> Uspešno ste poslali zahtev za isplatu!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
 
@@ -569,6 +714,126 @@ document.addEventListener("DOMContentLoaded", function () {
             errorDiv.classList.add("d-none"); // Sakriva div ako su lozinke iste
         }
     });
+
+    // Handle payout form submission with AJAX
+    document.getElementById('payoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+        const errorDiv = document.getElementById('payoutError');
+        const successDiv = document.getElementById('payoutSuccess');
+
+        // Reset UI state
+        errorDiv.classList.add('d-none');
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesiram...';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const successToast = new bootstrap.Toast(document.getElementById('payoutSuccessToast'));
+                successToast.show();
+
+                //console.log(data);
+
+                successDiv.textContent = data.message;
+                successDiv.classList.remove('d-none');
+                // Sakrij error poruku ako je prikazana
+                errorDiv.classList.add('d-none');
+
+                // Reload the page after 5 seconds to show flash message
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
+            }
+        })
+        .catch(error => {
+            //errorDiv.textContent = 'Došlo je do greške prilikom obrade zahteva';
+            //errorDiv.classList.remove('d-none');
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Pošalji zahtev';
+        });
+    });
+
+
+    // Show/hide payment method fields based on selection
+    document.getElementById('paymentMethod').addEventListener('change', function() {
+        const paypalField = document.getElementById('paypalEmailField');
+        const bankField = document.getElementById('bankDetailsField');
+        const cardField = document.getElementById('cardDetailsField');
+        const cardHolderField = document.getElementById('cardHolderField');
+        const cardExpiryField = document.getElementById('cardExpiryField');
+
+        // Hide all fields initially
+        paypalField.style.display = 'none';
+        bankField.style.display = 'none';
+        cardField.style.display = 'none';
+        cardHolderField.style.display = 'none';
+        cardExpiryField.style.display = 'none';
+
+        // Show fields based on selected payment method
+        if (this.value === 'paypal') {
+            paypalField.style.display = 'block';
+        } else if (this.value === 'bank') {
+            bankField.style.display = 'block';
+        } else if (this.value === 'card') {
+            cardField.style.display = 'block';
+            cardHolderField.style.display = 'block';
+            cardExpiryField.style.display = 'block';
+        }
+    });
+
 });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const cardNumberInput = document.getElementById('cardNumber');
+        const cardExpiryInput = document.getElementById('cardExpiry');
+
+        // Funkcija za formatiranje broja kartice (XX XX XX XX)
+        cardNumberInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Ukloni sve što nije broj
+            value = value.slice(0, 16); // Maksimalno 16 brojeva
+            let formattedValue = '';
+
+            // Dodaj razmake nakon svaka četiri broja
+            for (let i = 0; i < value.length; i += 4) {
+                formattedValue += value.slice(i, i + 4) + ' ';
+            }
+
+            // Ukloni poslednji razmak (ako postoji)
+            e.target.value = formattedValue.trim();
+        });
+
+        // Funkcija za formatiranje datuma isteka kartice (MM/YY)
+        cardExpiryInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Ukloni sve što nije broj
+            value = value.slice(0, 4); // Maksimalno 4 broja (MMYY)
+            let formattedValue = '';
+
+            // Dodaj delimiter između meseca i godine
+            if (value.length > 2) {
+                formattedValue = value.slice(0, 2) + '/' + value.slice(2);
+            } else {
+                formattedValue = value;
+            }
+
+            e.target.value = formattedValue;
+        });
+    });
+</script>
+
 @endsection

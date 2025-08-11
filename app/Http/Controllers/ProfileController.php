@@ -26,6 +26,9 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         $user = Auth::user();
+        $payouts = auth()->user()->Payouts()
+                    ->orderBy('request_date', 'desc')
+                    ->paginate(10); // 10 itema po strani
         $totalEarnings = 0;
 
         if (Auth::check()) { // Proverite da li je korisnik ulogovan
@@ -39,7 +42,8 @@ class ProfileController extends Controller
         }
 
         return view('profile.edit', compact(
-            'totalEarnings'
+            'totalEarnings',
+            'payouts'
             )
         );
     }
