@@ -770,12 +770,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Show/hide payment method fields based on selection
-    document.getElementById('paymentMethod').addEventListener('change', function() {
-        const paypalField = document.getElementById('paypalEmailField');
-        const bankField = document.getElementById('bankDetailsField');
-        const cardField = document.getElementById('cardDetailsField');
-        const cardHolderField = document.getElementById('cardHolderField');
-        const cardExpiryField = document.getElementById('cardExpiryField');
+    document.querySelector('#payoutForm #paymentMethod').addEventListener('change', function() {
+        const payoutForm = this.closest('#payoutForm');
+        const paypalField = payoutForm.querySelector('#paypalEmailField');
+        const bankField = payoutForm.querySelector('#bankDetailsField');
+        const cardField = payoutForm.querySelector('#cardDetailsField');
+        const cardHolderField = payoutForm.querySelector('#cardHolderField');
+        const cardExpiryField = payoutForm.querySelector('#cardExpiryField');
+        const payoutButton = payoutForm.querySelector('button[type="submit"]');
 
         // Hide all fields initially
         paypalField.style.display = 'none';
@@ -785,6 +787,28 @@ document.addEventListener("DOMContentLoaded", function () {
         cardExpiryField.style.display = 'none';
 
         // Show fields based on selected payment method
+        if (this.value === 'paypal') {
+            paypalField.style.display = 'block';
+            // Enable the form and the submit button if PayPal is selected
+            payoutForm.querySelectorAll('input, select').forEach(element => {
+                if (element !== document.getElementById('paymentMethod')) { // Keep paymentMethod enabled
+                    element.disabled = false;
+                }
+            });
+            payoutButton.disabled = false;
+            payoutButton.classList.remove('btn-secondary');
+            payoutButton.classList.add('btn-success');
+            payoutButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Pošaljite zahtev';
+        } else {
+            // Disable the form and the submit button if the payment method is not PayPal
+            payoutForm.querySelectorAll('input').forEach(element => element.disabled = true); // Disable only input fields
+            payoutButton.disabled = true;
+            payoutButton.classList.remove('btn-success');
+            payoutButton.classList.add('btn-secondary');
+            payoutButton.innerHTML = 'U razvoju';
+        }
+
+        // Show relevant fields based on the payment method selected
         if (this.value === 'paypal') {
             paypalField.style.display = 'block';
         } else if (this.value === 'bank') {
