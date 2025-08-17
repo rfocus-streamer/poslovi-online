@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Service;
 use App\Models\Subscription;
 use App\Models\Transaction;
+use App\Models\FiatPayout;
 use App\Models\ForcedService;
 use App\Models\ServiceImage;
 use App\Models\Project;
@@ -225,6 +226,53 @@ class DashboardController extends Controller
             ]);
 
 
+        // FIAT PAYOUTS ===========================================================
+        $payoutsQuery = FiatPayout::with('user');
+
+        // Sortiranje
+        $payoutsSortColumn = $request->input('payouts_sort_column', 'id');
+        $payoutsSortDirection = $request->input('payouts_sort_direction', 'desc');
+
+        // Provera validnosti parametara za sortiranje
+        $allowedPayoutColumns = ['id', 'user_id', 'amount', 'request_date', 'payed_date', 'status', 'payment_method'];
+        if (!in_array($payoutsSortColumn, $allowedPayoutColumns)) {
+            $payoutsSortColumn = 'id';
+            $payoutsSortDirection = 'desc';
+        }
+
+        $payoutsQuery->orderBy($payoutsSortColumn, $payoutsSortDirection);
+
+        // Filter po statusu
+        if ($request->has('payouts_status') && $request->payouts_status) {
+            $payoutsQuery->where('status', $request->payouts_status);
+        }
+
+        // Tekstualna pretraga
+        if ($request->has('payouts_search') && !empty($request->payouts_search)) {
+            $searchTerm = $request->payouts_search;
+            $payoutsQuery->where(function($query) use ($searchTerm) {
+                $query->where('id', 'like', "%{$searchTerm}%")
+                      ->orWhere('payment_method', 'like', "%{$searchTerm}%")
+                      ->orWhere('amount', 'like', "%{$searchTerm}%")
+                      ->orWhereHas('user', function($q) use ($searchTerm) {
+                          $q->where('firstname', 'like', "%{$searchTerm}%")
+                             ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                             ->orWhere('email', 'like', "%{$searchTerm}%");
+                      });
+            });
+        }
+
+        $fiatPayouts = $payoutsQuery->paginate(10, ['*'], 'page', $request->input('payouts_page', 1))
+            ->setPageName('payouts_page')
+            ->appends([
+                'tab' => 'fiatpayouts',
+                'payouts_search' => $request->payouts_search,
+                'payouts_status' => $request->payouts_status,
+                'payouts_sort_column' => $payoutsSortColumn,
+                'payouts_sort_direction' => $payoutsSortDirection
+            ]);
+
+
         // ISTAKNUTE PONUDE ======================================================
         $currentForcedServices = ForcedService::orderBy('priority')->pluck('service_id')->toArray();
         $allServices = Service::where('visible', true)
@@ -324,7 +372,8 @@ class DashboardController extends Controller
             'messageTemplates',
             'ticketTemplates',
             'subscriptionTemplates',
-            'inactiveTemplates'
+            'inactiveTemplates',
+            'fiatPayouts'
         ));
     }
 

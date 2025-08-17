@@ -22,6 +22,11 @@
                     href="#services">
                     <i class="fas fa-file-signature "></i> Ponude
                 </a>
+                <a class="nav-link text-white {{ $activeTab === 'fiatpayouts' ? 'active' : '' }}"
+                    data-bs-toggle="tab"
+                    href="#fiatpayouts">
+                    <i class="fas fa-money-check"></i> Isplate
+                </a>
                 <a class="nav-link text-white {{ $activeTab === 'forcedservices' ? 'active' : '' }}"
                     data-bs-toggle="tab"
                     href="#forcedservices">

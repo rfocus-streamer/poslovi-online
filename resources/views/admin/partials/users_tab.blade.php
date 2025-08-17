@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentUserId = null;
 
     // Opći handler za akcije
-    document.querySelectorAll('[data-action]').forEach(link => {
+    document.querySelectorAll('#users [data-action]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const action = this.dataset.action;

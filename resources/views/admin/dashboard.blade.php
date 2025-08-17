@@ -129,6 +129,9 @@
                     <!-- Transactions Tab -->
                     @include('admin.partials.transactions_tab')
 
+                    <!-- Fiat Payouts Tab -->
+                    @include('admin.partials.fiat_payouts_tab')
+
                     <!-- Services Tab -->
                     @include('admin.partials.services_tab')
 

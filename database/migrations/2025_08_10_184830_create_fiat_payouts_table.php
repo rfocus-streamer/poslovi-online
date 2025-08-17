@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('status', ['requested', 'completed', 'rejected'])->default('requested');
             $table->enum('payment_method', ['paypal', 'card', 'bank']);
             $table->text('payment_details');
+            $table->string('transaction_id')->nullable();
             $table->decimal('deposits', 10, 2);
             $table->string('card_number')->nullable();
             $table->string('card_holder_name')->nullable();

@@ -13,6 +13,7 @@ class FiatPayout extends Model
         'amount',
         'payment_method',
         'payment_details',
+        'transaction_id',
         'card_number', // Dodaj polje za karticu
         'card_holder_name', // Dodaj polje za ime vlasnika
         'card_expiry_date', // Dodaj polje za datum isteka

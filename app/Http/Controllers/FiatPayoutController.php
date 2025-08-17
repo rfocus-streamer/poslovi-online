@@ -70,4 +70,38 @@ class FiatPayoutController extends Controller
             ], 500);
         }
     }
+
+    public function show($id)
+    {
+        $payout = FiatPayout::with('user')->findOrFail($id);
+        return view('admin.partials.payout_details', compact('payout'));
+    }
+
+    public function approve($id)
+    {
+        $payout = FiatPayout::findOrFail($id);
+
+        $transactionId = request('transaction_id');
+        if (!$transactionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction ID je obavezan'
+            ]);
+        }
+
+        $payout->update([
+            'status' => 'completed',
+            'payed_date' => now(),
+            'transaction_id' => $transactionId
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function reject($id)
+    {
+        $payout = FiatPayout::findOrFail($id);
+        $payout->update(['status' => 'rejected']);
+        return response()->json(['success' => true]);
+    }
 }

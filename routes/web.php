@@ -189,6 +189,15 @@ Route::middleware('auth')->group(function () {
     Route::post('send-custom-email', [DashboardController::class, 'sendCustomEmail'])
          ->name('admin.send-custom-email');
 
+    Route::get('/fiat-payouts/{id}/details', [FiatPayoutController::class, 'show'])
+         ->name('fiat-payouts.details');
+
+    Route::post('/fiat-payouts/{id}/approve', [FiatPayoutController::class, 'approve'])
+         ->name('fiat-payouts.approve');
+
+    Route::post('/fiat-payouts/{id}/reject', [FiatPayoutController::class, 'reject'])
+         ->name('fiat-payouts.reject');
+
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
