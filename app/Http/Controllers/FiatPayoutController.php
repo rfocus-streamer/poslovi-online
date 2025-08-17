@@ -92,7 +92,7 @@ class FiatPayoutController extends Controller
         $payout->update([
             'status' => 'completed',
             'payed_date' => now(),
-            'transaction_id' => $transactionId
+            'transaction_id' => $transactionId//
         ]);
 
         return response()->json(['success' => true]);
