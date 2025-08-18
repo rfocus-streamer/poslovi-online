@@ -267,6 +267,28 @@
         transform: translateX(153px);
     }
 
+ /* Poboljšan vertikalni skrollbar SAMO za kontakt listu */
+    .contacts::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    .contacts::-webkit-scrollbar-thumb {
+        background-color: #9c1c2c;
+        border-radius: 6px;
+        border: 3px solid #f1f1f1;
+    }
+
+    .contacts::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+    }
+
+    /* Firefox */
+    .contacts {
+        scrollbar-width: auto;
+        scrollbar-color: #9c1c2c #f1f1f1;
+    }
+
     /* Responsive stilovi */
     @media (max-width: 767px) {
         .chat-container {
@@ -278,10 +300,24 @@
         .contacts {
             height: 200px;
             border-bottom: 1px solid #dee2e6;
+            /* Podebljani skrollbar za mobilne uređaje */
+            scrollbar-width: thick; /* Firefox */
         }
 
-        .chat-history {
-            max-height: calc(100vh - 400px) !important;
+        /* Veći skrollbar za mobilne uređaje */
+        .contacts::-webkit-scrollbar {
+            width: 14px;
+        }
+
+        .contacts::-webkit-scrollbar-thumb {
+            background: #9c1c2c;
+            border-radius: 8px;
+            border: 3px solid #f1f1f1;
+        }
+
+        .contacts::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 8px;
         }
     }
 
@@ -296,8 +332,9 @@
             height: calc(100vh - 200px);
         }
 
-        h6{
-            font-size: 0.9rem;
+        /* Manje vidljiv skrollbar na desktopu */
+        .contacts::-webkit-scrollbar {
+            width: 8px;
         }
     }
 </style>
