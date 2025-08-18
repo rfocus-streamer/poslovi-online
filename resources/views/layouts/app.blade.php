@@ -282,6 +282,30 @@
             background-color: #9c1c2c;
             color: white;
         }
+
+        /* Add to existing styles */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        /* Fix for mobile chat container */
+        @media (max-width: 767px) {
+            .chat-container {
+                height: auto !important;
+                min-height: 0;
+                flex: 1;
+            }
+
+            .chat-history {
+                max-height: calc(100vh - 250px) !important;
+            }
+        }
     </style>
 <body>
     <!-- Dekstop view -->
@@ -692,7 +716,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="text-white mt-5" style="background-color: #9c1c2c;">
+    <footer class="text-white mt-auto" style="background-color: #9c1c2c;">
         <div class="container py-5">
             <div class="row justify-content-center"> <!-- Centrira sve kolone -->
                 <!-- O nama -->

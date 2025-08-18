@@ -10,102 +10,123 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 @section('content')
-  <style>
+<style>
+    /* Glavni stilovi */
     .chat-container {
-      display: flex;
-      height: 100vh;
+        display: flex;
+        height: calc(100vh - 150px);
     }
+
     .contacts {
-      width: 250px;
-      background-color: #f1f1f1;
-      overflow-y: auto;
-      padding: 10px;
+        background-color: #f1f1f1;
+        overflow-y: auto;
+        padding: 10px;
     }
+
     .chat-box {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
+
     .chat-history {
-      flex: 1;
-      background-color: #ffffff;
-      padding: 20px;
-      overflow-y: auto;
+        flex: 1;
+        background-color: #ffffff;
+        padding: 20px;
+        overflow-y: auto;
+        min-height: 300px;
     }
+
     .chat-input {
-      padding: 10px;
-      background-color: #f1f1f1;
+        padding: 10px;
+        background-color: #f1f1f1;
     }
+
     .chat-message {
-      padding: 10px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
+
     .leftChat {
-      background-color: #7269ef;/*#e1ffe1;*/
-      background-color: #e1ffe1;
-      flex-direction: row-reverse;
-      /*color: white;*/
-      border-radius: 5px;
-      padding: 5px;
+        background-color: #e1ffe1;
+        flex-direction: row-reverse;
+        border-radius: 5px;
+        padding: 5px;
     }
+
     .rightChat {
-      background-color: #e1e1e1;
-      flex-direction: row-reverse;
-      border-radius: 5px;
-      background-color: #add8e6; /* Svetlo plava (LightBlue) */
-      padding: 5px;
+        background-color: #add8e6;
+        flex-direction: row-reverse;
+        border-radius: 5px;
+        padding: 5px;
     }
+
     .contact-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      cursor: pointer;
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.2s;
     }
+
+    .contact-item:hover {
+        background-color: #f8f9fa;
+    }
+
     .contact-avatar {
-      width: 40px;
-      height: 40px;
-    /*  object-fit: cover;*/
-      border-radius: 50%;
-      flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        flex-shrink: 0;
     }
+
     .status-online {
-      color: green;
-      font-size: 14px;
+        color: green;
+        font-size: 14px;
     }
+
     .status-offline {
-      color: gray;
-      font-size: 14px;
+        color: gray;
+        font-size: 14px;
     }
+
     .message-time {
-      font-size: 12px;
-      color: gray;
-      text-align: right;
-      margin-left: 10px;
+        font-size: 12px;
+        color: gray;
+        text-align: right;
+        margin-left: 10px;
     }
+
     .message-header {
-      display: flex;
-      align-items: center;
+        display: flex;
+        align-items: center;
     }
+
     .message-header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-right: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
     }
+
     .message-header .status {
-      font-size: 12px;
-      color: gray;
+        font-size: 12px;
+        color: gray;
     }
+
     .message-body {
-      margin-top: 5px;
+        margin-top: 5px;
     }
+
     .message-content {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
     }
 
     .read-status {
@@ -118,20 +139,20 @@
     }
 
     .conversation-list {
-      align-items: flex-end;
-      display: inline-flex;
-      margin-bottom: 24px;
-      max-width: 80%;
-      position: relative;
+        align-items: flex-end;
+        display: inline-flex;
+        margin-bottom: 24px;
+        max-width: 80%;
+        position: relative;
     }
 
     .conversation-list-right {
-        display: flex; /* umesto inline-flex */
+        display: flex;
         flex-direction: row-reverse;
         align-items: flex-end;
         margin-bottom: 24px;
         max-width: 80%;
-        margin-left: auto; /* gura ceo blok desno */
+        margin-left: auto;
     }
 
     .date-separator {
@@ -144,7 +165,7 @@
 
     .date-separator .date-text {
         padding: 0 10px;
-        background-color: white; /* ili boja modala */
+        background-color: white;
         position: relative;
         z-index: 1;
     }
@@ -153,7 +174,7 @@
     .date-separator::after {
         content: "";
         flex: 1;
-        border-bottom: 1px solid #dee2e6; /* standardna Bootstrap linija */
+        border-bottom: 1px solid #dee2e6;
         margin: 0 10px;
     }
 
@@ -162,17 +183,6 @@
         min-width: 1.25rem;
         height: 1.25rem;
         line-height: 1.25rem;
-    }
-
-    .contact-item {
-        cursor: pointer;
-        padding: 10px;
-        border-radius: 5px;
-        transition: background-color 0.2s;
-    }
-
-    .contact-item:hover {
-        background-color: #f8f9fa;
     }
 
     .contact-item.has-unread {
@@ -205,13 +215,12 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #ccc; /* Osnovna boja pozadine - siva kad je odblokiran */
+        background-color: #ccc;
         transition: 0.4s;
         border-radius: 24px;
-        background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Leva siva, desna zelena */
+        background: linear-gradient(to right, #ccc 50%, #4CAF50 50%);
     }
 
-    /* Stil za "lopticu" koja se pomera unutar slider-a */
     .sliderBlock:before {
         position: absolute;
         content: "";
@@ -224,7 +233,6 @@
         transition: 0.4s;
     }
 
-    /* Stilizacija za label-text */
     .label-textBlock {
         position: absolute;
         top: 50%;
@@ -243,34 +251,63 @@
         right: 22px;
     }
 
-    /* Kad je checkbox označen (blokiran) */
     .switchBlock input:checked + .sliderBlock {
-        background: linear-gradient(to right, #9c1c2c 50%, #ccc 50%); /* Pozadina crvena (blokiran) */
+        background: linear-gradient(to right, #9c1c2c 50%, #ccc 50%);
     }
 
-    /* Kad je checkbox označen, loptica je na levoj strani (blokiran) */
     .switchBlock input:checked + .sliderBlock:before {
-        transform: translateX(0); /* Loptica pomerena na levo */
+        transform: translateX(0);
     }
 
-    /* Kad nije označen (odblokiran), pozadina je zelena */
     .switchBlock input:not(:checked) + .sliderBlock {
-        background: linear-gradient(to right, #ccc 50%, #4CAF50 50%); /* Pozadina zelena (odblokiran) */
+        background: linear-gradient(to right, #ccc 50%, #4CAF50 50%);
     }
 
-    /* Kad nije označen, loptica pomera desno (odblokiran) */
     .switchBlock input:not(:checked) + .sliderBlock:before {
-        transform: translateX(153px); /* Loptica pomerena na desno */
+        transform: translateX(153px);
     }
 
+    /* Responsive stilovi */
+    @media (max-width: 767px) {
+        .chat-container {
+            flex-direction: column;
+            height: auto;
+            min-height: calc(100vh - 200px);
+        }
+
+        .contacts {
+            height: 200px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .chat-history {
+            max-height: calc(100vh - 400px) !important;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .contacts {
+            min-width: 300px;
+            max-width: 350px;
+            height: calc(100vh - 200px);
+        }
+
+        .chat-box {
+            height: calc(100vh - 200px);
+        }
+
+        h6{
+            font-size: 0.9rem;
+        }
+    }
 </style>
 
-<div class="container py-5">
+<div class="container py-3">
     <div class="row">
-        <div class="container-fluid">
-            <div class="row chat-container">
+        <div class="col-12 p-0">
+            <div class="chat-container">
                 <!-- Contacts List -->
-                <div class="col-12 col-md-3 contacts text-secondary">
+                <div class="contacts text-secondary">
                     <h6><i class="fa fa-address-book"></i> Tvoji kontakti</h6>
                     <ul class="list-group">
                         @foreach ($contacts as $contact)
@@ -291,7 +328,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex align-items-center">
+                                    <div class="d-flex align-items-center position-relative">
                                         <img src="{{ Storage::url('user/'.$contact->avatar) }}" alt="{{ $contact->firstname }} {{ $contact->lastname }}" class="contact-avatar me-2">
                                         <div>
                                             <strong>{{ $contact->firstname }} {{ $contact->lastname }}</strong><br>
@@ -313,7 +350,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div class="mt-3">
+                                <div class="mt-3 d-flex justify-content-center">
                                     <label class="switchBlock" onclick="event.stopPropagation()">
                                         <input type="checkbox" id="blockSwitch_{{ $contact->id }}"
                                                {{ $contact->blocked ? 'checked' : '' }}
@@ -330,34 +367,32 @@
                 </div>
 
                 <!-- Chat Box -->
-                <div class="col-12 col-md-9 chat-box chat-input">
-                    <div class="d-flex text-secondary ms-auto">
+                <div class="chat-box">
+                    <div class="d-flex text-secondary p-3 border-bottom">
                         <i class="fas fa-comment-dots mt-1 text-info"></i> &nbsp;
-                        <h6 id="topic"></h6>
+                        <h6 id="topic"><span class="text-secondary d-block d-md-none">Izaberi kontakt sa kojim želiš da započneš razgovor.</span></h6>
                     </div>
-                    <div class="row list-group-item contact-item">
-                        <div id="chatHistory" class="chat-history" data-contact-id="0" style="max-height: 75vh;">
-                            <h6 class="text-secondary">Izaberi kontakt sa kojim želiš da započneš razgovor.</h6>
-                        </div>
+                    <div id="chatHistory" class="chat-history" data-contact-id="0">
+                        <h6 class="text-secondary d-none d-md-block">Izaberi kontakt sa kojim želiš da započneš razgovor.</h6>
+                    </div>
 
-                        <form id="messageForm" enctype="multipart/form-data">
-                            @csrf
-                            <input type="hidden" name="service_id" id="service_id" value="">
-                            <input type="hidden" name="user_id"  id="user_id" value="">
-                            <div class="border rounded p-2 bg-light" id="chatArea" style="display: none;">
-                                <div class="mb-2">
-                                    <textarea name="content" id="content" class="form-control" rows="3" placeholder="Unesi poruku..." required></textarea>
-                                </div>
-
-                                <div class="d-flex align-items-center justify-content-between gap-2">
-                                    <input type="file" name="attachment" class="form-control form-control-sm w-50">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i> Pošalji
-                                    </button>
-                                </div>
+                    <form id="messageForm" enctype="multipart/form-data" class="border-top">
+                        @csrf
+                        <input type="hidden" name="service_id" id="service_id" value="">
+                        <input type="hidden" name="user_id"  id="user_id" value="">
+                        <div class="p-3 bg-light" id="chatArea" style="display: none;">
+                            <div class="mb-2">
+                                <textarea name="content" id="content" class="form-control" rows="3" placeholder="Unesi poruku..." required></textarea>
                             </div>
-                        </form>
-                    </div>
+
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <input type="file" name="attachment" class="form-control form-control-sm w-50">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Pošalji
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -399,7 +434,6 @@
         }
     });
 </script>
-
 
 <script type="text/javascript">
     // Funkcija koja uzima poslednju poruku
