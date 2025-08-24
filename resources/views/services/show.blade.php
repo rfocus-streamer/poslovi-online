@@ -562,10 +562,12 @@
                                         @endif
                                     @endfor
                                 @elseif ($service->user->stars == 0)
-                                    <p>Prodavac nije još ocenjen</p>
+                                    <p class="text-secondary">Prodavac nije još ocenjen</p>
                                 @endif
 
-                                <small class="ms-2">({{ $service->user->stars }})</small>
+                                @if ($service->user->stars > 0)
+                                    <small class="ms-2">({{ $service->user->stars }})</small>
+                                @endif
                             </p>
                     </div>
 

@@ -23,6 +23,26 @@
     padding: 20px;
     color: #666;
 }
+
+.service-card .card {
+    position: relative;
+}
+
+.service-card .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.service-card .card a:not(.stretched-link) {
+    position: relative;
+    z-index: 2;
+}
 </style>
 
 @section('content')
@@ -63,6 +83,8 @@
                  data-category="{{ $service->category->name }}"
                  data-subcategory="{{ $service->subcategory?->name ?? 'Nema podkategorije' }}">
                 <div class="card h-100 shadow">
+                    <!-- Stretched-link na glavni anchor -->
+                    <a href="{{ route('services.show', $service->id) }}" class="stretched-link"></a>
                     <!-- Slika usluge -->
                     @if($service->serviceImages->count())
                         <a href="{{ route('services.show', $service->id) }}">
@@ -134,6 +156,9 @@
              data-category="{{ $service->category->name }}"
              data-subcategory="{{ $service->subcategory?->name ?? 'Nema podkategorije' }}">
             <div class="card h-100 shadow">
+                <!-- Stretched-link na glavni anchor -->
+                <a href="{{ route('services.show', $service->id) }}" class="stretched-link"></a>
+
                 <!-- Slika usluge -->
                 @if($service->serviceImages->count())
                     <a href="{{ route('services.show', $service->id) }}">
@@ -200,6 +225,8 @@
              data-category="{{ $service->category->name }}"
              data-subcategory="{{ $service->subcategory?->name ?? 'Nema podkategorije' }}">
             <div class="card h-100 shadow">
+                <!-- Stretched-link na glavni anchor -->
+                <a href="{{ route('services.show', $service->id) }}" class="stretched-link"></a>
                 <!-- Slika usluge -->
                 @if($service->serviceImages->count())
                     <a href="{{ route('services.show', $service->id) }}">
@@ -292,12 +319,15 @@ document.addEventListener('DOMContentLoaded', function() {
              data-category="${service.category}"
              data-subcategory="${service.subcategory}">
             <div class="card h-100 shadow">
-                <a href="${service.details_url}">
-                    <img src="${service.image_url}"
-                         class="card-img-top service-image"
-                         alt="${service.title}"
-                         onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250';">
-                </a>
+                <!-- Stretched-link overlay -->
+                <a href="${service.details_url}" class="stretched-link"></a>
+
+                <!-- Slika usluge (bez anchor taga jer je sve pokriveno stretched-link) -->
+                <img src="${service.image_url}"
+                     class="card-img-top service-image"
+                     alt="${service.title}"
+                     onerror="this.onerror=null;this.src='https://via.placeholder.com/400x250';">
+
                 <div class="card-body d-flex flex-column">
                     <h6 class="service-category">${service.category}</h6>
                     <h5 class="card-title">${service.title}</h5>
@@ -318,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </p>
                         </div>
                         <a href="${service.details_url}"
-                           class="btn btn-service-details">
+                           class="btn btn-service-details" style="position: relative; z-index: 2;">
                             Detaljnije
                         </a>
                     </div>
