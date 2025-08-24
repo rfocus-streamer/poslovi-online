@@ -16,6 +16,7 @@
     @endauth
      <!-- Dodaj favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    @yield('meta')
 </head>
 <style>
         /* Postojeći stilovi */

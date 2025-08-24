@@ -1,6 +1,28 @@
 @extends('layouts.app')
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <title>Poslovi Online | {{ $title }}</title>
+
+{{-- Add Open Graph and Twitter Card meta tags --}}
+@section('meta')
+    <meta property="og:title" content="Poslovi Online | {{ $service->title }}" />
+    <meta property="og:description" content="{{ Str::limit(strip_tags($service->description), 160) }}" />
+    <meta property="og:url" content="{{ url()->current() }}" />
+    <meta property="og:type" content="website" />
+
+    {{-- Use first service image if available, otherwise fall back to logo --}}
+    @if($service->serviceImages->first())
+        <meta property="og:image" content="{{ asset('storage/services/' . $service->serviceImages[0]->image_path) }}" />
+        <meta name="twitter:image" content="{{ asset('storage/services/' . $service->serviceImages[0]->image_path) }}">
+    @else
+        <meta property="og:image" content="{{ asset('images/logo.png') }}" />
+        <meta name="twitter:image" content="{{ asset('images/logo.png') }}">
+    @endif
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Poslovi Online | {{ $service->title }}">
+    <meta name="twitter:description" content="{{ Str::limit(strip_tags($service->description), 160) }}">
+@endsection
+
 @section('content')
 <div class="container py-5">
     <div class="row d-flex">
