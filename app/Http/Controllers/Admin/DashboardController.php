@@ -17,6 +17,7 @@ use App\Models\TicketResponse;
 use App\Models\Complaint;
 use App\Models\ProjectFile;
 use App\Models\Message;
+use App\Models\PrivilegedCommission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -72,6 +73,43 @@ class DashboardController extends Controller
                 'users_sort_column' => $usersSortColumn,
                 'users_sort_direction' => $usersSortDirection
             ]);
+
+        // PRIVILEGOVANI PROCENTI ================================================
+        $privilegedCommissionsSortColumn = $request->input('privileged_commissions_sort_column', 'id');
+        $privilegedCommissionsSortDirection = $request->input('privileged_commissions_sort_direction', 'asc');
+
+        // Provera validnosti parametara za sortiranje
+        $allowedPrivilegedCommissionColumns = ['id', 'buyer_commission', 'seller_commission', 'created_at'];
+        if (!in_array($privilegedCommissionsSortColumn, $allowedPrivilegedCommissionColumns)) {
+            $privilegedCommissionsSortColumn = 'id';
+            $privilegedCommissionsSortDirection = 'asc';
+        }
+
+        $privilegedCommissionsQuery = PrivilegedCommission::with('user')
+            ->orderBy($privilegedCommissionsSortColumn, $privilegedCommissionsSortDirection);
+
+        $privilegedCommissions = $privilegedCommissionsQuery->paginate(10, ['*'], 'page', $request->input('privileged_commissions_page', 1))
+            ->setPageName('privileged_commissions_page')
+            ->appends([
+                'tab' => 'privileged_commissions',
+                'privileged_commissions_sort_column' => $privilegedCommissionsSortColumn,
+                'privileged_commissions_sort_direction' => $privilegedCommissionsSortDirection
+            ]);
+
+        // Search za privilegovane procente
+        $searchedUsers = collect();
+        if ($activeTab === 'privileged_commissions' && $request->has('user_search') && !empty($request->user_search)) {
+            $searchTerm = $request->user_search;
+
+            $searchedUsers = User::where(function($query) use ($searchTerm) {
+                $query->where('firstname', 'like', "%{$searchTerm}%")
+                    ->orWhere('lastname', 'like', "%{$searchTerm}%")
+                    ->orWhere('email', 'like', "%{$searchTerm}%")
+                    ->orWhere('id', 'like', "%{$searchTerm}%");
+            })->whereNotIn('id', PrivilegedCommission::pluck('user_id')->toArray())
+            ->limit(10)
+            ->get();
+        }
 
             // PONUDE ================================================================
             $servicesQuery = Service::with('user');
@@ -356,6 +394,8 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'users',
+            'privilegedCommissions',
+            'searchedUsers',
             'services',
             'currentForcedServices',
             'allServices',
@@ -375,6 +415,46 @@ class DashboardController extends Controller
             'inactiveTemplates',
             'fiatPayouts'
         ));
+    }
+
+    // CRUD metode za Privileged Commission
+    public function storePrivilegedCommission(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id|unique:privileged_commissions,user_id',
+            'buyer_commission' => 'required|numeric|min:0|max:100',
+            'seller_commission' => 'required|numeric|min:0|max:100'
+        ]);
+
+        PrivilegedCommission::create($request->only([
+            'user_id', 'buyer_commission', 'seller_commission'
+        ]));
+
+        return redirect()->route('admin.dashboard', ['tab' => 'privileged_commissions'])
+            ->with('success', 'Privilegovani procenti su uspešno dodati za korisnika.');
+    }
+
+    public function updatePrivilegedCommission(Request $request, PrivilegedCommission $privilegedCommission)
+    {
+        $request->validate([
+            'buyer_commission' => 'required|numeric|min:0|max:100',
+            'seller_commission' => 'required|numeric|min:0|max:100'
+        ]);
+
+        $privilegedCommission->update($request->only([
+            'buyer_commission', 'seller_commission'
+        ]));
+
+        return redirect()->route('admin.dashboard', ['tab' => 'privileged_commissions'])
+            ->with('success', 'Privilegovani procenti su uspešno ažurirani.');
+    }
+
+    public function destroyPrivilegedCommission(PrivilegedCommission $privilegedCommission)
+    {
+        $privilegedCommission->delete();
+
+        return redirect()->route('admin.dashboard', ['tab' => 'privileged_commissions'])
+            ->with('success', 'Privilegovani procenti su uspešno obrisani.');
     }
 
     // metoda za ažuriranje

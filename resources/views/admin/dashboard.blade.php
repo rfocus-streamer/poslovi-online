@@ -123,6 +123,9 @@
                     <!-- Users Tab -->
                     @include('admin.partials.users_tab')
 
+                     <!-- Commissions Tab -->
+                    @include('admin.partials.privileged_commissions_tab')
+
                     <!-- Subscriptions Tab -->
                     @include('admin.partials.subscriptions_tab')
 

@@ -189,6 +189,11 @@ Route::middleware('auth')->group(function () {
     Route::post('send-custom-email', [DashboardController::class, 'sendCustomEmail'])
          ->name('admin.send-custom-email');
 
+     // Rute za privilegovane procente
+    Route::post('privileged-commissions', [DashboardController::class, 'storePrivilegedCommission'])->name('admin.privileged_commissions.store');
+    Route::put('privileged-commissions/{privilegedCommission}', [DashboardController::class, 'updatePrivilegedCommission'])->name('admin.privileged_commissions.update');
+    Route::delete('privileged-commissions/{privilegedCommission}', [DashboardController::class, 'destroyPrivilegedCommission'])->name('admin.privileged_commissions.destroy');
+
     Route::get('/fiat-payouts/{id}/details', [FiatPayoutController::class, 'show'])
          ->name('fiat-payouts.details');
 

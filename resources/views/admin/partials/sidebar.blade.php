@@ -7,6 +7,11 @@
                     href="#users">
                     <i class="fas fa-user "></i> Korisnici
                 </a>
+                <a class="nav-link text-white {{ $activeTab === 'privileged_commissions' ? 'active' : '' }}"
+                    data-bs-toggle="tab"
+                    href="#privileged_commissions">
+                    <i class="fas fa-percent"></i> Procenati
+                </a>
                 <a class="nav-link text-white {{ $activeTab === 'subscriptions' ? 'active' : '' }}"
                     data-bs-toggle="tab"
                     href="#subscriptions">
