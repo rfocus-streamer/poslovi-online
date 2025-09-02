@@ -30,9 +30,9 @@
         <lastmod>{{ $service->updated_at->format('Y-m-d') }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
-        @if($service->images->count() > 0)
+        @if($service->serviceImages->count() > 0)
         <image:image>
-            <image:loc>{{ asset('storage/'.$service->images->first()->path) }}</image:loc>
+            <image:loc>{{ asset('storage/'.$service->serviceImages->first()->path) }}</image:loc>
             <image:title>{{ $service->title }}</image:title>
         </image:image>
         @endif

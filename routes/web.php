@@ -21,6 +21,8 @@ use App\Http\Controllers\PayPalWebhookController;
 use App\Http\Controllers\FiatPayoutController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Models\Service;
+use App\Models\Category;
 use Mews\Captcha\Facades\Captcha;
 use Illuminate\Support\Str;
 /*
@@ -327,7 +329,7 @@ Route::get('/math-captcha', function () {
 })->name('captcha');
 
 Route::get('/sitemap.xml', function() {
-    $services = Service::where('status', 'public')->with('images')->get();
+    $services = Service::where('visible', true)->get();
     $categories = Category::all();
 
     return response()
