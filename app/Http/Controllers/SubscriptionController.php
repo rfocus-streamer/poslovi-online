@@ -235,10 +235,16 @@ class SubscriptionController extends Controller
                     'payload' => json_encode($paypalSubscription)
                 ]);
 
-                $user = $subscription->user;
-                $user->deposits += $subscription->amount;
-                $user->save();
-                app(\App\Http\Controllers\PackageController::class)->activatePackage($user->package);
+                // Ispravka: Koristite paket iz pretplate umesto trenutnog korisničkog paketa
+                $package = Package::where('paypal_plan_id', $subscription->plan_id)->first();
+                if ($package) {
+                    app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+                }
+
+                Log::info('PayPal success - Subscription ID: ' . $subscription->id);
+                Log::info('PayPal success - Plan ID: ' . $subscription->plan_id);
+                Log::info('PayPal success - User ID: ' . $user->id);
+
                 return redirect()->route('subscriptions.index')->with('success', 'PayPal pretplata uspešno aktivirana.');
             }
 

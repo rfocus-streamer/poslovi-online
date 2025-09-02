@@ -66,8 +66,13 @@ class PayPalWebhookController extends Controller
                 'payload' => json_encode($resource),
             ]);
 
-            // Ažuriraj depozit
-            $user->increment('deposits', $subscription->amount);
+            // Dodajte aktivaciju paketa
+            $package = Package::where('paypal_plan_id', $subscription->plan_id)->first();
+            if ($package) {
+                app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+            } else {
+                Log::error("Package not found for subscription: {$subscription->id} for user id: {$user->id}");
+            }
 
             // Ažuriraj status pretplate
             $subscription->update([
@@ -76,6 +81,8 @@ class PayPalWebhookController extends Controller
             ]);
 
             Log::info("PayPal pretplata aktivirana za korisnika #{$user->id}");
+            Log::info('Webhook - Subscription ID: ' . $subscriptionId);
+            Log::info('Webhook - Plan ID: ' . $subscription->plan_id);
         });
     }
 

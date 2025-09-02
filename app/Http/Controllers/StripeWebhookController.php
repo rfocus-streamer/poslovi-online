@@ -18,41 +18,94 @@ class StripeWebhookController extends Controller
         $sigHeader = $request->header('Stripe-Signature');
         $webhookSecret = config('services.stripe.webhook_secret');
 
-        if (app()->environment('local')) {
-            Log::warning('Bypassing signature verification in local environment');
-            $event = json_decode($payload, false);
-        } else {
-             // Loguj podatke pre nego što konstrukcija događaja počne
-            Log::info('Stripe Webhook - Payload:', ['payload' => $payload]);
-            Log::info('Stripe Webhook - Signature Header:', ['signature' => $sigHeader]);
-            Log::info('Stripe Webhook - Webhook Secret:', ['webhook_secret' => $webhookSecret]);
-            //$event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
-            try {
-                // Ovdje se procesira stvarni događaj
-                $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
-            } catch (\Exception $e) {
-                // Ako dođe do greške u validaciji Webhook-a
-                Log::error('Stripe Webhook - Error constructing event', [
-                    'exception_message' => $e->getMessage(),
-                    'payload' => $payload,
-                    'signature' => $sigHeader
-                ]);
-                throw $e; // Onda prosledi grešku dalje, ili obradi po tvojoj logici
-            }
+        try {
+            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+        } catch (\UnexpectedValueException $e) {
+            // Invalid payload
+            Log::error('Stripe Webhook - Invalid payload', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Invalid payload'], 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            // Invalid signature
+            Log::error('Stripe Webhook - Invalid signature', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Invalid signature'], 400);
         }
-        //$event = json_decode($payload); // ovo nam sluzi samo za test preko postman-a
+
+        // Log successful verification
+        Log::info('Stripe Webhook - Event received', ['type' => $event->type]);
 
         switch ($event->type) {
             case 'invoice.payment_succeeded':
                 $this->handleInvoicePaymentSucceeded($event->data->object);
                 break;
-
+            case 'invoice.paid':
+                $this->handleInvoicePaid($event->data->object);
+                break;
             case 'charge.refunded':
                 $this->handleChargeRefunded($event->data->object);
                 break;
+            // Dodajte druge event tipove po potrebi
         }
 
         return response()->json(['status' => 'success']);
+    }
+
+    private function handleInvoicePaid($invoice)
+    {
+        try {
+            \DB::transaction(function () use ($invoice) {
+                // Pronađi pretplatu
+                $subscription = Subscription::where('subscription_id', $invoice->subscription)->first();
+
+                if (!$subscription) {
+                    Log::error('Subscription not found for paid invoice: '.$invoice->subscription);
+                    return;
+                }
+
+                // Pronađi korisnika
+                $user = User::find($subscription->user_id);
+
+                if (!$user) {
+                    Log::error('User not found for subscription: '.$subscription->id);
+                    return;
+                }
+
+                // Proveri da li je transakcija već obradena
+                $existingTransaction = Transaction::where('transaction_id', $invoice->payment_intent)->first();
+                if ($existingTransaction) {
+                    Log::info('Transaction already processed: '.$invoice->payment_intent);
+                    return;
+                }
+
+                // Kreiraj transakciju
+                Transaction::create([
+                    'user_id' => $user->id,
+                    'type' => 'subscription',
+                    'amount' => $invoice->amount_paid / 100,
+                    'currency' => strtoupper($invoice->currency),
+                    'payment_method' => 'stripe',
+                    'transaction_id' => $invoice->payment_intent,
+                    'status' => 'completed',
+                    'payload' => json_encode($invoice)
+                ]);
+
+                // Ažuriraj balans
+                $user->deposits += $invoice->amount_paid / 100;
+                $user->save();
+
+                // Aktiviraj paket
+                $package = Package::find($subscription->plan_id);
+                if ($package) {
+                    app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+                    Log::info("Package activated for user {$user->id}: {$package->name}");
+                } else {
+                    Log::error('Package not found for subscription: '.$subscription->id);
+                }
+
+                Log::info("Subscription payment processed for user {$user->id}");
+            });
+        } catch (\Exception $e) {
+            Log::error('Payment processing error: '.$e->getMessage());
+        }
     }
 
     private function handleInvoicePaymentSucceeded($invoice)
@@ -67,8 +120,21 @@ class StripeWebhookController extends Controller
                     return;
                 }
 
+                // Proveri da li je invoice već plaćen
+                if (!$invoice->paid) {
+                    Log::info('Invoice not paid yet: '.$invoice->id);
+                    return;
+                }
+
                 // Pronađi korisnika
-                $user = User::where('id',$subscription->user_id)->first();
+                $user = User::find($subscription->user_id);
+
+                // Proveri da li je transakcija već obradena
+                $existingTransaction = Transaction::where('transaction_id', $invoice->payment_intent)->first();
+                if ($existingTransaction) {
+                    Log::info('Transaction already processed: '.$invoice->payment_intent);
+                    return;
+                }
 
                 // Kreiraj transakciju
                 Transaction::create([
@@ -77,14 +143,19 @@ class StripeWebhookController extends Controller
                     'amount' => $invoice->amount_paid / 100,
                     'currency' => strtoupper($invoice->currency),
                     'payment_method' => 'stripe',
-                    'transaction_id' => (isset($invoice->payment_intent)) ? $invoice->payment_intent : $subscription->subscription_id,
+                    'transaction_id' => $invoice->payment_intent,
                     'status' => 'completed',
                     'payload' => json_encode($invoice)
                 ]);
 
-                // Ažuriraj balans
-                $user->deposits += $invoice->amount_paid / 100;
-                $user->save();
+                // Aktiviraj paket
+                $package = Package::find($subscription->plan_id);
+                if ($package) {
+                    app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+                    Log::info("Package activated for user {$user->id}: {$package->name}");
+                } else {
+                    Log::error('Package not found for subscription: '.$subscription->id);
+                }
 
                 Log::info("Subscription payment processed for user {$user->id}");
             });
