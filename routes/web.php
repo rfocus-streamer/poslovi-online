@@ -326,4 +326,13 @@ Route::get('/math-captcha', function () {
     ]);
 })->name('captcha');
 
+Route::get('/sitemap.xml', function() {
+    $services = Service::where('status', 'public')->with('images')->get();
+    $categories = Category::all();
+
+    return response()
+        ->view('sitemap', compact('services', 'categories'))
+        ->header('Content-Type', 'text/xml');
+});
+
 require __DIR__.'/auth.php';

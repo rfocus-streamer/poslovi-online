@@ -11,6 +11,7 @@ use App\Models\Message;
 use App\Models\Ticket;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use App\Support\SEOData;
 
 class CommonDataComposer
 {
@@ -60,6 +61,13 @@ class CommonDataComposer
             $ticketCount = Ticket::where('status', '!=', 'closed')->where('assigned_team', Auth::user()->role)->count();
         }
 
+        // Generički SEO podaci za celu aplikaciju
+        $seoData = new SEOData(
+            title: 'Poslovi Online | Platforma za freelance usluge | Pronađite vrhunske talente',
+            description: 'Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.',
+            image: asset('images/logo.png') // Prilagodite putanju ako imate drugačiju SEO sliku
+        );
+
         // Data koja će biti dostupna svim prikazima
         $view->with(compact(
             'categories',
@@ -70,7 +78,8 @@ class CommonDataComposer
             'reserved_amount',
             'messagesCount',
             'complaintCount',
-            'ticketCount'
+            'ticketCount',
+            'seoData'
         ));
     }
 }
