@@ -95,9 +95,12 @@
                         // Korisnički balans
                         $userBalance = Auth::user()->deposits;
 
-                        // Izračunavanje 3% od ukupnog iznosa ( provizija )
-                        $packageAmount = $totalPrice;
-                        $commissionAmount = $packageAmount * 0.03; // 3% za komisiju
+                        // Provera da li prodavac ima privilegovane komisije
+                        $privilegedCommission = \App\Models\PrivilegedCommission::where('user_id', $cartItem->seller_id)->first();
+                        $buyerCommissionPercentage = $privilegedCommission ? $privilegedCommission->buyer_commission : 3.00;
+
+                        // Izračunavanje provizije na osnovu dinamičkih procenata
+                        $commissionAmount = $totalPrice * ($buyerCommissionPercentage / 100);
                         $totalWithCommisionPrice = $totalPrice + $commissionAmount;
                     @endphp
                     <tr>
@@ -133,7 +136,7 @@
                         <td>
                             <span>{{ number_format($totalPrice, 2) }}</span>
                         </td>
-                        <td>{{number_format( $commissionAmount, 2)}}</td>
+                        <td>{{number_format( $commissionAmount, 2)}} ({{ $buyerCommissionPercentage }}%)</td>
                         <td>{{number_format($totalWithCommisionPrice, 2)}}</td>
                         <td>
                             <button type="submit" class="btn btn-primary btn-sm">Izmeni <i class="fas fa-sync"></i></button>
@@ -176,7 +179,12 @@
                         default => 0
                     };
                     $totalPrice = $price * $cartItem->quantity;
-                    $commissionAmount = $totalPrice * 0.03;
+
+                    // Provera da li prodavac ima privilegovane komisije
+                    $privilegedCommission = \App\Models\PrivilegedCommission::where('user_id', $cartItem->seller_id)->first();
+                    $buyerCommissionPercentage = $privilegedCommission ? $privilegedCommission->buyer_commission : 3.00;
+
+                    $commissionAmount = $totalPrice * ($buyerCommissionPercentage / 100);
                     $totalWithCommisionPrice = $totalPrice + $commissionAmount;
                     $userBalance = Auth::user()->deposits;
                 @endphp
@@ -212,7 +220,7 @@
 
                             <div class="mb-1"><strong>Cena po komadu:</strong> {{ number_format($price, 2) }} €</div>
                             <div class="mb-1"><strong>Ukupno:</strong> {{ number_format($totalPrice, 2) }} €</div>
-                            <div class="mb-1"><strong>Provizija (3%):</strong> {{ number_format($commissionAmount, 2) }} €</div>
+                            <div class="mb-1"><strong>Provizija ({{ $buyerCommissionPercentage }}%):</strong> {{ number_format($commissionAmount, 2) }} €</div>
                             <div class="mb-2"><strong>Svega:</strong> {{ number_format($totalWithCommisionPrice, 2) }} €</div>
                         </div>
                     </form>

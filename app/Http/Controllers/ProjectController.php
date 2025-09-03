@@ -13,6 +13,7 @@ use App\Models\Complaint;
 use App\Models\Commission;
 use App\Models\User;
 use App\Models\Invoice;
+use App\Models\PrivilegedCommission;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,14 +30,17 @@ class ProjectController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $reserved_amount = Project::where('buyer_id', Auth::id())
+
+        // Izračunaj ukupan iznos rezervisanih sredstava sa dinamičkom provizijom
+        $reserved_amount = Project::where('projects.buyer_id', Auth::id())
                             ->where(function ($query) {
-                                $query->where('seller_uncomplete_decision', '!=', 'accepted')
-                                      ->orWhereNull('seller_uncomplete_decision');
+                                $query->where('projects.seller_uncomplete_decision', '!=', 'accepted')
+                                      ->orWhereNull('projects.seller_uncomplete_decision');
                             })
-                            ->where('status', ['inactive', 'in_progress', 'waiting_confirmation', 'requires_corrections'])
-                            ->selectRaw('sum(reserved_funds + reserved_funds * 0.03) as total_amount')  // Dodajemo 0.03% na svaki reserved_funds
-                            ->value('total_amount');  // Dobijamo vrednost 'total_amount'
+                            ->whereIn('projects.status', ['inactive', 'in_progress', 'waiting_confirmation', 'requires_corrections'])
+                            ->join('commissions', 'projects.id', '=', 'commissions.project_id')
+                            ->selectRaw('SUM(projects.reserved_funds + (projects.reserved_funds * commissions.buyer_percentage / 100)) as total_amount')
+                            ->value('total_amount');
 
         $projects = [];
 
@@ -230,13 +234,20 @@ class ProjectController extends Controller
                     ->with('error', 'Moraš da prvo popuniš ulicu, grad i zemlju pre nego što nastaviš sa kupovinom !');
             }
 
-           // Konvertujemo naziv paketa u mala slova
+            // Proveri da li prodavac ima privilegovane komisije
+            $privilegedCommission = PrivilegedCommission::where('user_id', $cart->seller_id)->first();
+
+            // Postavi procente komisija na osnovu privilegija ili podrazumevane vrednosti
+            $buyerCommissionPercentage = $privilegedCommission ? $privilegedCommission->buyer_commission : 3.00;
+            $sellerCommissionPercentage = $privilegedCommission ? $privilegedCommission->seller_commission : 10.00;
+
+            // Konvertujemo naziv paketa u mala slova
             $packageColumn = strtolower($cart->package) . '_price';
 
             // Dobijamo vrednost iz baze
-            $reserved_funds = (float) Service::where('id', $cart->service_id)->value($packageColumn) ?? 0; // Koristimo float za broj
+            $reserved_funds = (float) Service::where('id', $cart->service_id)->value($packageColumn) ?? 0;
 
-            $quantity = (int) $cart->quantity; // Osiguravamo da je quantity broj
+            $quantity = (int) $cart->quantity;
 
             // Sada kreiramo projekat
             $project = Project::create([
@@ -247,38 +258,40 @@ class ProjectController extends Controller
                 'seller_id' => $cart->seller_id,
                 'package' => $cart->package,
                 'status' => 'inactive',
-                'reserved_funds' => ($reserved_funds * $quantity) // Ovdje ne koristimo number_format, samo broj
+                'reserved_funds' => ($reserved_funds * $quantity)
             ]);
 
-            // Izračunavanje 3% i 97% od ukupnog iznosa ( provizija i rezervisana sredstva )
+            // Izračunavanje komisija na osnovu dinamičkih procenata
             $packageAmount = $reserved_funds;
-            $amountToAdd = $packageAmount * 0.97; // 97% za deposits prodavca
-            $commissionAmount = $packageAmount * 0.03; // 3% za komisiju
+            $buyerCommissionAmount = $packageAmount * ($buyerCommissionPercentage / 100);
+            $totalAmount = $packageAmount * $quantity;
+            $totalBuyerCommission = $buyerCommissionAmount * $quantity;
 
-            // Dodavanje 3% u tabelu za komisije kupca
+            // Dodavanje u tabelu za komisije
             Commission::create([
                 'project_id' => $project->id,
                 'project_number' => $project->project_number,
                 'seller_id' => $cart->seller_id,
-                'buyer_id' =>Auth::id(),
-                'amount' => ($packageAmount * $quantity), // Ukupan iznos projekta
-                'seller_percentage' => 10, // Hardkodovani procenat provizije za prodavca
-                'buyer_percentage' => 3, // Hardkodovani procenat provizije za kupca
-                'commission_amount' => $commissionAmount, // 3% od ukupnog iznosa (inicijalno)
-                'seller_amount' => 0, // prodavceva zarada od projekta
-                'buyer_amount' => ($commissionAmount * $quantity) // kupceva placena provizija
+                'buyer_id' => Auth::id(),
+                'amount' => $totalAmount,
+                'seller_percentage' => $sellerCommissionPercentage,
+                'buyer_percentage' => $buyerCommissionPercentage,
+                'commission_amount' => $totalBuyerCommission,
+                'seller_amount' => 0,
+                'buyer_amount' => $totalBuyerCommission
             ]);
 
             // Umanji iznos iz deposits kolone
-            $user->deposits -= ($reserved_funds * $cart->quantity)+($commissionAmount * $cart->quantity);
+            $totalCost = $totalAmount + $totalBuyerCommission;
+            $user->deposits -= $totalCost;
             $user->save();
 
             $cart->delete();
             return redirect()
                     ->back()
                     ->with('success', "Uspešno je pokrenut posao (projekat)")
-                    ->withFragment('cart-message'); // Skrolujte do elementa sa ID "cart-message"
-        }else{
+                    ->withFragment('cart-message');
+        } else {
             return redirect(RouteServiceProvider::HOME);
         }
     }
@@ -366,32 +379,28 @@ class ProjectController extends Controller
                       ->with('error', 'Posao (projekat) je već završen.');
         }
 
-        // Izračunavanje 10% i 90% od ukupnog iznosa ( prodavac - kupac )
+        // Dohvati komisiju za ovaj projekat
+        $commission = Commission::where('project_id', $project->id)->first();
+
+        // Izračunaj iznose na osnovu dinamičkih procenata
         $packageAmount = $project->reserved_funds;
-        $amountToAdd = $packageAmount * 0.90; // 90% za deposits prodavca
-        $commissionAmount = $packageAmount * 0.10; // 10% za komisiju
+        $sellerCommissionPercentage = $commission->seller_percentage;
 
-        // Dodavanje 90% na deposits prodavca
+        $amountToAdd = $packageAmount * (1 - ($sellerCommissionPercentage / 100));
+        $commissionAmount = $packageAmount * ($sellerCommissionPercentage / 100);
+
+        // Dodavanje na deposits prodavca
         $project->seller->deposits += $amountToAdd;
-
-        // Spremanje promena na prodavcu
         $project->seller->save();
 
-        // Dodavanje dodatnih 10% u tabelu za komisije ( kompletan projekat )
-        Commission::where('project_id', $project->id)->increment('seller_amount', $commissionAmount);
-        Commission::where('project_id', $project->id)->increment('commission_amount', $commissionAmount);
+        // Ažuriranje komisije
+        $commission->increment('seller_amount', $commissionAmount);
+        $commission->increment('commission_amount', $commissionAmount);
 
-        $buyer_commision = Commission::where('project_id', $project->id)->select('id', 'buyer_amount')->first();
-        $buyer_amount = 0;
+        $buyer_amount = $commission->buyer_amount;
 
-        if($buyer_commision){
-            $buyer_amount = $buyer_commision->buyer_amount;
-        }
-
-        // Ažuriranje statusa projekta na "completed"
+        // Ažuriranje statusa projekta
         $project->status = 'completed';
-
-        // Spremanje promena na projektu
         $project->save();
 
         $user = Auth::user();
@@ -547,29 +556,25 @@ class ProjectController extends Controller
         $project->status = 'uncompleted';
         $project->admin_decision = 'accepted';
 
-         // Izračunavanje 10% i 90% od ukupnog iznosa ( provizija i zarada prodavac )
+        // Dohvati komisiju za ovaj projekat
+        $commission = Commission::where('project_id', $project->id)->first();
+        $sellerCommissionPercentage = $commission->seller_percentage;
+
+        // Izračunavanje iznosa na osnovu dinamičkih procenata
         $packageAmount = $project->reserved_funds;
-        $amountToAdd = $packageAmount * 0.90; // 90% za deposits prodavca
-        $commissionAmount = $packageAmount * 0.10; // 10% za komisiju
+        $amountToAdd = $packageAmount * (1 - ($sellerCommissionPercentage / 100));
+        $commissionAmount = $packageAmount * ($sellerCommissionPercentage / 100);
 
-         // Dodavanje dodatnih 10% u tabelu za komisije ( kompletan projekat )
-        Commission::where('project_id', $project->id)->increment('seller_amount', $commissionAmount);
-        Commission::where('project_id', $project->id)->increment('commission_amount', $commissionAmount);
+        // Ažuriranje komisije
+        $commission->increment('seller_amount', $commissionAmount);
+        $commission->increment('commission_amount', $commissionAmount);
 
-        $buyer_commision = Commission::where('project_id', $project->id)->select('id', 'buyer_amount')->first();
-        $buyer_amount = 0;
+        $buyer_amount = $commission->buyer_amount;
 
-        if($buyer_commision){
-            $buyer_amount = $buyer_commision->buyer_amount;
-        }
-
-        // Dodavanje 90% na deposits prodavca
+        // Dodavanje na deposits prodavca
         $project->seller->deposits += $amountToAdd;
-
-        // Spremanje promena na korisniku
         $project->seller->save();
 
-        // Spremanje promena na projektu
         $project->save();
 
         $user = $project->buyer;
@@ -603,36 +608,32 @@ class ProjectController extends Controller
                     ->with('success', "Tvoja odluka je sačuvana. Novac je prebačen prodavcu!");
     }
 
+
     public function partiallyCompletedSupport(Request $request, Project $project)
     {
         $request->validate([
             'fairPlayAmount' => 'required|numeric|min:0|max:' . $project->reserved_funds,
         ]);
 
+        // Dohvati komisiju za ovaj projekat
+        $commission = Commission::where('project_id', $project->id)->first();
+        $sellerCommissionPercentage = $commission->seller_percentage;
+
         $sellerAmount = $request->input('fairPlayAmount');
+        $commissionAmount = $sellerAmount * ($sellerCommissionPercentage / 100);
 
-         // Izračunavanje 10% i 90% od ukupnog iznosa ( provizija i zarada prodavac )
-        $packageAmount = $sellerAmount;
-        $commissionAmount = $packageAmount * 0.10; // 10% za komisiju
-
+        $buyer_commision = $commission->buyer_amount;
         $buyerAmount = ($project->reserved_funds - $sellerAmount) - $commissionAmount;
 
-         // Dodavanje dodatnih 10% u tabelu za komisije ( kompletan projekat )
-        Commission::where('project_id', $project->id)->increment('seller_amount', $sellerAmount);
-        Commission::where('project_id', $project->id)->increment('commission_amount', $commissionAmount);
+        DB::transaction(function () use ($project, $sellerAmount, $commissionAmount, $buyerAmount) {
+            // Ažuriranje komisije
+            $project->commission->increment('seller_amount', $sellerAmount);
+            $project->commission->increment('commission_amount', $commissionAmount);
 
-        $buyer_commision = Commission::where('project_id', $project->id)->select('id', 'buyer_amount')->first();
-        $buyer_amount_commision = 0;
-
-        if($buyer_commision){
-            $buyer_amount_commision = $buyer_commision->buyer_amount;
-        }
-
-        DB::transaction(function () use ($project, $sellerAmount, $buyerAmount) {
-            // Ažuriranje statusa projekta i odluke podrške
+            // Ažuriranje statusa projekta
             $project->status = 'uncompleted';
             $project->admin_decision = 'partially';
-            $project->save(); // OVDE sada pozivamo save unutar transakcije
+            $project->save();
 
             // Ažuriranje balansa prodavca i kupca
             $project->seller->increment('deposits', $sellerAmount);
@@ -645,7 +646,7 @@ class ProjectController extends Controller
             'user_id' => $project->buyer_id,
             'issue_date' => now(),
             'status' => 'plaćen',
-            'total' => ($sellerAmount +  $commissionAmount + $buyer_amount_commision),
+            'total' => ($sellerAmount + $commissionAmount + $buyer_commision),
             'client_info' => [
                 'name' => $user->firstname.' '.$user->lastname,
                 'address' => $user->street,
@@ -657,8 +658,8 @@ class ProjectController extends Controller
                     'description' => $project->service->title,
                     'billing_period' => 'Delimično završetak posla na osnovu procene podrške',
                     'quantity' => $project->quantity,
-                    'amount' =>  ($sellerAmount +  $commissionAmount),
-                    'buyer_amount' => $buyer_amount_commision,
+                    'amount' => ($sellerAmount + $commissionAmount),
+                    'buyer_amount' => $buyer_commision,
                     'project_id' => $project->id
                 ]
             ],

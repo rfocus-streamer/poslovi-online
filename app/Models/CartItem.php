@@ -28,4 +28,10 @@ class CartItem extends Model
     {
         return $this->belongsTo(Service::class);
     }
+
+    // CartItem.php
+    public function seller()
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
 }

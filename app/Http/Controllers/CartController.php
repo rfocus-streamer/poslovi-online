@@ -15,7 +15,7 @@ class CartController extends Controller
     // Prikaz korpe
     public function index()
     {
-        $cartItems = Auth::user()->cartItems()->with('service', 'user')->get();
+        $cartItems = Auth::user()->cartItems()->with(['service', 'user', 'seller.privilegedCommission'])->get();
         return view('cart.index', compact('cartItems'));
     }
 

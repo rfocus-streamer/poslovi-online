@@ -69,6 +69,10 @@
                         $encryptedServiceId = Crypt::encrypt($project->service->id);
                         $encryptedUserId = Crypt::encryptString($project->buyer->id);
                         $encryptedUserId = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
+
+                        // Dinamički izračun provizije
+                        $sellerCommissionAmount = $project->reserved_funds * ($project->commission->seller_percentage / 100);
+                        $reservedAmount = $project->reserved_funds - $sellerCommissionAmount;
                     @endphp
 
                     <tr>
@@ -90,8 +94,8 @@
                         <td class="text-center">{{$project->quantity}}</td>
                         <td>{{ $project->start_date ? $project->start_date : 'N/A' }}</td>
                         <td>{{ $project->end_date ? $project->end_date : 'N/A' }}</td>
-                        <td class="text-center">{{ number_format(($project->reserved_funds - $project->commission->amount * 0.10), 2) }}</td>
-                        <td class="text-center">{{ $project->commission->amount * 0.10 }}</td>
+                        <td class="text-center">{{ number_format($reservedAmount, 2) }}</td>
+                        <td class="text-center">{{ number_format($sellerCommissionAmount, 2) }}</td>
                         <td style="float: right;">
                             @if(Auth::user()->role == 'seller')
                                 <div class="d-flex gap-2 justify-content-center">
@@ -160,6 +164,10 @@
                     $encryptedServiceId = Crypt::encrypt($project->service->id);
                     $encryptedUserId = Crypt::encryptString($project->buyer->id);
                     $msgLink = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
+
+                    // Dinamički izračun provizije
+                    $sellerCommissionAmount = $project->reserved_funds * ($project->commission->seller_percentage / 100);
+                    $reservedAmount = $project->reserved_funds - $sellerCommissionAmount;
                 @endphp
                 <div class="card mb-3 shadow-sm">
                      <div class="card-header bg-light d-flex justify-content-between align-items-center" style="background-color: #198754 !important; color: white !important">
@@ -170,7 +178,7 @@
                                     data-bs-target="#userInfoModal"
                                     data-firstname="{{ $project->buyer->firstname }}"
                                     data-lastname="{{ $project->buyer->lastname }}"
-                                    data-image="{{ $project->buyer_id->avatar ?? 'https://via.placeholder.com/120' }}"
+                                    data-image="{{ $project->buyer->avatar ?? 'https://via.placeholder.com/120' }}"
                                     data-userid="{{ $msgLink }}"
                                     data-projectid="{{ $project->project_number }}">
                                 Kontakt <i class="fas fa-user-circle"></i>
@@ -182,8 +190,8 @@
                         <p class="mb-1"><strong>Količina:</strong> {{ $project->quantity }}</p>
                         <p class="mb-1"><strong>Početak:</strong> {{ $project->start_date ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Završetak:</strong> {{ $project->end_date ?? 'N/A' }}</p>
-                        <p class="mb-1"><strong>Rezervisano:</strong> {{ number_format($project->reserved_funds - $project->commission->amount * 0.10, 2) }} €</p>
-                        <p class="mb-2"><strong>Provizija:</strong> {{ number_format($project->commission->amount * 0.10, 2) }} €</p>
+                        <p class="mb-1"><strong>Rezervisano:</strong> {{ number_format($reservedAmount, 2) }} €</p>
+                        <p class="mb-2"><strong>Provizija:</strong> {{ number_format($sellerCommissionAmount, 2) }} €</p>
 
                         <div class="d-flex justify-content-between align-items-center">
                             @switch($project->status)
