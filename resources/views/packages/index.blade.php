@@ -101,7 +101,7 @@
                                                     </button>
                                                 @endif
 
-                                                @if(Auth::user()->package->id === $package->id)
+                                                @if(Auth::user()->package->id === $package->id and !$packageExpired)
                                                    <button type="button" class="btn text-white w-100 btn-secondary">
                                                         <i class="fa fa-check-circle me-1"></i> Kupljen
                                                     </button>
@@ -125,7 +125,7 @@
                                                     </a>
                                                 @endif
 
-                                                @if(Auth::user()->package->id === $package->id)
+                                                @if(Auth::user()->package->id === $package->id and !$packageExpired)
                                                    <button type="button" class="btn text-white w-100 btn-secondary">
                                                         <i class="fa fa-check-circle me-1"></i> Kupljen
                                                     </button>
