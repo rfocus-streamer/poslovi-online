@@ -131,11 +131,16 @@
                                                     </button>
                                                 @endif
 
-                                                @if(Auth::user()->package->id === $package->id and $packageExpired)
+                                                @if(Auth::user()->package->id === $package->id && $packageExpired && Auth::user()->deposits >= $package->price)
                                                     <button type="submit" class="btn text-white w-100" style="background-color: #198754">
                                                         <i class="fa fas fa-shopping-cart me-1"></i> Kupi
                                                     </button>
+                                                @else
+                                                    <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}"    class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
+                                                        <i class="fas fa-credit-card"></i> Pretplati se
+                                                    </a>
                                                 @endif
+
                                             @else
                                                 <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}" class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
                                                         <i class="fas fa-credit-card"></i> Pretplati se
@@ -212,10 +217,14 @@
                                                 </button>
                                             @endif
 
-                                             @if(Auth::user()->package->id === $package->id and $packageExpired)
+                                            @if(Auth::user()->package->id === $package->id && $packageExpired && Auth::user()->deposits >= $package->price)
                                                 <button type="submit" class="btn text-white w-100" style="background-color: #198754">
                                                     <i class="fa fas fa-shopping-cart me-1"></i> Kupi
                                                 </button>
+                                            @else
+                                                <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}"    class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
+                                                        <i class="fas fa-credit-card"></i> Pretplati se
+                                                </a>
                                             @endif
                                         @else
                                             <!-- Submit Button -->
