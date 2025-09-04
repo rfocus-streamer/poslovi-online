@@ -380,7 +380,7 @@ class ServiceController extends Controller
             'description.required' => 'Opis je obavezan.',
             'serviceImages.*.image' => 'Svaka datoteka mora biti slika.',
             'serviceImages.*.mimes' => 'Dozvoljeni formati slika su: jpeg, png, jpg, gif.',
-            'serviceImages.*.max' => 'Svaka slika može imati maksimalno 2048 KB.', // ili MB ako koristiš 2048
+            //'serviceImages.*.max' => 'Svaka slika može imati maksimalno 2048 KB.', // ili MB ako koristiš 2048
         ]);
 
         // Dinamička validacija za pakete
@@ -412,7 +412,7 @@ class ServiceController extends Controller
             'subcategory' => 'required|numeric',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+            //'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ], $packageRules));
 
         $visible = 0;
@@ -649,7 +649,7 @@ class ServiceController extends Controller
             'subcategory' => 'required|numeric',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+            //'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         // Dinamička validacija za pakete
@@ -680,7 +680,7 @@ class ServiceController extends Controller
             'subcategory' => 'required|numeric',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
+            //'serviceImages.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048'
         ], $packageRules));
 
         $visible = 0;
