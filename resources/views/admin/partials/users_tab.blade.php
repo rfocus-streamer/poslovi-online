@@ -26,6 +26,32 @@
         </div>
     </div>
 
+    <!-- Mobile Sort Controls -->
+    <div class="d-md-none mb-3">
+        <form method="GET" action="">
+            @foreach(request()->except(['users_sort_column', 'users_sort_direction', 'page']) as $key => $value)
+                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+            @endforeach
+            <div class="row g-2">
+                <div class="col-8">
+                    <select class="form-select" name="users_sort_column" onchange="this.form.submit()">
+                        <option value="id" {{ request('users_sort_column', 'id') == 'id' ? 'selected' : '' }}>ID</option>
+                        <option value="firstname" {{ request('users_sort_column') == 'firstname' ? 'selected' : '' }}>Ime i prezime</option>
+                        <option value="email" {{ request('users_sort_column') == 'email' ? 'selected' : '' }}>Email</option>
+                        <option value="created_at" {{ request('users_sort_column') == 'created_at' ? 'selected' : '' }}>Registracija</option>
+                        <option value="last_seen_at" {{ request('users_sort_column') == 'last_seen_at' ? 'selected' : '' }}>Aktivan</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <button type="submit" name="users_sort_direction" value="{{ request('users_sort_direction', 'asc') == 'asc' ? 'desc' : 'asc' }}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-{{ request('users_sort_direction', 'asc') == 'asc' ? 'up' : 'down' }}"></i>
+                        {{ request('users_sort_direction', 'asc') == 'asc' ? 'Rastuće' : 'Opadajuće' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead class="table-dark d-md-table-header-group">
