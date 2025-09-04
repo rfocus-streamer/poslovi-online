@@ -28,7 +28,7 @@
 
     <div class="table-responsive">
         <table class="table table-striped table-hover">
-            <thead class="table-dark d-none d-md-table-header-group">
+            <thead class="table-dark d-md-table-header-group">
                 <tr>
                     <th>
                         <a href="?{{ http_build_query(array_merge(request()->except(['users_sort_column', 'users_sort_direction']), [
