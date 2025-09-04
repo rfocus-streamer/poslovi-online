@@ -130,6 +130,12 @@
                                                         <i class="fa fa-check-circle me-1"></i> Kupljen
                                                     </button>
                                                 @endif
+
+                                                @if(Auth::user()->package->id === $package->id and $packageExpired)
+                                                    <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                        <i class="fa fas fa-shopping-cart me-1"></i> Kupi
+                                                    </button>
+                                                @endif
                                             @else
                                                 <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}" class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
                                                         <i class="fas fa-credit-card"></i> Pretplati se
@@ -200,9 +206,15 @@
                                                 </button>
                                             @endif
 
-                                            @if(Auth::user()->package->id === $package->id)
+                                            @if(Auth::user()->package->id === $package->id and !$packageExpired)
                                                 <button type="button" class="btn text-white w-100 btn-secondary">
                                                         <i class="fa fa-check-circle me-1"></i> Kupljen
+                                                </button>
+                                            @endif
+
+                                             @if(Auth::user()->package->id === $package->id and $packageExpired)
+                                                <button type="submit" class="btn text-white w-100" style="background-color: #198754">
+                                                    <i class="fa fas fa-shopping-cart me-1"></i> Kupi
                                                 </button>
                                             @endif
                                         @else
