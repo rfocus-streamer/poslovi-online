@@ -15,14 +15,16 @@
                                 placeholder="Pretraži transakcije (korisnik, iznos, ID)..."
                                 value="{{ request('transactions_search') }}"
                                 id="transactionsSearchInput">
-                                <button class="btn btn-outline-secondary" type="submit">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                                @if(request('transactions_search') || request('transactions_status'))
-                                    <a href="?tab=transactions" class="btn btn-outline-danger">
-                                        <i class="fas fa-times"></i> Reset
-                                    </a>
-                                @endif
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-search"></i>
+                                <span class="d-none d-md-inline">Pretraži</span>
+                            </button>
+                            @if(request('transactions_search') || request('transactions_status'))
+                                <a href="?tab=transactions" class="btn btn-outline-danger">
+                                    <i class="fas fa-times"></i>
+                                    <span class="d-none d-md-inline">Reset</span>
+                                </a>
+                            @endif
                         </div>
                     </div>
 
@@ -33,13 +35,24 @@
                         @endphp
                         <div class="btn-group w-100">
                             <a href="?{{ http_build_query(array_merge($baseParams, ['transactions_status' => 'completed'])) }}"
-                                class="btn btn-outline-success {{ request('transactions_status') === 'completed' ? 'active' : '' }}">Završene</a>
+                                class="btn btn-outline-success {{ request('transactions_status') === 'completed' ? 'active' : '' }}">
+                                <span class="d-none d-md-inline">Završene</span>
+                                <span class="d-md-none">Z</span>
+                            </a>
                             <a href="?{{ http_build_query(array_merge($baseParams, ['transactions_status' => 'pending'])) }}"
-                                class="btn btn-outline-warning {{ request('transactions_status') === 'pending' ? 'active' : '' }}">Na čekanju</a>
+                                class="btn btn-outline-warning {{ request('transactions_status') === 'pending' ? 'active' : '' }}">
+                                <span class="d-none d-md-inline">Na čekanju</span>
+                                <span class="d-md-none">Č</span>
+                            </a>
                             <a href="?{{ http_build_query(array_merge($baseParams, ['transactions_status' => 'failed'])) }}"
-                                                       class="btn btn-outline-danger {{ request('transactions_status') === 'failed' ? 'active' : '' }}">Neuspešne</a>
+                                class="btn btn-outline-danger {{ request('transactions_status') === 'failed' ? 'active' : '' }}">
+                                <span class="d-none d-md-inline">Neuspešne</span>
+                                <span class="d-md-none">N</span>
+                            </a>
                             <a href="?{{ http_build_query($baseParams) }}"
-                                class="btn btn-outline-dark {{ !request('transactions_status') ? 'active' : '' }}">Sve
+                                class="btn btn-outline-dark {{ !request('transactions_status') ? 'active' : '' }}">
+                                <span class="d-none d-md-inline">Sve</span>
+                                <span class="d-md-none">S</span>
                             </a>
                         </div>
                     </div>
@@ -50,7 +63,7 @@
 
     <div class="table-responsive">
         <table class="table table-striped table-hover">
-            <thead class="table-dark">
+            <thead class="table-dark d-none d-md-table-header-group">
                 <tr>
                     <th>
                         <a href="?{{ http_build_query(array_merge(request()->except(['transactions_sort_column', 'transactions_sort_direction']), [
@@ -110,43 +123,103 @@
                     </th>
                 </tr>
             </thead>
-        <tbody>
-        @foreach($transactions as $transaction)
-            <tr>
-                <td>{{ $transaction->id }}</td>
-                <td>
-                    <a href="?tab=users&users_search={{ urlencode($transaction->user->email) }}"
-                        class="text-decoration-none d-flex align-items-center gap-2"
-                        title="Prikaži korisnika">
-                        <img src="{{ $transaction->user->avatar ? Storage::url('user/' . $transaction->user->avatar) : asset('images/default-avatar.png') }}" alt="Avatar" width="30" height="30" class="rounded-circle">
-                        <span>{{ $transaction->user->firstname }} {{ $transaction->user->lastname }}</span>
-                    </a>
-                </td>
-                <td>{{ number_format($transaction->amount, 2) }} {{ $transaction->currency }}</td>
-                <td>{{ ucfirst($transaction->payment_method) }}</td>
-                <td>
-                    @php
-                        $statusColors = [
+            <tbody>
+            @foreach($transactions as $transaction)
+                <tr>
+                    <!-- Desktop view -->
+                    <td class="d-none d-md-table-cell">{{ $transaction->id }}</td>
+                    <td class="d-none d-md-table-cell">
+                        <a href="?tab=users&users_search={{ urlencode($transaction->user->email) }}"
+                            class="text-decoration-none d-flex align-items-center gap-2"
+                            title="Prikaži korisnika">
+                            <img src="{{ $transaction->user->avatar ? Storage::url('user/' . $transaction->user->avatar) : asset('images/default-avatar.png') }}" alt="Avatar" width="30" height="30" class="rounded-circle">
+                            <span>{{ $transaction->user->firstname }} {{ $transaction->user->lastname }}</span>
+                        </a>
+                    </td>
+                    <td class="d-none d-md-table-cell">{{ number_format($transaction->amount, 2) }} {{ $transaction->currency }}</td>
+                    <td class="d-none d-md-table-cell">{{ ucfirst($transaction->payment_method) }}</td>
+                    <td class="d-none d-md-table-cell">
+                        @php
+                            $statusColors = [
+                                                'completed' => 'success',
+                                                'pending' => 'warning',
+                                                'failed' => 'danger'
+                                            ];
+                            $color = $statusColors[$transaction->status] ?? 'primary';
+                        @endphp
+                        <span class="badge bg-{{ $color }}">
+                            {{ ucfirst($transaction->status) }}
+                        </span>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        @if($transaction->created_at)
+                            {{ \Carbon\Carbon::parse($transaction->created_at)->format('d.m.Y. H:i') }}
+                        @else
+                            Nije postavljeno
+                        @endif
+                    </td>
+
+                    <!-- Mobile view -->
+                    <td class="d-md-none">
+                        <div class="mobile-transaction-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong>ID: {{ $transaction->id }}</strong>
+                                    <div class="small text-muted">
+                                        {{ \Carbon\Carbon::parse($transaction->created_at)->format('d.m.Y. H:i') }}
+                                    </div>
+                                </div>
+                                <div>
+                                    @php
+                                        $statusColors = [
                                             'completed' => 'success',
                                             'pending' => 'warning',
                                             'failed' => 'danger'
                                         ];
-                        $color = $statusColors[$transaction->status] ?? 'primary';
-                    @endphp
-                    <span class="badge bg-{{ $color }}">
-                        {{ ucfirst($transaction->status) }}
-                    </span>
-                </td>
-                <td>
-                    @if($transaction->created_at)
-                        {{ \Carbon\Carbon::parse($transaction->created_at)->format('d.m.Y. H:i') }}
-                    @else
-                        Nije postavljeno
-                    @endif
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
+                                        $color = $statusColors[$transaction->status] ?? 'primary';
+                                    @endphp
+                                    <span class="badge bg-{{ $color }}">
+                                        {{ ucfirst($transaction->status) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <a href="?tab=users&users_search={{ urlencode($transaction->user->email) }}"
+                                    class="text-decoration-none d-flex align-items-center gap-2"
+                                    title="Prikaži korisnika">
+                                    <img src="{{ $transaction->user->avatar ? Storage::url('user/' . $transaction->user->avatar) : asset('images/default-avatar.png') }}" alt="Avatar" width="40" height="40" class="rounded-circle">
+                                    <div>
+                                        <div class="fw-bold">{{ $transaction->user->firstname }} {{ $transaction->user->lastname }}</div>
+                                        <div class="small text-muted">{{ $transaction->user->email }}</div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>
+                                    <i class="fas fa-money-bill-wave me-1 text-success"></i>
+                                    <span class="fw-bold">{{ number_format($transaction->amount, 2) }} {{ $transaction->currency }}</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-credit-card me-1 text-info"></i>
+                                    <span>{{ ucfirst($transaction->payment_method) }}</span>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <button class="btn btn-sm btn-outline-primary view-transaction-details"
+                                        data-transaction-id="{{ $transaction->id }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#transactionDetailsModal">
+                                    <i class="fas fa-info-circle"></i> Detalji transakcije
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+            </tbody>
         </table>
 
         <div class="mt-3 d-flex justify-content-center">
@@ -176,12 +249,84 @@
     </div>
 </div>
 
+<style>
+    /* Stilovi za mobilni prikaz */
+    .mobile-transaction-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 8px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-transaction-card .small {
+        font-size: 0.85rem;
+    }
+
+    /* Prilagodba paginacije za mobilne uređaje */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-link {
+        padding: 0.375rem 0.65rem;
+        font-size: 0.875rem;
+    }
+
+    /* Responsive table header */
+    @media (max-width: 767.98px) {
+        .d-md-table-header-group {
+            display: none !important;
+        }
+
+        .table-responsive {
+            border: none;
+        }
+
+        .table > tbody > tr > td {
+            border-top: 1px solid #dee2e6;
+            padding: 0.5rem;
+        }
+
+        .table > tbody > tr:first-child > td {
+            border-top: none;
+        }
+
+        .view-transaction-details {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+
+    /* Prikaz za tablete */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .table td, .table th {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-group .btn {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Prilagodba filter dugmadi za mobilne uređaje */
+    @media (max-width: 575.98px) {
+        .btn-group .btn {
+            padding: 0.25rem 0.4rem;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = new bootstrap.Modal('#transactionDetailsModal');
 
     // Otvaranje detalja transakcije
-    document.querySelectorAll('[data-bs-target="#transactionDetailsModal"]').forEach(btn => {
+    document.querySelectorAll('.view-transaction-details').forEach(btn => {
         btn.addEventListener('click', function() {
             const transactionId = this.getAttribute('data-transaction-id');
             document.getElementById('transactionId').textContent = transactionId;

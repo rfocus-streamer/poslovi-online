@@ -16,11 +16,13 @@
                         placeholder="Pretraži korisnike (ime, prezime, email, ID)..."
                         value="{{ request('user_search') }}">
                     <button class="btn btn-outline-primary" type="submit">
-                        <i class="fas fa-search"></i> Pretraži
+                        <i class="fas fa-search"></i>
+                        <span class="d-none d-md-inline">Pretraži</span>
                     </button>
                     @if(request('user_search'))
                         <a href="?tab=privileged_commissions" class="btn btn-outline-danger">
-                            <i class="fas fa-times"></i> Reset
+                            <i class="fas fa-times"></i>
+                            <span class="d-none d-md-inline">Reset</span>
                         </a>
                     @endif
                 </div>
@@ -31,7 +33,7 @@
                 <h6>Rezultati pretrage:</h6>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover">
-                        <thead>
+                        <thead class="d-none d-md-table-header-group">
                             <tr>
                                 <th>ID</th>
                                 <th>Ime i prezime</th>
@@ -42,15 +44,36 @@
                         <tbody>
                             @foreach($searchedUsers as $user)
                             <tr>
-                                <td>{{ $user->id }}</td>
-                                <td>{{ $user->firstname }} {{ $user->lastname }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>
+                                <td class="d-none d-md-table-cell">{{ $user->id }}</td>
+                                <td class="d-none d-md-table-cell">{{ $user->firstname }} {{ $user->lastname }}</td>
+                                <td class="d-none d-md-table-cell">{{ $user->email }}</td>
+                                <td class="d-none d-md-table-cell">
                                     <button class="btn btn-sm btn-success add-privileged-commission-btn"
                                             data-user-id="{{ $user->id }}"
                                             data-user-name="{{ $user->firstname }} {{ $user->lastname }}">
                                         <i class="fas fa-plus"></i> Dodaj procente
                                     </button>
+                                </td>
+
+                                <!-- Mobile view for search results -->
+                                <td class="d-md-none">
+                                    <div class="mobile-user-search-card">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <strong>{{ $user->firstname }} {{ $user->lastname }}</strong>
+                                                <div class="small text-muted">ID: {{ $user->id }}</div>
+                                            </div>
+                                            <button class="btn btn-sm btn-success add-privileged-commission-btn"
+                                                    data-user-id="{{ $user->id }}"
+                                                    data-user-name="{{ $user->firstname }} {{ $user->lastname }}">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="mb-1">
+                                            <i class="fas fa-envelope me-1 text-muted"></i>
+                                            <span class="small">{{ $user->email }}</span>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -75,7 +98,7 @@
             @if($privilegedCommissions->count() > 0)
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
-                    <thead class="table-dark">
+                    <thead class="table-dark d-none d-md-table-header-group">
                         <tr>
                             <th>
                                 <a href="?{{ http_build_query(array_merge(request()->except(['privileged_commissions_sort_column', 'privileged_commissions_sort_direction']), [
@@ -128,8 +151,9 @@
                     <tbody>
                         @foreach($privilegedCommissions as $commission)
                         <tr>
-                            <td>{{ $commission->id }}</td>
-                            <td>
+                            <!-- Desktop view -->
+                            <td class="d-none d-md-table-cell">{{ $commission->id }}</td>
+                            <td class="d-none d-md-table-cell">
                                 <a href="#" class="text-decoration-none view-user-profile"
                                    data-user-id="{{ $commission->user_id }}">
                                     {{ $commission->user->firstname }} {{ $commission->user->lastname }}
@@ -137,10 +161,10 @@
                                 <br>
                                 <small class="text-muted">{{ $commission->user->email }}</small>
                             </td>
-                            <td>{{ $commission->buyer_commission }}%</td>
-                            <td>{{ $commission->seller_commission }}%</td>
-                            <td>{{ $commission->created_at->format('d.m.Y. H:i') }}</td>
-                            <td>
+                            <td class="d-none d-md-table-cell">{{ $commission->buyer_commission }}%</td>
+                            <td class="d-none d-md-table-cell">{{ $commission->seller_commission }}%</td>
+                            <td class="d-none d-md-table-cell">{{ $commission->created_at->format('d.m.Y. H:i') }}</td>
+                            <td class="d-none d-md-table-cell">
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-sm btn-primary edit-privileged-commission-btn"
                                             data-commission-id="{{ $commission->id }}"
@@ -156,6 +180,59 @@
                                             title="Obriši">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
+                                </div>
+                            </td>
+
+                            <!-- Mobile view -->
+                            <td class="d-md-none">
+                                <div class="mobile-commission-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>ID: {{ $commission->id }}</strong>
+                                            <div class="small text-muted">
+                                                {{ $commission->created_at->format('d.m.Y. H:i') }}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-primary edit-privileged-commission-btn"
+                                                    data-commission-id="{{ $commission->id }}"
+                                                    data-user-id="{{ $commission->user_id }}"
+                                                    data-buyer-commission="{{ $commission->buyer_commission }}"
+                                                    data-seller-commission="{{ $commission->seller_commission }}"
+                                                    title="Izmeni">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger delete-privileged-commission-btn"
+                                                    data-commission-id="{{ $commission->id }}"
+                                                    data-user-name="{{ $commission->user->firstname }} {{ $commission->user->lastname }}"
+                                                    title="Obriši">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <a href="#" class="text-decoration-none view-user-profile"
+                                           data-user-id="{{ $commission->user_id }}">
+                                            <i class="fas fa-user me-1 text-primary"></i>
+                                            <strong>{{ $commission->user->firstname }} {{ $commission->user->lastname }}</strong>
+                                        </a>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            {{ $commission->user->email }}
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-around border-top pt-2">
+                                        <div class="text-center">
+                                            <div class="fw-bold text-success">{{ $commission->buyer_commission }}%</div>
+                                            <div class="small text-muted">Kupac</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="fw-bold text-info">{{ $commission->seller_commission }}%</div>
+                                            <div class="small text-muted">Prodavac</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -267,6 +344,73 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Stilovi za mobilni prikaz */
+    .mobile-commission-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 8px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-user-search-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin: 8px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .mobile-commission-card .small,
+    .mobile-user-search-card .small {
+        font-size: 0.85rem;
+    }
+
+    /* Prilagodba paginacije za mobilne uređaje */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-link {
+        padding: 0.375rem 0.65rem;
+        font-size: 0.875rem;
+    }
+
+    /* Responsive table header */
+    @media (max-width: 767.98px) {
+        .d-md-table-header-group {
+            display: none !important;
+        }
+
+        .table-responsive {
+            border: none;
+        }
+
+        .table > tbody > tr > td {
+            border-top: 1px solid #dee2e6;
+            padding: 0.5rem;
+        }
+
+        .table > tbody > tr:first-child > td {
+            border-top: none;
+        }
+    }
+
+    /* Prikaz za tablete */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .table td, .table th {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .d-flex.gap-2 {
+            gap: 0.5rem !important;
+        }
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
