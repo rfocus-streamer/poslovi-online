@@ -168,7 +168,10 @@
                                         <i class="fas fa-money-bill-wave text-success me-1"></i>
                                         <span class="small">Depozit</span>
                                     </a>
-                                    <a href="#" class="text-decoration-none" title="Računi">
+                                    <a href="#" class="text-decoration-none"
+                                        data-action="invoices"
+                                        data-user-id="{{ $user->id }}"
+                                        title="Računi">
                                         <i class="fas fa-file-invoice-dollar text-info me-1"></i>
                                         <span class="small">Računi</span>
                                     </a>
@@ -199,7 +202,10 @@
                                     title="Depozit">
                                     <i class="fas fa-money-bill-wave text-success"></i>
                                 </a>
-                                <a href="#" class="text-decoration-none" title="Računi">
+                                <a href="#" class="text-decoration-none"
+                                    data-action="invoices"
+                                    data-user-id="{{ $user->id }}"
+                                    title="Računi">
                                     <i class="fas fa-file-invoice-dollar text-info"></i>
                                 </a>
                                 <a href="#" class="text-decoration-none" title="Preporuci">

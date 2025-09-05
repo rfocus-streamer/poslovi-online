@@ -46,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/{user}/deposit', [DashboardController::class, 'depositAmount'])->name('admin.user.deposit-amount');
     Route::delete('admin/{user}', [DashboardController::class, 'destroy'])->name('admin.user.destroy');
 
+    Route::get('/admin/{user}/invoices', [DashboardController::class, 'userInvoices'])
+        ->name('admin.users.invoices');
+
     Route::delete('/admin/files/delete', [DashboardController::class, 'deleteFile'])->name('files.delete');
     // ... ostale rute
 });

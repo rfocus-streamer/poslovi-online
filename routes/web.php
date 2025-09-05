@@ -204,7 +204,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/fiat-payouts/{id}/reject', [FiatPayoutController::class, 'reject'])
          ->name('fiat-payouts.reject');
-
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])

@@ -27,6 +27,12 @@ class InvoiceController extends Controller
     public function getPDF($id)
     {
         $invoice = Invoice::findOrFail($id);
+        $user = auth()->user();
+
+        // Ako korisnik NIJE admin i NIJE vlasnik invoice-a → zabranjen pristup
+        if ($user->role !== 'admin' && $invoice->user_id !== $user->id) {
+            abort(403, 'Access denied');
+        }
 
         $pdf = PDF::loadView('invoices.template', compact('invoice'));
 

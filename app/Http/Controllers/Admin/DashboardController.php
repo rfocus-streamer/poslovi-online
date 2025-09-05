@@ -17,6 +17,7 @@ use App\Models\TicketResponse;
 use App\Models\Complaint;
 use App\Models\ProjectFile;
 use App\Models\Message;
+use App\Models\Invoice;
 use App\Models\PrivilegedCommission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Mail\ContactMail;
 
@@ -748,6 +750,15 @@ class DashboardController extends Controller
         $user->save();
         return redirect()->back()->with('success', 'Depozit za '.$user->firstname.' '.$user->lastname.' je uspešno dodat!')
                     ->withInput(); // Ovaj .withInput() omogućava da sačuvaš podatke forme nakon što se stranica učita ponovo
+    }
+
+    public function userInvoices(User $user)
+    {
+        $invoices = Invoice::where('user_id', $user->id)
+                                ->orderBy('created_at', 'desc') // Sortiraj od najnovijih ka najstarijima
+                                ->paginate(50); // Paginacija sa 50 stavke po stranici
+
+        return view('admin.users.user_invoices', compact('user', 'invoices'));
     }
 
 
