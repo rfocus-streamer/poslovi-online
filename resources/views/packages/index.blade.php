@@ -130,6 +130,12 @@
                                                         <i class="fas fa-credit-card"></i> Pretplati se
                                                     </a>
                                                 @endif
+
+                                                @if(Auth::user()->package->id === $package->id and !$packageExpired)
+                                                   <button type="button" class="btn text-white w-100 btn-secondary">
+                                                        <i class="fa fa-check-circle me-1"></i> Kupljen
+                                                    </button>
+                                                @endif
                                             @else
                                                 <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}" class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
                                                         <i class="fas fa-credit-card"></i> Pretplati se
@@ -228,6 +234,12 @@
                                                 <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}"    class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">
                                                         <i class="fas fa-credit-card"></i> Pretplati se
                                                 </a>
+                                            @endif
+
+                                            @if(Auth::user()->package->id === $package->id and !$packageExpired)
+                                                <button type="button" class="btn text-white w-100 btn-secondary">
+                                                    <i class="fa fa-check-circle me-1"></i> Kupljen
+                                                </button>
                                             @endif
                                         @else
                                             <a href="{{ route('subscriptions.index', ['package_id' => $package->id]) }}" class="btn ms-auto w-100 text-white" data-bs-toggle="tooltip" title="Pretplati se" style="background-color: #198754">

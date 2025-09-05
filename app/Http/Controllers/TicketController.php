@@ -36,7 +36,7 @@ class TicketController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'attachment' => 'nullable|file|max:2048', // Max 2MB
+            //'attachment' => 'nullable|file|max:2048', // Max 2MB
         ]);
 
         $attachmentPath = null;

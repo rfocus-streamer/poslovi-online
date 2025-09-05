@@ -369,7 +369,7 @@ class ServiceController extends Controller
             'subcategory' => ['required', 'numeric'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'serviceImages.*' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            //'serviceImages.*' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
         ], [
             'category.required' => 'Morate izabrati kategoriju.',
             'category.exists' => 'Izabrana kategorija nije validna.',
