@@ -142,7 +142,7 @@ class TicketController extends Controller
             'message' => 'Telo poruke iz kontrolera', // Možete dodati dinamicki tekst
             'template' => 'emails.tickets', // Predloženi Blade šablon,
             'subject' => 'Obaveštenje o odgovoru na tiket: '.$ticket->title,
-            'from_email' => 'gligorijesaric@gmail.com',
+            'from_email' => config('mail.from.address'),
             'from' => 'Poslovi Online Podrška',
             'ticket_id' => $ticket->id
         ];
