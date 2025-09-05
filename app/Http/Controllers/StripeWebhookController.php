@@ -88,17 +88,22 @@ class StripeWebhookController extends Controller
                     'payload' => json_encode($invoice)
                 ]);
 
-                // Ažuriraj balans
-                $user->deposits += $invoice->amount_paid / 100;
-                $user->save();
-
                 // Aktiviraj paket
                 $package = Package::find($subscription->plan_id);
                 if ($package) {
                     app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
                     Log::info("Package activated for user {$user->id}: {$package->name}");
+
+                    // Ažuriraj status pretplate
+                    $subscription->update([
+                        'status' => 'active',
+                        'ends_at' => now()->addMonth(), // ili koliko plan traje
+                    ]);
+
+                    Log::info('Webhook - Subscription ID: ' . $subscriptionId);
+                    Log::info('Webhook - Plan ID: ' . $subscription->plan_id);
                 } else {
-                    Log::error('Package not found for subscription: '.$subscription->id);
+                    Log::error('Package not found for user {$user->id} for subscription: '.$subscription->id);
                 }
 
                 Log::info("Subscription payment processed for user {$user->id}");
