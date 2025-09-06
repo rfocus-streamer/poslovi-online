@@ -204,6 +204,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/fiat-payouts/{id}/reject', [FiatPayoutController::class, 'reject'])
          ->name('fiat-payouts.reject');
+
+    Route::get('/admin/stripe-transactions', [DashboardController::class, 'stripeTransactions'])
+        ->name('admin.stripe.transactions');
+    Route::get('/admin/stripe-transactions/details/{transactionId}', [DashboardController::class, 'stripeTransactionDetails'])
+        ->name('admin.stripe.transaction.details');
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])

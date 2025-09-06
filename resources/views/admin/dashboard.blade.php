@@ -240,6 +240,9 @@
                     <!-- Transactions Tab -->
                     @include('admin.partials.transactions_tab')
 
+                    <!-- Stripe Transactions Tab -->
+                    @include('admin.partials.stripe-transactions_tab')
+
                     <!-- Fiat Payouts Tab -->
                     @include('admin.partials.fiat_payouts_tab')
 

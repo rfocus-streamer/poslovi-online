@@ -1,7 +1,12 @@
 <div class="col-md-3 col-lg-2 sidebar p-0" id="sidebar">
                 <div class="p-3">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="text-white mb-0">Admin panel</h4>
+                        <a href="{{ route('admin.dashboard') }}" class="text-decoration-none">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ asset('favicon.ico') }}" class="me-2" style="width: 30px; height: 30px;">
+                                <h4 class="text-white mb-0">Admin panel</h4>
+                            </div>
+                        </a>
                         <button class="btn btn-sm text-white d-lg-none" id="closeSidebar">
                             <i class="fas fa-times"></i>
                         </button>
@@ -20,12 +25,17 @@
                         <a class="nav-link text-white {{ $activeTab === 'subscriptions' ? 'active' : '' }}"
                             data-bs-toggle="tab"
                             href="#subscriptions">
-                            <i class="fas fa-credit-card"></i> Pretplate
+                            <i class="fas fa-crown"></i> Pretplate
                         </a>
                         <a class="nav-link text-white {{ $activeTab === 'transactions' ? 'active' : '' }}"
                             data-bs-toggle="tab"
                             href="#transactions">
                             <i class="fas fa-money-bill-wave"></i> Transakcije
+                        </a>
+                        <a class="nav-link text-white {{ $activeTab === 'stripe_transactions' ? 'active' : '' }}"
+                            data-bs-toggle="tab"
+                            href="#stripe_transactions">
+                            <i class="fas fa-credit-card"></i> Stripe Transakcije
                         </a>
                         <a class="nav-link text-white {{ $activeTab === 'services' ? 'active' : '' }}"
                             data-bs-toggle="tab"

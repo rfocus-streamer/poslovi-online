@@ -29,6 +29,11 @@ use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Mail\ContactMail;
+use Stripe\Stripe;
+use Stripe\Charge;
+use Stripe\PaymentIntent;
+use Stripe\Invoice as StripeInvoice;
+use Stripe\Exception\ApiErrorException;
 
 class DashboardController extends Controller
 {
@@ -219,6 +224,30 @@ class DashboardController extends Controller
                 'subscriptions_sort_column' => $subscriptionsSortColumn,
                 'subscriptions_sort_direction' => $subscriptionsSortDirection
             ]);
+
+        // STRIPE TRANSACTIONS ======================================================
+        $stripeFilters = [
+            'status' => $request->input('stripe_status', ''),
+            'transaction_id' => $request->input('stripe_transaction_id', ''),
+            'customer_email' => $request->input('stripe_customer_email', ''),
+            'subscription_id' => $request->input('stripe_subscription_id', ''),
+            'from_date' => $request->input('stripe_from_date', ''),
+            'to_date' => $request->input('stripe_to_date', ''),
+        ];
+
+        $stripePage = $request->input('stripe_page', 1);
+        $stripePerPage = 10;
+        $startingAfter = $request->input('starting_after', null);
+        $endingBefore = $request->input('ending_before', null);
+
+        $stripeTransactions = null;
+        $stripePagination = null;
+
+        // Only fetch Stripe transactions if this is the active tab to avoid unnecessary API calls
+        if ($activeTab === 'stripe_transactions') {
+            $stripeTransactions = $this->getStripeTransactions($stripeFilters, $stripePerPage, $startingAfter, $endingBefore);
+            $stripePagination = $this->formatStripePagination($stripeTransactions, $stripePage, $stripePerPage);
+        }
 
         // TRANSAKCIJE =========================================================
         $transactionsQuery = Transaction::with('user');
@@ -415,7 +444,10 @@ class DashboardController extends Controller
             'ticketTemplates',
             'subscriptionTemplates',
             'inactiveTemplates',
-            'fiatPayouts'
+            'fiatPayouts',
+            'stripeTransactions',
+            'stripeFilters',
+            'stripePagination'
         ));
     }
 
@@ -803,6 +835,340 @@ class DashboardController extends Controller
         }
 
         return back()->with('error', 'Fajl nije pronađen.');
+    }
+
+
+    /**
+     * Dobija Stripe transakcije preko API-ja
+     */
+    private function getStripeTransactions($filters, $limit = 100, $startingAfter = null, $endingBefore = null)
+    {
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            // If subscription_id is specified, use a different approach
+            if (!empty($filters['subscription_id'])) {
+                return $this->getTransactionsBySubscription($filters['subscription_id'], $filters, $limit);
+            }
+
+            $params = [
+                'limit' => $limit,
+                'expand' => ['data.customer', 'data.payment_intent', 'data.invoice.subscription', 'data.invoice.lines']
+            ];
+
+            // Date filters are still applied via API
+            if (!empty($filters['from_date'])) {
+                $params['created']['gte'] = strtotime($filters['from_date']);
+            }
+
+            if (!empty($filters['to_date'])) {
+                $params['created']['lte'] = strtotime($filters['to_date']);
+            }
+
+            // If customer email is specified, find the customer ID first
+            if (!empty($filters['customer_email'])) {
+                // Search for customers with this email
+                try {
+                    $customers = \Stripe\Customer::all([
+                        'email' => $filters['customer_email'],
+                        'limit' => 10
+                    ]);
+
+                    if (count($customers->data) > 0) {
+                        // Get all customer IDs
+                        $customerIds = array_map(function($customer) {
+                            return $customer->id;
+                        }, $customers->data);
+
+                        // Filter by customer IDs instead of email
+                        if (count($customerIds) === 1) {
+                            $params['customer'] = $customerIds[0];
+                        } else {
+                            // For multiple customers, fetch all charges for each customer
+                            $allCharges = [];
+                            foreach ($customerIds as $customerId) {
+                                $customerParams = $params;
+                                $customerParams['customer'] = $customerId;
+
+                                $customerCharges = Charge::all($customerParams);
+                                $allCharges = array_merge($allCharges, $customerCharges->data);
+                            }
+
+                            // Now apply client-side status filter
+                            if (!empty($filters['status'])) {
+                                $allCharges = array_filter($allCharges, function($charge) use ($filters) {
+                                    return $charge->status === $filters['status'];
+                                });
+                            }
+
+                            // Create a filtered result
+                            $filteredCharges = new \stdClass();
+                            $filteredCharges->data = $allCharges;
+                            $filteredCharges->has_more = false;
+                            $filteredCharges->url = '';
+                            $filteredCharges->object = 'list';
+
+                            return $filteredCharges;
+                        }
+                    } else {
+                        // No customers found with this email
+                        $emptyResult = new \stdClass();
+                        $emptyResult->data = [];
+                        $emptyResult->has_more = false;
+                        return $emptyResult;
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error searching for customers: ' . $e->getMessage());
+                    // Fall back to manual filtering
+                }
+            }
+
+            // Pagination
+            if ($startingAfter) {
+                $params['starting_after'] = $startingAfter;
+            }
+
+            if ($endingBefore) {
+                $params['ending_before'] = $endingBefore;
+            }
+
+            // Get charges
+            $charges = Charge::all($params);
+
+            // Get the data array from the charges object
+            $dataArray = $charges->data;
+
+            // Client-side filtering by status
+            if (!empty($filters['status'])) {
+                $dataArray = array_filter($dataArray, function($charge) use ($filters) {
+                    return $charge->status === $filters['status'];
+                });
+            }
+
+            // Additional filtering by email if specified (if not already handled via customer ID)
+            if (!empty($filters['customer_email']) && empty($params['customer'])) {
+                $dataArray = array_filter($dataArray, function($charge) use ($filters) {
+                    return isset($charge->customer->email) &&
+                           stripos($charge->customer->email, $filters['customer_email']) !== false;
+                });
+            }
+
+            // Additional filtering by transaction_id if specified
+            if (!empty($filters['transaction_id'])) {
+                $dataArray = array_filter($dataArray, function($charge) use ($filters) {
+                    return stripos($charge->id, $filters['transaction_id']) !== false;
+                });
+            }
+
+            // Reset array keys
+            $dataArray = array_values($dataArray);
+
+            // Create a new Stripe collection with the filtered data
+            $filteredCharges = new \stdClass();
+            $filteredCharges->data = $dataArray;
+            $filteredCharges->has_more = $charges->has_more;
+            $filteredCharges->url = $charges->url;
+            $filteredCharges->object = $charges->object;
+
+            return $filteredCharges;
+
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe API Error: '.$e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Dobija transakcije na osnovu subscription ID-a
+     */
+    private function getTransactionsBySubscription($subscriptionId, $filters, $limit = 10)
+    {
+        try {
+            // Prvo dobijamo sve invoice-e za dati subscription
+            $invoices = \Stripe\Invoice::all([
+                'subscription' => $subscriptionId,
+                'limit' => 100,
+                'expand' => ['data.charge', 'data.customer', 'data.subscription', 'data.lines']
+            ]);
+
+            // Prikupijamo charge ID-eve iz invoice-a
+            $chargeIds = [];
+            foreach ($invoices->data as $invoice) {
+                if (!empty($invoice->charge) && is_string($invoice->charge)) {
+                    $chargeIds[] = $invoice->charge;
+                } elseif (!empty($invoice->charge) && is_object($invoice->charge)) {
+                    $chargeIds[] = $invoice->charge->id;
+                }
+            }
+
+            if (empty($chargeIds)) {
+                $emptyResult = new \stdClass();
+                $emptyResult->data = [];
+                $emptyResult->has_more = false;
+                return $emptyResult;
+            }
+
+            // Sada dobijamo sve charge-eve odjednom
+            $charges = Charge::all([
+                'limit' => $limit,
+                'ids' => array_slice($chargeIds, 0, $limit), // Ograničavamo na traženi limit
+                'expand' => ['data.customer', 'data.payment_intent', 'data.invoice.subscription', 'data.invoice.lines']
+            ]);
+
+            // Dodatno filtriranje po statusu ako je specificiran
+            if (!empty($filters['status'])) {
+                $charges->data = array_filter($charges->data, function($charge) use ($filters) {
+                    return $charge->status === $filters['status'];
+                });
+
+                // Resetujemo ključeve niza
+                $charges->data = array_values($charges->data);
+            }
+
+            // Dodatno filtriranje po emailu ako je specificiran
+            if (!empty($filters['customer_email'])) {
+                $charges->data = array_filter($charges->data, function($charge) use ($filters) {
+                    return isset($charge->customer->email) &&
+                           stripos($charge->customer->email, $filters['customer_email']) !== false;
+                });
+
+                // Resetujemo ključeve niza
+                $charges->data = array_values($charges->data);
+            }
+
+            return $charges;
+
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe API Greška (getTransactionsBySubscription): '.$e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Formatira paginaciju za Stripe transakcije
+     */
+    private function formatStripePagination($transactions, $currentPage, $perPage)
+    {
+        if (!$transactions || !isset($transactions->data)) {
+            return [
+                'current_page' => $currentPage,
+                'per_page' => $perPage,
+                'has_more' => false,
+                'first_id' => null,
+                'last_id' => null,
+                'total' => 0,
+            ];
+        }
+
+        $hasMore = isset($transactions->has_more) ? $transactions->has_more : false;
+        $firstId = count($transactions->data) > 0 ? $transactions->data[0]->id : null;
+        $lastId = count($transactions->data) > 0 ? end($transactions->data)->id : null;
+
+        return [
+            'current_page' => $currentPage,
+            'per_page' => $perPage,
+            'has_more' => $hasMore,
+            'first_id' => $firstId,
+            'last_id' => $lastId,
+            'total' => count($transactions->data),
+        ];
+    }
+
+    /**
+     * Dobija detalje o specifičnoj transakciji
+     */
+    public function stripeTransactionDetails(Request $request, $transactionId)
+    {
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            // First, try to retrieve the charge with expansion
+            $transaction = Charge::retrieve([
+                'id' => $transactionId,
+                'expand' => ['customer', 'invoice', 'invoice.subscription', 'invoice.lines']
+            ]);
+
+            // If customer is still not expanded, try to fetch it separately
+            if (isset($transaction->customer) && is_string($transaction->customer)) {
+                // Customer is just an ID string, not expanded - fetch it separately
+                try {
+                    $customer = \Stripe\Customer::retrieve($transaction->customer);
+                    $transaction->customer = $customer;
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch customer details: '.$e->getMessage());
+                }
+            }
+
+            // If invoice exists but isn't properly expanded, try to fetch it
+            if (isset($transaction->invoice) && is_string($transaction->invoice)) {
+                try {
+                    $invoice = \Stripe\Invoice::retrieve([
+                        'id' => $transaction->invoice,
+                        'expand' => ['subscription', 'lines']
+                    ]);
+                    $transaction->invoice = $invoice;
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch invoice details: '.$e->getMessage());
+                }
+            }
+
+            $details = [
+                'id' => $transaction->id,
+                'amount' => number_format($transaction->amount / 100, 2),
+                'currency' => strtoupper($transaction->currency),
+                'status' => $transaction->status,
+                'description' => $transaction->description ?? 'Nema opisa',
+                'customer' => isset($transaction->customer) && is_object($transaction->customer) ? [
+                    'id' => $transaction->customer->id,
+                    'email' => $transaction->customer->email ?? 'Nepoznato',
+                    'name' => $transaction->customer->name ?? 'Nepoznato',
+                ] : null,
+                'payment_method' => isset($transaction->payment_method_details->type) ?
+                    $transaction->payment_method_details->type : 'Nepoznato',
+                'created' => Carbon::createFromTimestamp($transaction->created)->format('d.m.Y. H:i:s'),
+                'invoice' => isset($transaction->invoice) && is_object($transaction->invoice) ? [
+                    'id' => $transaction->invoice->id,
+                    'number' => $transaction->invoice->number ?? 'Nepoznato',
+                    'pdf_url' => $transaction->invoice->invoice_pdf ?? null,
+                    'subscription' => isset($transaction->invoice->subscription) && is_object($transaction->invoice->subscription) ? [
+                        'id' => $transaction->invoice->subscription->id,
+                        'status' => $transaction->invoice->subscription->status,
+                        'current_period_start' => Carbon::createFromTimestamp($transaction->invoice->subscription->current_period_start)->format('d.m.Y.'),
+                        'current_period_end' => Carbon::createFromTimestamp($transaction->invoice->subscription->current_period_end)->format('d.m.Y.'),
+                    ] : null,
+                    'lines' => isset($transaction->invoice->lines) && is_object($transaction->invoice->lines) ?
+                        array_map(function($line) {
+                            return [
+                                'description' => $line->description ?? 'Nema opisa',
+                                'amount' => number_format($line->amount / 100, 2),
+                                'currency' => strtoupper($line->currency),
+                                'period' => isset($line->period) && is_object($line->period) ? [
+                                    'start' => Carbon::createFromTimestamp($line->period->start)->format('d.m.Y.'),
+                                    'end' => Carbon::createFromTimestamp($line->period->end)->format('d.m.Y.'),
+                                ] : null,
+                            ];
+                        }, $transaction->invoice->lines->data) : [],
+                ] : null,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'transaction' => $details
+            ]);
+
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe API Greška: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Greška pri dobijanju detalja transakcije: '.$e->getMessage()
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('General error in stripeTransactionDetails: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Došlo je do greške pri obradi zahteva.'
+            ], 500);
+        }
     }
 
 
