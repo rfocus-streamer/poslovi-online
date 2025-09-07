@@ -67,6 +67,11 @@
                             href="#packages">
                             <i class="fas fa-calendar-alt "></i> Plan paketa
                         </a>
+                        <a class="nav-link text-white {{ $activeTab === 'finances' ? 'active' : '' }}"
+                            data-bs-toggle="tab"
+                            href="#finances">
+                            <i class="fas fa-chart-line "></i> Finansije
+                        </a>
                         <a class="nav-link text-white {{ $activeTab === 'unusedfiles' ? 'active' : '' }}"
                             data-bs-toggle="tab"
                             href="#unusedfiles">

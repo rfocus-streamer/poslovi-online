@@ -258,6 +258,9 @@
                     <!-- Packages Tab -->
                     @include('admin.partials.packages_tab')
 
+                    <!-- Finances Tab -->
+                    @include('admin.partials.finances_tab')
+
                     <!-- Email notification Tab -->
                     @include('admin.partials.email_notifications_tab')
 

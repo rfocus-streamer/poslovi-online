@@ -32,7 +32,7 @@ use App\Mail\ContactMail;
 use Stripe\Stripe;
 use Stripe\Charge;
 use Stripe\PaymentIntent;
-use Stripe\Invoice as StripeInvoice;
+use Stripe\Balance;
 use Stripe\Exception\ApiErrorException;
 
 class DashboardController extends Controller
@@ -240,14 +240,34 @@ class DashboardController extends Controller
         $startingAfter = $request->input('starting_after', null);
         $endingBefore = $request->input('ending_before', null);
 
+        // Određivanje tekućeg meseca i godine
+        $currentMonth = $request->input('report_month', date('n'));
+        $currentYear = $request->input('report_year', date('Y'));
+
         $stripeTransactions = null;
         $stripePagination = null;
+        $stripeBalance = 0;
+
+        $monthlyStripeReport = Array(
+            'total_amount' => 0,
+            'successful_charges' => 0,
+            'failed_charges' => 0,
+            'currency' => '',
+            'transactions' => Array()
+        );
 
         // Only fetch Stripe transactions if this is the active tab to avoid unnecessary API calls
         if ($activeTab === 'stripe_transactions') {
             $stripeTransactions = $this->getStripeTransactions($stripeFilters, $stripePerPage, $startingAfter, $endingBefore);
             $stripePagination = $this->formatStripePagination($stripeTransactions, $stripePage, $stripePerPage);
         }
+
+        if ($activeTab === 'finances') {
+            $stripeBalance = $this->getStripeBalance();
+            $monthlyStripeReport = $this->getMonthlyTransactions($currentYear, $currentMonth);
+        }
+
+
 
         // TRANSAKCIJE =========================================================
         $transactionsQuery = Transaction::with('user');
@@ -447,7 +467,11 @@ class DashboardController extends Controller
             'fiatPayouts',
             'stripeTransactions',
             'stripeFilters',
-            'stripePagination'
+            'stripePagination',
+            'stripeBalance',
+            'monthlyStripeReport',
+            'currentMonth',
+            'currentYear'
         ));
     }
 
@@ -837,6 +861,65 @@ class DashboardController extends Controller
         return back()->with('error', 'Fajl nije pronađen.');
     }
 
+    private function getStripeBalance()
+    {
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+            $balance = Balance::retrieve();
+            return $balance;
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe Balance API Error: '.$e->getMessage());
+            return null;
+        }
+    }
+
+    private function getMonthlyTransactions($year, $month)
+    {
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            // Određivanje početka i kraja meseca
+            $startDate = Carbon::create($year, $month, 1)->startOfMonth()->timestamp;
+            $endDate = Carbon::create($year, $month, 1)->endOfMonth()->timestamp;
+
+            $params = [
+                'limit' => 100,
+                'created' => [
+                    'gte' => $startDate,
+                    'lte' => $endDate
+                ],
+                'expand' => ['data.customer', 'data.invoice.subscription']
+            ];
+
+            $charges = Charge::all($params);
+
+            // Izračunavanje ukupnog iznosa za mesec
+            $totalAmount = 0;
+            $successfulCharges = 0;
+            $failedCharges = 0;
+
+            foreach ($charges->data as $charge) {
+                if ($charge->status === 'succeeded') {
+                    $totalAmount += $charge->amount;
+                    $successfulCharges++;
+                } else {
+                    $failedCharges++;
+                }
+            }
+
+            return [
+                'total_amount' => $totalAmount / 100, // Konverzija iz centi
+                'successful_charges' => $successfulCharges,
+                'failed_charges' => $failedCharges,
+                'transactions' => $charges->data,
+                'currency' => 'eur' // Ili druga valuta
+            ];
+
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe Monthly Transactions Error: '.$e->getMessage());
+            return null;
+        }
+    }
 
     /**
      * Dobija Stripe transakcije preko API-ja
