@@ -25,6 +25,7 @@ use App\Models\Service;
 use App\Models\Category;
 use Mews\Captcha\Facades\Captcha;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
