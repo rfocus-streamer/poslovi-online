@@ -246,6 +246,34 @@ Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handleWebhook']
 //     ]);
 // });
 
+// Test PayPal webhook rute
+Route::post('/test-paypal-webhook', function(Request $request) {
+    \Log::info('Test PayPal webhook primljen', [
+        'headers' => $request->headers->all(),
+        'content' => $request->getContent()
+    ]);
+    return response()->json(['status' => 'primljeno']);
+});
+
+Route::get('/test-paypal-connection', function() {
+    try {
+        $apiContext = new \PayPal\Rest\ApiContext(
+            new \PayPal\Auth\OAuthTokenCredential(
+                config('services.paypal.client_id'),
+                config('services.paypal.secret')
+            )
+        );
+
+        $apiContext->setConfig([
+            'mode' => config('services.paypal.settings.mode'),
+        ]);
+
+        return response()->json(['status' => 'uspešno', 'message' => 'PayPal konekcija uspostavljena']);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'greška', 'message' => $e->getMessage()], 500);
+    }
+});
+
 Route::get('/attachments/{file}', function ($file) {
     $path = storage_path('app/attachments/'.$file);
 
