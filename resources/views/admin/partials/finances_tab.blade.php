@@ -73,7 +73,7 @@
                             @endphp
                             <h5 class="card-title text-primary">{{ $monthName }} {{ $year }}</h5>
                             <p class="card-text display-4">
-                                {{ number_format($monthlyStripeReport['total_net_amount'], 2) }}
+                                {{ isset($monthlyStripeReport['total_net_amount']) ? number_format($monthlyStripeReport['total_net_amount'], 2) : '0.00' }}
                                 {{ strtoupper($monthlyStripeReport['currency']) }}
                             </p>
                         </div>
