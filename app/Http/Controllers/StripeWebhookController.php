@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Subscription;
+use App\Models\Package;
 use App\Services\StripeService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -89,7 +90,7 @@ class StripeWebhookController extends Controller
                 ]);
 
                 // Aktiviraj paket
-                $package = Package::find($subscription->plan_id);
+                $package = Package::where('id', $subscription->plan_id)->first();
                 if ($package) {
                     app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
                     Log::info("Package activated for user {$user->id}: {$package->name}");
