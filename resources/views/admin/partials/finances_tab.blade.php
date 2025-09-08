@@ -30,67 +30,67 @@
 
         <hr class="my-4">
 
-<div class="container">
-    <div class="row mb-4 justify-content-center">
-        <!-- Stripe statistika Header -->
-        <div class="col-12 text-center mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5>Stripe statistika</h5>
-            </div>
-        </div>
+        <div class="container">
+            <div class="row mb-4 justify-content-center">
+                <!-- Stripe statistika Header -->
+                <div class="col-12 text-center mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5>Stripe statistika</h5>
+                    </div>
+                </div>
 
-        <!-- Trenutni Balans Card -->
-        <div class="col-md-3 col-lg-3 mb-3">
-            <div class="card shadow-sm rounded">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Trenutni Balans</h5>
-                    <p class="card-text">
-                        @if (is_object($stripeBalance) && isset($stripeBalance->available) && is_array($stripeBalance->available) && isset($stripeBalance->available[0]))
-                            <span class="display-4 text-success">
-                                {{ number_format($stripeBalance->available[0]->amount / 100, 2) }}
-                                {{ strtoupper($stripeBalance->available[0]->currency) }}
-                            </span>
-                        @else
-                            <span class="text-muted">Podaci nisu dostupni.</span>
-                        @endif
-                    </p>
+                <!-- Trenutni Balans Card -->
+                <div class="col-md-3 col-lg-3 mb-3">
+                    <div class="card shadow-sm rounded">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Trenutni Balans</h5>
+                            <p class="card-text">
+                                @if (is_object($stripeBalance) && isset($stripeBalance->available) && is_array($stripeBalance->available) && isset($stripeBalance->available[0]))
+                                    <span class="display-4 text-success">
+                                        {{ number_format($stripeBalance->available[0]->amount / 100, 2) }}
+                                        {{ strtoupper($stripeBalance->available[0]->currency) }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">Podaci nisu dostupni.</span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mesec i Godina Card -->
+                <div class="col-md-3 col-lg-3 mb-3">
+                    <div class="card shadow-sm rounded">
+                        <div class="card-body text-center">
+                            @php
+                                $month = request()->query('report_month', date('n'));
+                                $year = request()->query('report_year', date('Y'));
+                                $months = [
+                                    1 => 'Januar', 2 => 'Februar', 3 => 'Mart', 4 => 'April', 5 => 'Maj', 6 => 'Jun',
+                                    7 => 'Jul', 8 => 'Avgust', 9 => 'Septembar', 10 => 'Oktobar', 11 => 'Novembar', 12 => 'Decembar'
+                                ];
+                                $monthName = $months[$month] ?? 'Nepoznat mesec';
+                            @endphp
+                            <h5 class="card-title text-primary">{{ $monthName }} {{ $year }}</h5>
+                            <p class="card-text display-4">
+                                {{ number_format($monthlyStripeReport['total_net_amount'], 2) }}
+                                {{ strtoupper($monthlyStripeReport['currency']) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Uspešne transakcije Card -->
+                <div class="col-md-3 col-lg-3 mb-3">
+                    <div class="card shadow-sm rounded">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Uspešnih transakcija</h5>
+                            <p class="card-text display-4 text-success">{{ $monthlyStripeReport['successful_charges'] }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Mesec i Godina Card -->
-        <div class="col-md-3 col-lg-3 mb-3">
-            <div class="card shadow-sm rounded">
-                <div class="card-body text-center">
-                    @php
-                        $month = request()->query('report_month', date('n'));
-                        $year = request()->query('report_year', date('Y'));
-                        $months = [
-                            1 => 'Januar', 2 => 'Februar', 3 => 'Mart', 4 => 'April', 5 => 'Maj', 6 => 'Jun',
-                            7 => 'Jul', 8 => 'Avgust', 9 => 'Septembar', 10 => 'Oktobar', 11 => 'Novembar', 12 => 'Decembar'
-                        ];
-                        $monthName = $months[$month] ?? 'Nepoznat mesec';
-                    @endphp
-                    <h5 class="card-title text-primary">{{ $monthName }} {{ $year }}</h5>
-                    <p class="card-text display-4">
-                        {{ number_format($monthlyStripeReport['total_amount'], 2) }}
-                        {{ strtoupper($monthlyStripeReport['currency']) }}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Uspešne transakcije Card -->
-        <div class="col-md-3 col-lg-3 mb-3">
-            <div class="card shadow-sm rounded">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Uspešnih transakcija</h5>
-                    <p class="card-text display-4 text-success">{{ $monthlyStripeReport['successful_charges'] }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
     </div>
 </div>

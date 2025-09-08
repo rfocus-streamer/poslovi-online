@@ -882,37 +882,38 @@ class DashboardController extends Controller
             $startDate = Carbon::create($year, $month, 1)->startOfMonth()->timestamp;
             $endDate = Carbon::create($year, $month, 1)->endOfMonth()->timestamp;
 
-            $params = [
+            // Dobijanje balance transakcija za period
+            $balanceTransactions = \Stripe\BalanceTransaction::all([
                 'limit' => 100,
                 'created' => [
                     'gte' => $startDate,
                     'lte' => $endDate
                 ],
-                'expand' => ['data.customer', 'data.invoice.subscription']
-            ];
+                'type' => 'charge', // Samo transakcije vezane za naplate
+                'expand' => ['data.source', 'data.source.customer']
+            ]);
 
-            $charges = Charge::all($params);
-
-            // Izračunavanje ukupnog iznosa za mesec
             $totalAmount = 0;
+            $totalNetAmount = 0;
+            $totalFees = 0;
             $successfulCharges = 0;
-            $failedCharges = 0;
 
-            foreach ($charges->data as $charge) {
-                if ($charge->status === 'succeeded') {
-                    $totalAmount += $charge->amount;
+            foreach ($balanceTransactions->data as $transaction) {
+                if ($transaction->type === 'charge' && $transaction->source->status === 'succeeded') {
+                    $totalAmount += $transaction->amount;
+                    $totalNetAmount += $transaction->net;
+                    $totalFees += $transaction->fee;
                     $successfulCharges++;
-                } else {
-                    $failedCharges++;
                 }
             }
 
             return [
-                'total_amount' => $totalAmount / 100, // Konverzija iz centi
+                'total_amount' => $totalAmount / 100,
+                'total_net_amount' => $totalNetAmount / 100,
+                'total_fees' => $totalFees / 100,
                 'successful_charges' => $successfulCharges,
-                'failed_charges' => $failedCharges,
-                'transactions' => $charges->data,
-                'currency' => 'eur' // Ili druga valuta
+                'failed_charges' => 0, // Balance transakcije ne uključuju neuspešne
+                'currency' => 'eur'
             ];
 
         } catch (ApiErrorException $e) {
