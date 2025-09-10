@@ -53,6 +53,7 @@ return [
             'log.LogLevel' => 'ERROR'
         ],
         'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
+        'skip_verification' => env('PAYPAL_SKIP_VERIFICATION', false),
     ],
     'stripe' => [
         'secret' => env('STRIPE_SECRET'),

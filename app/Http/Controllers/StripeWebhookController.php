@@ -101,7 +101,6 @@ class StripeWebhookController extends Controller
                         'ends_at' => now()->addMonth(), // ili koliko plan traje
                     ]);
 
-                    Log::info('Webhook - Subscription ID: ' . $subscriptionId);
                     Log::info('Webhook - Plan ID: ' . $subscription->plan_id);
                 } else {
                     Log::error('Package not found for user {$user->id} for subscription: '.$subscription->id);
