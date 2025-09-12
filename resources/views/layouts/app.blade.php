@@ -3,27 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <!-- SEO Meta Tags - Koristimo SEOData -->
     @if(isset($seoData))
         {!! seo()->for($seoData) !!}
     @else
         <title>Poslovi Online | Platforma za freelance usluge</title>
         <meta name="description" content="Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.">
+
+        <!-- Osnovni Open Graph meta tagovi -->
+        <meta property="og:title" content="Poslovi Online | Platforma za freelance usluge">
+        <meta property="og:description" content="Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.">
+        <meta property="og:image" content="{{ secure_url('images/logo.png') }}">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Poslovi Online">
     @endif
-    <!-- <title>Poslovi Online | Platforma za freelance usluge | Pronađite vrhunske talente</title> -->
-    <!-- <meta name="description" content="Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi."> -->
+
     <meta name="google-site-verification" content="sbt7BLiUQl1OCgkhcEY9oMlj_hPM4vjnyK-jKosZFCU" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
     @auth
         <meta name="user_id" content="{{ auth()->user()->id }}">
         @vite(['resources/js/app.js'])
     @endauth
-     <!-- Dodaj favicon -->
+
+    <!-- Dodaj favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
-    @yield('meta')
+
+    <!-- Canonical URL za SEO -->
+    <link rel="canonical" href="{{ url()->current() }}" />
+
+    <!-- Facebook Domain Verification (opciono) -->
+    <!-- <meta property="fb:domain_verification" content="YOUR_DOMAIN_VERIFICATION_CODE" /> -->
+
+    <!-- Facebook App ID (opciono) -->
+    <!-- <meta property="fb:app_id" content="YOUR_FACEBOOK_APP_ID"> -->
+
+    @yield('meta') <!-- Ovo mora biti POSLEDNJE u head sekciji -->
 </head>
 <style>
         /* Postojeći stilovi */
