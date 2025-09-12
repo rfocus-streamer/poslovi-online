@@ -14,6 +14,7 @@
         <meta property="og:image" content="{{ asset('storage/services/' . $service->serviceImages[0]->image_path) }}" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="{{ $title }}" />
     @else
         <meta property="og:image" content="{{ asset('images/logo.png') }}" />
         <meta property="og:image:width" content="1200" />
@@ -23,6 +24,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Poslovi Online | {{ $service->title }}">
     <meta name="twitter:description" content="{{ Str::limit(strip_tags($service->description), 160) }}">
+    <link rel="canonical" href="{{ url()->current() }}" />
 @endsection
 
 @section('content')
