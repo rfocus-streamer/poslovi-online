@@ -264,7 +264,10 @@ class ServiceController extends Controller
                     'name' => $service->user->firstname . ' ' . $service->user->lastname,
                     'avatar' => Storage::url('user/' . $service->user->avatar)
                 ],
-                'details_url' => route('services.show', $service->id)
+                'details_url' => route('services.show', [
+                    'id' => $service->id,
+                    'slug' => Str::slug($service->title),
+                ])
             ];
         });
     }
@@ -535,7 +538,7 @@ class ServiceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, $slug)
     {
         // Dohvati uslugu sa svim relacijama
         $service = Service::with([

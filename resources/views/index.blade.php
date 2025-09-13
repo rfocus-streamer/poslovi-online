@@ -84,10 +84,10 @@
                  data-subcategory="{{ $service->subcategory?->name ?? 'Nema podkategorije' }}">
                 <div class="card h-100 shadow">
                     <!-- Stretched-link na glavni anchor -->
-                    <a href="{{ route('services.show', $service->id) }}" class="stretched-link"></a>
+                    <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="stretched-link"></a>
                     <!-- Slika usluge -->
                     @if($service->serviceImages->count())
-                        <a href="{{ route('services.show', $service->id) }}">
+                        <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}">
                             <img src="{{ asset('storage/services/' . $service->serviceImages[0]['image_path']) }}"
                                 class="card-img-top service-image"
                                 alt="{{ $service->title }}"
@@ -128,7 +128,7 @@
                                     <strong>Cena od:</strong> {{ number_format($service->basic_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i>
                                 </p>
                             </div>
-                            <a href="{{ route('services.show', $service->id) }}"
+                            <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}"
                                class="btn btn-service-details">
                                 Detaljnije
                             </a>
@@ -157,11 +157,11 @@
              data-subcategory="{{ $service->subcategory?->name ?? 'Nema podkategorije' }}">
             <div class="card h-100 shadow">
                 <!-- Stretched-link na glavni anchor -->
-                <a href="{{ route('services.show', $service->id) }}" class="stretched-link"></a>
+                <a href="{{ route('services.show', [$service->id, 'slug' => Str::slug($service->title)]) }}" class="stretched-link"></a>
 
                 <!-- Slika usluge -->
                 @if($service->serviceImages->count())
-                    <a href="{{ route('services.show', $service->id) }}">
+                    <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}">
                         <img src="{{ asset('storage/services/' . $service->serviceImages[0]['image_path']) }}"
                             class="card-img-top service-image"
                             alt="{{ $service->title }}"
@@ -202,7 +202,7 @@
                                 <strong>Cena od:</strong> {{ number_format($service->basic_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i>
                             </p>
                         </div>
-                        <a href="{{ route('services.show', $service->id) }}"
+                        <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}"
                            class="btn btn-service-details">
                             Detaljnije
                         </a>
@@ -226,10 +226,10 @@
              data-subcategory="{{ $service->subcategory?->name ?? 'Nema podkategorije' }}">
             <div class="card h-100 shadow">
                 <!-- Stretched-link na glavni anchor -->
-                <a href="{{ route('services.show', $service->id) }}" class="stretched-link"></a>
+                <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="stretched-link"></a>
                 <!-- Slika usluge -->
                 @if($service->serviceImages->count())
-                    <a href="{{ route('services.show', $service->id) }}">
+                    <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}">
                         <img src="{{ asset('storage/services/' . $service->serviceImages[0]['image_path']) }}"
                             class="card-img-top service-image"
                             alt="{{ $service->title }}"
@@ -270,7 +270,7 @@
                                 <strong>Cena od:</strong> {{ number_format($service->basic_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i>
                             </p>
                         </div>
-                        <a href="{{ route('services.show', $service->id) }}"
+                        <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}"
                            class="btn btn-service-details">
                             Detaljnije
                         </a>

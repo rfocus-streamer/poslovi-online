@@ -75,7 +75,7 @@
                     @endphp
                     <tr>
                         <td>{{ $key + 1 }}</td>
-                        <td><a class="text-dark" href="{{ route('services.show', $project->service->id) }}">{{ $project->service->title }}</a></td>
+                        <td><a class="text-dark" href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}">{{ $project->service->title }}</a></td>
                         <td>
                             <div class="d-flex gap-2 justify-content-center">
                                 {{$project->project_number}}
@@ -194,7 +194,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <p><a href="{{ route('services.show', $project->service->id) }}" class="text-dark text-decoration-none"><h6 class="card-title mb-1"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a></p>
+                        <p><a href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}" class="text-dark text-decoration-none"><h6 class="card-title mb-1"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a></p>
                         <p><strong>Količina:</strong> {{ $project->quantity }}</p>
                         <p><strong>Početak:</strong> {{ $project->start_date ?? 'N/A' }}</p>
                         <p><strong>Završetak:</strong> {{ $project->end_date ?? 'N/A' }}</p>

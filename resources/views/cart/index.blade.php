@@ -106,7 +106,7 @@
                     <tr>
                         <td>{{ $key +1 }}</td>
                         <td>
-                            <a class="text-dark" href="{{ route('services.show', $cartItem->service->id) }}">{{ $cartItem->service->title }}</a>
+                            <a class="text-dark" href="{{ route('services.show', ['id' => $cartItem->service->id, 'slug' => Str::slug($cartItem->service->title)]) }}">{{ $cartItem->service->title }}</a>
                         </td>
 
                         <form action="{{ route('cart.update', $cartItem) }}" method="POST">
@@ -190,7 +190,7 @@
                 @endphp
 
                 <div class="card mb-3 cart-card" data-id="{{ $cartItem->id }}">
-                    <a class="text-dark" href="{{ route('services.show', $cartItem->service->id) }}">
+                    <a class="text-dark" href="{{ route('services.show', ['id' => $cartItem->service->id, 'slug' => Str::slug($cartItem->service->title)]) }}">
                         <div class="card-header bg-light d-flex justify-content-between" style="background-color: #198754 !important; color: white !important">
                             <span class="mr-3">#{{ $key + 1 }}</span>
                             <strong>{{ $cartItem->service->title }}</strong>

@@ -63,9 +63,9 @@
                 @foreach($favoriteServices as $key => $favorite)
                     <tr data-service-id="{{ $favorite->service->id }}">
                         <td>{{ $key +1 }}</td>
-                        <td><a class="text-dark" href="{{ route('services.show', $favorite->service->id) }}">{{ $favorite->service->title }}</a></td>
+                        <td><a class="text-dark" href="{{ route('services.show', ['id' => $favorite->service->id, 'slug' => Str::slug($favorite->service->title)]) }}">{{ $favorite->service->title }}</a></td>
                         <td>
-                            {{ Str::limit($favorite->service->description, 20) }}  <a class="text-dark" href="{{ route('services.show', $favorite->service->id) }}"><i class="fa fa-info-circle ml-2 text-primary mt-1" ></i></a>
+                            {{ Str::limit($favorite->service->description, 20) }}  <a class="text-dark" href="{{ route('services.show', ['id' => $favorite->service->id, 'slug' => Str::slug($favorite->service->title)]) }}"><i class="fa fa-info-circle ml-2 text-primary mt-1" ></i></a>
                         </td>
                         <td>
                             <select class="form-select package-select">
@@ -99,7 +99,7 @@
         <div class="d-md-none">
             @foreach($favoriteServices as $key => $favorite)
             <div class="card mb-3 favorite-card" data-id="{{ $favorite->service->id }}">
-                <a href="{{ route('services.show', $favorite->service->id) }}" class="text-dark">
+                <a href="{{ route('services.show', ['id' => $favorite->service->id, 'slug' => Str::slug($favorite->service->title)]) }}" class="text-dark">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center" style="background-color: #198754 !important; color: white !important">
                         <span class="mr-3">#{{ $key + 1 }}</span>
                         <span><strong>{{ $favorite->service->title }}</strong></span>

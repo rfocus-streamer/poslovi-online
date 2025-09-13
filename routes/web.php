@@ -39,7 +39,9 @@ use Illuminate\Support\Facades\Log;
 
 Route::get('/', [ServiceController::class, 'index'])->name('home');
 Route::get('/api/load-more-services', [ServiceController::class, 'loadMoreServices'])->name('api.load-more');
-Route::get('/ponuda/{id}', [ServiceController::class, 'show'])->name('services.show');
+//Route::get('/ponuda/{id}', [ServiceController::class, 'show'])->name('services.show');
+Route::get('/ponuda/{id}-{slug}', [ServiceController::class, 'show'])->name('services.show');
+
 Route::get('/verify/{id}/{hash}', [RegisteredUserController::class, 'verify'])
     ->name('verification.email');
 

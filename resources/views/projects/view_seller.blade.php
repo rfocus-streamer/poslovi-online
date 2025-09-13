@@ -34,7 +34,7 @@
         <!-- Glavni sadržaj -->
         <div class="col-md-8 g-0">
             <!-- Naslov i osnovne informacije -->
-             <h4><i class="fas fa-project-diagram"></i> <a class="text-dark" href="{{ route('services.show', $project->service->id) }}">{{ $project->service->title }}</a></h4>
+             <h4><i class="fas fa-project-diagram"></i> <a class="text-dark" href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}">{{ $project->service->title }}</a></h4>
             <div class="d-flex align-items-center mb-1">
 
                 @auth

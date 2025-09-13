@@ -41,7 +41,7 @@
                     <tr>
                         <td>{{ $key + 1 }}</td>
                         <td>
-                            <a class="text-dark" href="{{ route('services.show', $complaint->service->id) }}">{{ $complaint->service->title }}
+                            <a class="text-dark" href="{{ route('services.show', ['id' => $complaint->service->id, 'slug' => Str::slug($complaint->service->title)]) }}">{{ $complaint->service->title }}
                             </a>
                         </td>
                         <td>

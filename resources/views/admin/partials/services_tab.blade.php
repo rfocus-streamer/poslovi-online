@@ -107,7 +107,7 @@
                         <!-- Desktop view -->
                         <td class="d-none d-md-table-cell">{{ $service->id }}</td>
                         <td class="d-none d-md-table-cell">
-                            <a target="_blank" href="{{ route('services.show', $service->id) }}" class="btn">
+                            <a target="_blank" href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="btn">
                                 {{ $service->title }}
                             </a>
                         </td>
@@ -158,7 +158,7 @@
                                 </div>
 
                                 <div class="mb-2">
-                                    <a target="_blank" href="{{ route('services.show', $service->id) }}" class="text-decoration-none">
+                                    <a target="_blank" href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="text-decoration-none">
                                         <h6 class="mb-0">{{ $service->title }}</h6>
                                     </a>
                                 </div>
@@ -176,7 +176,7 @@
                                 </div>
 
                                 <div class="text-center">
-                                    <a target="_blank" href="{{ route('services.show', $service->id) }}" class="btn btn-sm btn-outline-primary">
+                                    <a target="_blank" href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-external-link-alt"></i> Pogledaj ponudu
                                     </a>
                                 </div>

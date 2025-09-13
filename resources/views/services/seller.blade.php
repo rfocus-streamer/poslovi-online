@@ -125,7 +125,7 @@
                     @endphp
                     <tr>
                         <td>{{ $key + 1 }}</td>
-                        <td><a class="text-dark" href="{{ route('services.show', $service->id) }}">{{ $service->title }}</a></td>
+                        <td><a class="text-dark" href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}">{{ $service->title }}</a></td>
                         <td>
                             {{ \Carbon\Carbon::parse($service->created_at)->format('d.m.Y H:i:s') }}
                         </td>
@@ -173,7 +173,7 @@
             <div class="card mb-3 subscription-card" data-id="{{ $service->id }}">
                 <div class="card-header btn-poslovi-green text-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ route('services.show', $service->id) }}" class="text-light"><span>{{ $service->title }}</span></a>
+                        <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="text-light"><span>{{ $service->title }}</span></a>
                         <span class="badge bg-light text-dark">
                             @if(is_null($service->visible))
                                 <i class="fa fa-question-circle text-secondary" title="Nikada nije javno prikazana"></i>

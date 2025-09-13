@@ -77,7 +77,7 @@
 
                     <tr>
                         <td>{{ $key + 1 }}</td>
-                        <td><a class="text-dark" href="{{ route('services.show', $project->service->id) }}">{{ $project->service->title }}</a></td>
+                        <td><a class="text-dark" href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}">{{ $project->service->title }}</a></td>
                         <td>
                             {{$project->project_number}}
                             <button type="button" class="btn btn-link openUserModal"
@@ -186,7 +186,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('services.show', $project->service->id) }}"><h6 class="card-title mb-1 text-dark"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a>
+                        <a href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}"><h6 class="card-title mb-1 text-dark"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a>
                         <p class="mb-1"><strong>Količina:</strong> {{ $project->quantity }}</p>
                         <p class="mb-1"><strong>Početak:</strong> {{ $project->start_date ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Završetak:</strong> {{ $project->end_date ?? 'N/A' }}</p>
