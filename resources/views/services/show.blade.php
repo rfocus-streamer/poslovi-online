@@ -1,17 +1,21 @@
 @extends('layouts.app')
 
+{{-- Dodatni CSS za ovu stranicu --}}
 @section('head')
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
 @endsection
 
+{{-- Dinamički SEO meta --}}
 @section('title', $service->title . ' | Poslovi Online')
 @section('meta_description', Str::limit(strip_tags($service->description), 160))
 @section('canonical', url()->current())
 
+{{-- OpenGraph / Twitter --}}
 @section('og_title', $service->title . ' | Poslovi Online')
 @section('og_description', Str::limit(strip_tags($service->description), 160))
-@section('og_image', $service->image ? asset('storage/services/' . $service->image) : asset('images/logo.png'))
+@section('og_image', $service->serviceImages->count() ? asset('storage/services/' . $service->serviceImages[0]->image_path) : asset('images/logo.png'))
 
+{{-- Strukturirani podaci (JSON-LD) --}}
 @section('structured-data')
 <script type="application/ld+json">
 {
