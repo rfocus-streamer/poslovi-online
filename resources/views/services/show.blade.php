@@ -1,30 +1,40 @@
 @extends('layouts.app')
+
+@section('head')
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
-<title>Poslovi Online | {{ $title }}</title>
+@endsection
 
-{{-- Add Open Graph and Twitter Card meta tags --}}
-@section('meta')
-    <meta property="og:title" content="Poslovi Online | {{ $title }}" />
-    <meta property="og:description" content="{{ Str::limit(strip_tags($service->description), 160) }}" />
-    <meta property="og:url" content="{{ url()->current() }}" />
-    <meta property="og:type" content="website" />
+@section('title', $service->title . ' | Poslovi Online')
+@section('meta_description', Str::limit(strip_tags($service->description), 160))
+@section('canonical', url()->current())
 
-    {{-- Use first service image if available, otherwise fall back to logo --}}
-    @if($service->serviceImages->first())
-        <meta property="og:image" content="{{ asset('storage/services/' . $service->serviceImages[0]->image_path) }}" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="{{ $title }}" />
-    @else
-        <meta property="og:image" content="{{ asset('images/logo.png') }}" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-    @endif
+@section('og_title', $service->title . ' | Poslovi Online')
+@section('og_description', Str::limit(strip_tags($service->description), 160))
+@section('og_image', $service->image ? asset('storage/services/' . $service->image) : asset('images/logo.png'))
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Poslovi Online | {{ $service->title }}">
-    <meta name="twitter:description" content="{{ Str::limit(strip_tags($service->description), 160) }}">
-    <link rel="canonical" href="{{ url()->current() }}" />
+@section('structured-data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "{{ $service->title }}",
+  "description": "{{ Str::limit(strip_tags($service->description), 160) }}",
+  "provider": {
+    "@type": "Person",
+    "name": "{{ $service->user->firstname }} {{ $service->user->lastname }}"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "{{ $service->basic_price }}",
+    "priceCurrency": "EUR"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ $service->average_rating }}",
+    "reviewCount": "{{ $service->reviews->count() }}"
+  }
+}
+</script>
 @endsection
 
 @section('content')

@@ -4,21 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- SEO Meta Tags - Koristimo SEOData -->
-    @if(isset($seoData))
-        {!! seo()->for($seoData) !!}
-    @else
-        <title>Poslovi Online | Platforma za freelance usluge</title>
-        <meta name="description" content="Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.">
+    <!-- CSRF -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Osnovni Open Graph meta tagovi -->
-        <meta property="og:title" content="Poslovi Online | Platforma za freelance usluge">
-        <meta property="og:description" content="Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.">
-        <meta property="og:image" content="{{ secure_url('images/logo.png') }}">
-        <meta property="og:url" content="{{ url()->current() }}">
-        <meta property="og:type" content="website">
-        <meta property="og:site_name" content="Poslovi Online">
-    @endif
+    <!-- Default SEO -->
+    <title>@yield('title', 'Poslovi Online | Platforma za freelance usluge')</title>
+    <meta name="description" content="@yield('meta_description', 'Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+
+    <!-- OpenGraph -->
+    <meta property="og:title" content="@yield('og_title', 'Poslovi Online | Platforma za freelance usluge')">
+    <meta property="og:description" content="@yield('og_description', 'Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">
+    <meta property="og:url" content="@yield('canonical', url()->current())">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', 'Poslovi Online | Platforma za freelance usluge')">
+    <meta name="twitter:description" content="@yield('og_description', 'Pronađite ili ponudite digitalne usluge na najbržoj domaćoj freelance platformi.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/logo.png'))">
 
     <meta name="google-site-verification" content="sbt7BLiUQl1OCgkhcEY9oMlj_hPM4vjnyK-jKosZFCU" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -43,7 +48,10 @@
     <!-- Facebook App ID (opciono) -->
     <!-- <meta property="fb:app_id" content="YOUR_FACEBOOK_APP_ID"> -->
 
-    @yield('meta') <!-- Ovo mora biti POSLEDNJE u head sekciji -->
+    @yield('head') <!-- Za dodatne head skripte/stilove po stranici -->
+
+    <!-- JSON-LD Strukturirani podaci -->
+    @yield('structured-data')
 </head>
 <style>
         /* Postojeći stilovi */

@@ -12,7 +12,7 @@
     {{-- Single service pages --}}
     @foreach($services as $service)
         <url>
-            <loc>{{ url('/ponuda/' . $service->id . '-' . $service->slug) }}</loc>
+            <loc>{{ url('/ponuda/' . $service->id . '-' . Str::slug($service->title)) }}</loc>
             <lastmod>{{ $service->updated_at ? $service->updated_at->toAtomString() : now()->toAtomString() }}</lastmod>
             <changefreq>weekly</changefreq>
             <priority>0.8</priority>
