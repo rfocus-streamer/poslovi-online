@@ -93,8 +93,14 @@ class ServiceController extends Controller
             $searchTerm = $request->input('search');
 
             $services = Service::where('visible', true)
-                ->whereNotNull('visible_expires_at')  // Proverava da li je datum isteka postavljen
-                ->where('visible_expires_at', '>=', now())  // Proverava da datum isteka nije prošao
+                ->where(function ($query) {
+                    $query->where('is_unlimited', true)
+                        ->orWhere(function ($q) {
+                            $q->where('is_unlimited', false)
+                                ->whereNotNull('visible_expires_at')
+                                ->where('visible_expires_at', '>=', now());
+                        });
+                })
                 ->with([
                     'user',
                     'category',

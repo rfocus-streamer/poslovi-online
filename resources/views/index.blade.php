@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const excludedIds = @json($excludedIds ?? []);
-    const maxPages = 4; // Možete ovo dinamički proslediti iz PHP-a ako želite
+    const maxPages = 5; // Možete ovo dinamički proslediti iz PHP-a ako želite
 
     async function loadMoreServices() {
         //console.log(excludedIds);
