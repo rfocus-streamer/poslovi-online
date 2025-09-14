@@ -43,11 +43,14 @@ class ServiceController extends Controller
         $otherTopServices = Service::where('visible', true)
             ->whereNotIn('id', $forcedIds)
             ->where(function ($query) {
-                $query->where('is_unlimited', true)
+                $query->where('is_unlimited', true)  // Ako je servis neograničen
+                      ->whereHas('user', function($userQuery) {
+                          $userQuery->where('package_expires_at', '>=', now()); // Paket korisnika nije istekao
+                      })
                       ->orWhere(function ($q) {
-                          $q->where('is_unlimited', false)
-                            ->whereNotNull('visible_expires_at')
-                            ->where('visible_expires_at', '>=', now());
+                          $q->where('is_unlimited', false) // Ako nije neograničen
+                            ->whereNotNull('visible_expires_at') // Datum isteka mora biti postavljen
+                            ->where('visible_expires_at', '>=', now()); // Proveravamo da li je datum isteka veći ili jednak trenutnom vremenu
                       });
             })
             ->with([
@@ -94,12 +97,17 @@ class ServiceController extends Controller
 
             $services = Service::where('visible', true)
                 ->where(function ($query) {
+                    // Servisi sa 'is_unlimited' = true i validacija za paket korisnika
                     $query->where('is_unlimited', true)
-                        ->orWhere(function ($q) {
-                            $q->where('is_unlimited', false)
+                          ->whereHas('user', function($userQuery) {
+                              $userQuery->where('package_expires_at', '>=', now()); // Paket korisnika nije istekao
+                          })
+                          ->orWhere(function ($q) {
+                              // Servisi sa 'is_unlimited' = false i validacija za datum isteka
+                              $q->where('is_unlimited', false)
                                 ->whereNotNull('visible_expires_at')
-                                ->where('visible_expires_at', '>=', now());
-                        });
+                                ->where('visible_expires_at', '>=', now()); // Datum isteka mora biti veći ili jednak trenutnom vremenu
+                          });
                 })
                 ->with([
                     'user',
@@ -110,6 +118,7 @@ class ServiceController extends Controller
                     'cartItems'
                 ])
                 ->where(function($query) use ($searchTerm) {
+                    // Pretraga po 'title', 'description', 'category', 'subcategory'
                     $query->where('title', 'like', "%{$searchTerm}%")
                           ->orWhere('description', 'like', "%{$searchTerm}%")
                           ->orWhereHas('category', function($q) use ($searchTerm) {
@@ -122,6 +131,7 @@ class ServiceController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(6);
 
+            // Dodajemo prosečan rejting za svaki servis
             $services->each(function ($service) {
                 $service->average_rating = $service->reviews->count() > 0
                     ? round($service->reviews->avg('rating'), 1)
@@ -167,17 +177,20 @@ class ServiceController extends Controller
 
         // Dohvatamo servise sa paginacijom, isključujući već prikazane
         $moreServices = Service::where('visible', true)
-            ->whereNotIn('id', $excludedIds)
+            ->whereNotIn('id', $excludedIds)  // Isključujemo servise koji su u $excludedIds
             ->where(function ($query) {
-                $query->where('is_unlimited', true)
+                $query->where('is_unlimited', true)  // Ako je servis neograničen
+                      ->whereHas('user', function($userQuery) {
+                          $userQuery->where('package_expires_at', '>=', now()); // Paket korisnika nije istekao
+                      })
                       ->orWhere(function ($q) {
-                          $q->where('is_unlimited', false)
-                            ->whereNotNull('visible_expires_at')
-                            ->where('visible_expires_at', '>=', now());
+                          $q->where('is_unlimited', false) // Ako nije neograničen
+                            ->whereNotNull('visible_expires_at') // Datum isteka mora biti postavljen
+                            ->where('visible_expires_at', '>=', now()); // Proveravamo da li je datum isteka veći ili jednak trenutnom vremenu
                       });
             })
             ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'desc') // Sortiramo po datumu kreiranja
             ->paginate(3, ['*'], 'page', $page); // 3 servisa po strani
 
         return response()->json([
