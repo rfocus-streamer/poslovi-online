@@ -139,11 +139,16 @@ class DashboardController extends Controller
                     case 'active':
                         $servicesQuery->where('visible', true)
                                      ->where(function ($query) {
-                                         // Preskoči validaciju za 'visible_expires_at' ako je is_unlimited true
+                                         // Servisi sa 'is_unlimited = true' proveravaju paket korisnika
                                          $query->where('is_unlimited', true)
+                                               ->whereHas('user', function($userQuery) {
+                                                   $userQuery->where('package_expires_at', '>=', now()); // Paket korisnika nije istekao
+                                               })
+                                               // Servisi sa 'is_unlimited = false' proveravaju datum isteka 'visible_expires_at'
                                                ->orWhere(function ($q) {
                                                    $q->where('is_unlimited', false)
-                                                     ->where('visible_expires_at', '>', now());
+                                                     ->whereNotNull('visible_expires_at') // Datum isteka mora biti postavljen
+                                                     ->where('visible_expires_at', '>=', now()); // Datum isteka je veći ili jednak trenutnom vremenu
                                                });
                                      });
                         break;
@@ -156,13 +161,15 @@ class DashboardController extends Controller
                                   ->orWhere(function($q) {
                                       $q->where('visible', true)
                                         ->where(function($q2) {
-                                            $q2->where('is_unlimited', true) // Ako je servis neograničen
+                                            // Servisi koji su neograničeni
+                                            $q2->where('is_unlimited', true)
                                                ->whereHas('user', function($userQuery) {
-                                                   $userQuery->where('package_expires_at', '<', now()); // Provera za korisnički paket
+                                                   $userQuery->where('package_expires_at', '<', now()); // Paket korisnika je istekao
                                                })
+                                               // Servisi koji nisu neograničeni
                                                ->orWhere(function($q3) {
                                                    $q3->where('is_unlimited', false) // Ako nije neograničen
-                                                      ->where('visible_expires_at', '<', now()) // Proveravamo datum isteka
+                                                      ->where('visible_expires_at', '<', now()) // Datum isteka je manji od trenutnog vremena
                                                       ->orWhereNull('visible_expires_at'); // Takođe uzimamo u obzir null vrednosti
                                                });
                                         });
