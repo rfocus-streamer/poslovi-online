@@ -149,8 +149,8 @@ class ServiceController extends Controller
         $page = $request->input('page', 1);
         $excludedIds = $request->input('excluded_ids', []);
 
-        // Ograničavamo na maksimalno 4 stranice (4 * 3 = 12 servisa)
-        $maxPage = 4;
+        // Ograničavamo na maksimalno 4 stranice (5 * 3 = 15 servisa)
+        $maxPage = 5;
         if ($page > $maxPage) {
             return response()->json([
                 'services' => [],
@@ -725,7 +725,9 @@ class ServiceController extends Controller
             ];
 
             if(Auth::user()->package && $visible === 1){
-                $serviceData['visible_expires_at'] = now()->addMonth();
+                if(\Carbon\Carbon::parse($service->visible_expires_at)->isPast()){
+                    $serviceData['visible_expires_at'] = now()->addMonth();
+                }
             }else{
                 $serviceData['visible_expires_at'] = null;
             }

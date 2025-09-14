@@ -123,12 +123,20 @@
                             @if($service->visible && $service->visible_expires_at > now())
                                 <span class="badge bg-success">Aktivna</span>
                             @else
-                                <span class="badge bg-danger">Neaktivna</span>
+                                @if($service->visible_expires_at < now() && $service->is_unlimited )
+                                    <span class="badge bg-success">Aktivna</span>
+                                @else
+                                    <span class="badge bg-danger">Neaktivna</span>
+                                @endif
                             @endif
                         </td>
                         <td class="d-none d-md-table-cell">
                             @if($service->visible_expires_at)
-                                {{ \Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y. H:i') }}
+                                @if($service->is_unlimited )
+                                    {{ \Carbon\Carbon::parse($service->user->package_expires_at)->format('d.m.Y. H:i') }}
+                                @else
+                                    {{ \Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y. H:i') }}
+                                @endif
                             @else
                                 Nije javno vidljivo
                             @endif

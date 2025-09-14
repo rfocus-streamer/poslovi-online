@@ -138,7 +138,19 @@ class DashboardController extends Controller
                 switch ($request->services_status) {
                     case 'active':
                         $servicesQuery->where('visible', true)
-                                     ->where('visible_expires_at', '>', now());
+                            ->where(function ($query) {
+                                $query->where(function ($q) {
+                                    // Standardno trajanje
+                                    $q->where('is_unlimited', false)
+                                      ->where('visible_expires_at', '>', now());
+                                })->orWhere(function ($q) {
+                                    // Ako je unlimited, koristi se datum iz user->package_expires_at
+                                    $q->where('is_unlimited', true)
+                                      ->whereHas('user', function ($uq) {
+                                          $uq->where('package_expires_at', '>', now());
+                                      });
+                                });
+                            });
                         break;
                     case 'inactive':
                         $servicesQuery->where(function($query) {
