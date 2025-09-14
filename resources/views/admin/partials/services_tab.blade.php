@@ -123,7 +123,7 @@
                             @if($service->visible && $service->visible_expires_at > now())
                                 <span class="badge bg-success">Aktivna</span>
                             @else
-                                @if($service->visible_expires_at < now() && $service->is_unlimited && $service->user->package)
+                                @if($service->visible_expires_at < now() && $service->is_unlimited && $service->user->package_expires_at >= now())
                                     <span class="badge bg-success">Aktivna</span>
                                 @else
                                     <span class="badge bg-danger">Neaktivna</span>
@@ -164,7 +164,7 @@
                                         @if($service->visible && $service->visible_expires_at > now())
                                             <span class="badge bg-success">Aktivna</span>
                                         @else
-                                            @if($service->visible_expires_at < now() && $service->is_unlimited && $service->user->package)
+                                            @if($service->visible_expires_at < now() && $service->is_unlimited && $service->user->package_expires_at >= now())
                                                 <span class="badge bg-success">Aktivna</span>
                                             @else
                                                 <span class="badge bg-danger">Neaktivna</span>
