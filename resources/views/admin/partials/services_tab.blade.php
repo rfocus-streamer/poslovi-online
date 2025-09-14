@@ -123,7 +123,7 @@
                             @if($service->visible && $service->visible_expires_at > now())
                                 <span class="badge bg-success">Aktivna</span>
                             @else
-                                @if($service->visible_expires_at < now() && $service->is_unlimited )
+                                @if($service->visible_expires_at < now() && $service->is_unlimited && $service->user->package)
                                     <span class="badge bg-success">Aktivna</span>
                                 @else
                                     <span class="badge bg-danger">Neaktivna</span>
@@ -150,7 +150,11 @@
                                         <strong>ID: {{ $service->id }}</strong>
                                         <div class="small text-muted">
                                             @if($service->visible_expires_at)
-                                                {{ \Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y. H:i') }}
+                                                @if($service->is_unlimited )
+                                                    {{ \Carbon\Carbon::parse($service->user->package_expires_at)->format('d.m.Y. H:i') }}
+                                                @else
+                                                    {{ \Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y. H:i') }}
+                                                @endif
                                             @else
                                                 Nije javno vidljivo
                                             @endif
@@ -160,7 +164,11 @@
                                         @if($service->visible && $service->visible_expires_at > now())
                                             <span class="badge bg-success">Aktivna</span>
                                         @else
-                                            <span class="badge bg-danger">Neaktivna</span>
+                                            @if($service->visible_expires_at < now() && $service->is_unlimited && $service->user->package)
+                                                <span class="badge bg-success">Aktivna</span>
+                                            @else
+                                                <span class="badge bg-danger">Neaktivna</span>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>
