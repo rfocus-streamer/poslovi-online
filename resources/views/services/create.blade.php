@@ -93,6 +93,14 @@
                 </div>
             </div>
 
+            <div class="col-md-4">
+                <div class="form-group" style="margin-top: 38px !important; float: right;">
+                    <input type="checkbox" name="is_unlimited" id="is_unlimited" class="form-check-input" checked>
+                    <label for="is_unlimited" class="form-check-label">
+                        <i class="fa fa-infinity text-primary"></i> Prikazuj ponudu tokom trajanja pretplate
+                    </label>
+                </div>
+            </div>
         </div>
 
         <div class="row">

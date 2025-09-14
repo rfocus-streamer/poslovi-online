@@ -24,7 +24,8 @@ class Service extends Model
         'premium_delivery_days',
         'premium_inclusions',
         'visible',
-        'visible_expires_at'
+        'visible_expires_at',
+        'is_unlimited'
     ];
     use HasFactory;
 

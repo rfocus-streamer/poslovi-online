@@ -100,7 +100,15 @@
                         @endforeach
                     </select>
                 </div>
+            </div>
 
+            <div class="col-md-4">
+                <div class="form-group" style="margin-top: 38px !important; float: right;">
+                    <input type="checkbox" name="is_unlimited" id="is_unlimited" class="form-check-input" {{ $service->is_unlimited ? 'checked' : '' }}>
+                    <label for="is_unlimited" class="form-check-label">
+                        <i class="fa fa-infinity text-primary"></i> Prikazuj ponudu tokom trajanja pretplate
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -145,19 +153,21 @@
                                 class="form-check-input"
                                 value="{{ $service->visible ? true : false }}"
                             >
-                            <!-- Desktop  -->
-                            <div class="d-none d-md-block form-check text-end mt-4">
-                                <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
-                                <strong>Ponuda je javno dostupna do:</strong><br>
-                                {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y H:i')}}
-                            </div>
+                            @if(!$service->is_unlimited)
+                                <!-- Desktop  -->
+                                <div class="d-none d-md-block form-check text-end mt-4">
+                                    <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
+                                    <strong>Ponuda je javno dostupna do:</strong><br>
+                                    {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y H:i')}}
+                                </div>
 
-                            <!-- Mobile -->
-                            <div class="d-md-none form-check text-center mt-4">
-                                <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
-                                <strong>Ponuda je javno dostupna do:</strong><br>
-                                {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y H:i')}}
-                            </div>
+                                <!-- Mobile -->
+                                <div class="d-md-none form-check text-center mt-4">
+                                    <i class="fa fa-eye text-success" title="Javno vidljivo do {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y')}}"></i>
+                                    <strong>Ponuda je javno dostupna do:</strong><br>
+                                    {{\Carbon\Carbon::parse($service->visible_expires_at)->format('d.m.Y H:i')}}
+                                </div>
+                            @endif
                         @endif
                     @endif
                 </div>

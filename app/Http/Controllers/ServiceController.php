@@ -41,9 +41,15 @@ class ServiceController extends Controller
 
         // Zatim dohvatamo ostale servise koji ispunjavaju uslove i nisu već forsirani
         $otherTopServices = Service::where('visible', true)
-            ->whereNotNull('visible_expires_at')
-            ->where('visible_expires_at', '>=', now())
-            ->whereNotIn('id', $forcedIds) // Da ne dupliramo
+            ->whereNotIn('id', $forcedIds)
+            ->where(function ($query) {
+                $query->where('is_unlimited', true)
+                      ->orWhere(function ($q) {
+                          $q->where('is_unlimited', false)
+                            ->whereNotNull('visible_expires_at')
+                            ->where('visible_expires_at', '>=', now());
+                      });
+            })
             ->with([
                 'user',
                 'category',
@@ -153,11 +159,17 @@ class ServiceController extends Controller
             ]);
         }
 
-          // Dohvatamo servise sa paginacijom, isključujući već prikazane
+        // Dohvatamo servise sa paginacijom, isključujući već prikazane
         $moreServices = Service::where('visible', true)
-            ->whereNotNull('visible_expires_at')
-            ->where('visible_expires_at', '>=', now())
             ->whereNotIn('id', $excludedIds)
+            ->where(function ($query) {
+                $query->where('is_unlimited', true)
+                      ->orWhere(function ($q) {
+                          $q->where('is_unlimited', false)
+                            ->whereNotNull('visible_expires_at')
+                            ->where('visible_expires_at', '>=', now());
+                      });
+            })
             ->with(['user', 'category', 'subcategory', 'serviceImages', 'reviews', 'cartItems'])
             ->orderBy('created_at', 'desc')
             ->paginate(3, ['*'], 'page', $page); // 3 servisa po strani
@@ -419,11 +431,14 @@ class ServiceController extends Controller
         ], $packageRules));
 
         $visible = 0;
+        $isUnlimited = false;
 
         if(Auth::user()->package){
             $countPublicService = Service::where('user_id', Auth::id())->where('visible', 1)->count();
             if($countPublicService < Auth::user()->package->quantity){
                 $visible = $request->has('visible') ? 1 : 0;
+                // Provera za neograničenu opciju
+                $isUnlimited = $request->has('is_unlimited') ? true : false;
             }
         }
 
@@ -436,7 +451,8 @@ class ServiceController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'visible' => ($visible === 0) ? null : $visible,
-                'visible_expires_at' => ($visible === 0) ? null : now()->addMonth()
+                'visible_expires_at' => ($visible === 0) ? null : now()->addMonth(),
+                'is_unlimited' => $isUnlimited
             ];
 
             // Dodajemo podatke za svaki paket koji je poslat
@@ -687,11 +703,13 @@ class ServiceController extends Controller
         ], $packageRules));
 
         $visible = 0;
+        $isUnlimited = false;
 
         if(Auth::user()->package){
             $countPublicService = Service::where('user_id', Auth::id())->where('visible', 1)->count();
             if($countPublicService <= Auth::user()->package->quantity){
                 $visible = filter_var($request->input('visible'), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+                $isUnlimited = $request->has('is_unlimited') ? true : false;
             }
         }
 
@@ -703,6 +721,7 @@ class ServiceController extends Controller
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'visible' => ($visible === 0 && $service->visible === null) ? null : $visible,
+                'is_unlimited' => $isUnlimited
             ];
 
             if(Auth::user()->package && $visible === 1){
