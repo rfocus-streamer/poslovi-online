@@ -292,6 +292,28 @@ class DashboardController extends Controller
         }
 
 
+        // PayPal Transakcije ==============================================================
+        $paypalFilters = [
+            'status' => $request->input('paypal_status', ''),
+            'transaction_id' => $request->input('paypal_transaction_id', ''),
+            'customer_email' => $request->input('paypal_customer_email', ''),
+            'from_date' => $request->input('paypal_from_date', ''),
+            'to_date' => $request->input('paypal_to_date', ''),
+        ];
+
+        $paypalPage = $request->input('paypal_page', 1);
+        $paypalPerPage = 10;
+
+        // Only fetch PayPal transactions if this is the active tab
+        $paypalTransactions = null;
+        $paypalPagination = null;
+
+        if ($activeTab === 'paypal_transactions') {
+            $paypalTransactions = $this->getPayPalTransactions($paypalFilters, $paypalPerPage, $paypalPage);
+            $paypalPagination = $this->formatPayPalPagination($paypalTransactions, $paypalPage, $paypalPerPage);
+        }
+
+
 
         // TRANSAKCIJE =========================================================
         $transactionsQuery = Transaction::with('user');
@@ -495,7 +517,10 @@ class DashboardController extends Controller
             'stripeBalance',
             'monthlyStripeReport',
             'currentMonth',
-            'currentYear'
+            'currentYear',
+            'paypalTransactions',
+            'paypalFilters',
+            'paypalPagination'
         ));
     }
 
@@ -1275,6 +1300,180 @@ class DashboardController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Došlo je do greške pri obradi zahteva.'
+            ], 500);
+        }
+    }
+
+    private function getPayPalTransactions($filters, $limit = 100, $startingAfter = null, $endingBefore = null)
+    {
+        try {
+            // Set up PayPal API context
+            $apiContext = new \PayPal\Rest\ApiContext(
+                new \PayPal\Auth\OAuthTokenCredential(
+                    config('services.paypal.client_id'),
+                    config('services.paypal.secret')
+                )
+            );
+
+            // Set mode based on configuration
+            $apiContext->setConfig([
+                'mode' => config('services.paypal.mode', 'sandbox')
+            ]);
+
+            // Create a payment list request
+            $paymentListRequest = new \PayPal\Api\Payment();
+
+            // Set up parameters
+            $params = [
+                'count' => $limit,
+                'start_index' => $startingAfter ? ($startingAfter * $limit) : 0
+            ];
+
+            // Date filters
+            if (!empty($filters['from_date'])) {
+                $params['start_time'] = date('c', strtotime($filters['from_date']));
+            }
+
+            if (!empty($filters['to_date'])) {
+                $params['end_time'] = date('c', strtotime($filters['to_date'] . ' 23:59:59'));
+            }
+
+            // Get payments from PayPal API
+            $payments = \PayPal\Api\Payment::all($params, $apiContext);
+
+            // Convert to a format similar to Stripe
+            $paypalData = new \stdClass();
+            $paypalData->data = [];
+
+            foreach ($payments->getPayments() as $payment) {
+                $transaction = new \stdClass();
+                $transaction->id = $payment->getId();
+                $transaction->status = $payment->getState();
+                $transaction->create_time = $payment->getCreateTime();
+                $transaction->amount = $payment->getTransactions()[0]->getAmount()->getTotal();
+                $transaction->currency_code = $payment->getTransactions()[0]->getAmount()->getCurrency();
+                $transaction->payer_email = $payment->getPayer()->getPayerInfo()->getEmail();
+                $transaction->payer_name = $payment->getPayer()->getPayerInfo()->getFirstName() . ' ' .
+                                          $payment->getPayer()->getPayerInfo()->getLastName();
+
+                // Check for subscription ID (custom field often used for this)
+                $transaction->subscription_id = null;
+                if ($payment->getTransactions()[0]->getCustom()) {
+                    $transaction->subscription_id = $payment->getTransactions()[0]->getCustom();
+                }
+
+                $paypalData->data[] = $transaction;
+            }
+
+            // Client-side filtering
+            $dataArray = $paypalData->data;
+
+            // Filter by status
+            if (!empty($filters['status'])) {
+                $dataArray = array_filter($dataArray, function($transaction) use ($filters) {
+                    return $transaction->status === $filters['status'];
+                });
+            }
+
+            // Filter by transaction ID
+            if (!empty($filters['transaction_id'])) {
+                $dataArray = array_filter($dataArray, function($transaction) use ($filters) {
+                    return stripos($transaction->id, $filters['transaction_id']) !== false;
+                });
+            }
+
+            // Filter by customer email
+            if (!empty($filters['customer_email'])) {
+                $dataArray = array_filter($dataArray, function($transaction) use ($filters) {
+                    return isset($transaction->payer_email) &&
+                           stripos($transaction->payer_email, $filters['customer_email']) !== false;
+                });
+            }
+
+            // Reset array keys
+            $dataArray = array_values($dataArray);
+
+            // Create a filtered result similar to Stripe format
+            $filteredPayments = new \stdClass();
+            $filteredPayments->data = $dataArray;
+            $filteredPayments->has_more = ($payments->getCount() >= $limit);
+            $filteredPayments->url = '';
+            $filteredPayments->object = 'list';
+
+            return $filteredPayments;
+
+        } catch (\Exception $e) {
+            Log::error('PayPal API Error: '.$e->getMessage());
+            return null;
+        }
+    }
+
+    private function formatPayPalPagination($transactions, $currentPage, $perPage)
+    {
+        if (!$transactions || !isset($transactions->data)) {
+            return [
+                'current_page' => $currentPage,
+                'per_page' => $perPage,
+                'has_more' => false,
+                'first_id' => null,
+                'last_id' => null,
+                'total' => 0,
+            ];
+        }
+
+        $hasMore = isset($transactions->has_more) ? $transactions->has_more : false;
+        $firstId = count($transactions->data) > 0 ? $transactions->data[0]->id : null;
+        $lastId = count($transactions->data) > 0 ? end($transactions->data)->id : null;
+
+        return [
+            'current_page' => $currentPage,
+            'per_page' => $perPage,
+            'has_more' => $hasMore,
+            'first_id' => $firstId,
+            'last_id' => $lastId,
+            'total' => count($transactions->data),
+        ];
+    }
+
+    public function paypalTransactionDetails($id)
+    {
+        try {
+            // Set up PayPal API context
+            $apiContext = new \PayPal\Rest\ApiContext(
+                new \PayPal\Auth\OAuthTokenCredential(
+                    config('services.paypal.client_id'),
+                    config('services.paypal.secret')
+                )
+            );
+
+            // Set mode based on configuration
+            $apiContext->setConfig([
+                'mode' => config('services.paypal.mode', 'sandbox')
+            ]);
+
+            // Get payment details from PayPal API
+            $payment = \PayPal\Api\Payment::get($id, $apiContext);
+
+            return response()->json([
+                'success' => true,
+                'transaction' => [
+                    'id' => $payment->getId(),
+                    'amount' => number_format($payment->getTransactions()[0]->getAmount()->getTotal(), 2),
+                    'currency_code' => $payment->getTransactions()[0]->getAmount()->getCurrency(),
+                    'status' => $payment->getState(),
+                    'create_time' => \Carbon\Carbon::parse($payment->getCreateTime())->format('d.m.Y. H:i:s'),
+                    'payer_email' => $payment->getPayer()->getPayerInfo()->getEmail(),
+                    'payer_name' => $payment->getPayer()->getPayerInfo()->getFirstName() . ' ' .
+                                   $payment->getPayer()->getPayerInfo()->getLastName(),
+                    'subscription_id' => $payment->getTransactions()[0]->getCustom(),
+                    'description' => $payment->getTransactions()[0]->getDescription(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PayPal Transaction Details Error: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Greška pri dobijanju detalja transakcije: '.$e->getMessage()
             ], 500);
         }
     }

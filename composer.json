@@ -16,6 +16,7 @@
         "paypal/paypal-checkout-sdk": "^1.0",
         "paypal/paypal-server-sdk": "^0.6.1",
         "paypal/paypalhttp": "^1.0",
+        "paypal/rest-api-sdk-php": "^1.6",
         "pusher/pusher-php-server": "^7.2",
         "ralphjsmit/laravel-seo": "^1.7",
         "spatie/laravel-sitemap": "^7.0",

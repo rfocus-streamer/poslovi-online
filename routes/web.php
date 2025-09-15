@@ -212,6 +212,9 @@ Route::middleware('auth')->group(function () {
         ->name('admin.stripe.transactions');
     Route::get('/admin/stripe-transactions/details/{transactionId}', [DashboardController::class, 'stripeTransactionDetails'])
         ->name('admin.stripe.transaction.details');
+
+    Route::get('/admin/paypal-transactions/{id}/details', [DashboardController::class, 'paypalTransactionDetails'])
+    ->name('admin.paypal.transaction.details');
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])

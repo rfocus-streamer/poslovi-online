@@ -37,6 +37,11 @@
                             href="#stripe_transactions">
                             <i class="fas fa-credit-card"></i> Stripe Transakcije
                         </a>
+                        <a class="nav-link text-white {{ $activeTab === 'paypal_transactions' ? 'active' : '' }}"
+                           data-bs-toggle="tab"
+                           href="#paypal_transactions">
+                           <i class="fab fa-paypal"></i> PayPal Transakcije
+                        </a>
                         <a class="nav-link text-white {{ $activeTab === 'services' ? 'active' : '' }}"
                             data-bs-toggle="tab"
                             href="#services">
