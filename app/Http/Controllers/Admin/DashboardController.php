@@ -1317,7 +1317,7 @@ class DashboardController extends Controller
 
             // Set mode based on configuration
             $apiContext->setConfig([
-                'mode' => config('services.paypal.mode', 'sandbox')
+                'mode' => config('services.paypal.settings.mode', 'sandbox')
             ]);
 
             // Create a payment list request
