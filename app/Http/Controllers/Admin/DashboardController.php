@@ -1304,7 +1304,11 @@ class DashboardController extends Controller
         }
     }
 
-    private function getPayPalTransactions($filters, $limit = 100, $startingAfter = null, $endingBefore = null)
+
+    /**
+     * Dobija PayPal transakcije
+     */
+    private function getPayPalTransactions($filters, $perPage = 10, $page = 1)
     {
         try {
             // Set up PayPal API context
@@ -1320,83 +1324,166 @@ class DashboardController extends Controller
                 'mode' => config('services.paypal.settings.mode', 'sandbox')
             ]);
 
-            // Create a payment list request
-            $paymentListRequest = new \PayPal\Api\Payment();
+            // Set default date range (last 30 days) if not provided
+            $defaultStartDate = now()->subDays(30)->setTime(0, 0, 0);
+            $defaultEndDate = now()->setTime(23, 59, 59);
 
-            // Set up parameters
+            // Parse from_date if provided
+            if (!empty($filters['from_date'])) {
+                $fromDate = \DateTime::createFromFormat('d.m.Y', $filters['from_date']);
+                if ($fromDate === false) {
+                    Log::error('Invalid from_date format. Expected format: dd.mm.yyyy');
+                    $fromDate = $defaultStartDate;
+                } else {
+                    $fromDate->setTime(0, 0, 0);
+                }
+            } else {
+                $fromDate = $defaultStartDate;
+            }
+
+            // Parse to_date if provided
+            if (!empty($filters['to_date'])) {
+                $toDate = \DateTime::createFromFormat('d.m.Y', $filters['to_date']);
+                if ($toDate === false) {
+                    Log::error('Invalid to_date format. Expected format: dd.mm.yyyy');
+                    $toDate = $defaultEndDate;
+                } else {
+                    $toDate->setTime(23, 59, 59);
+                }
+            } else {
+                $toDate = $defaultEndDate;
+            }
+
+            // Convert dates to UTC
+            $fromDate->setTimezone(new \DateTimeZone('UTC'));
+            $toDate->setTimezone(new \DateTimeZone('UTC'));
+
+            // Build parameters
             $params = [
-                'count' => $limit,
-                'start_index' => $startingAfter ? ($startingAfter * $limit) : 0
+                'start_date' => $fromDate->format('Y-m-d\TH:i:s\Z'),
+                'end_date' => $toDate->format('Y-m-d\TH:i:s\Z'),
+                'page_size' => $perPage,
+                'page' => $page,
+                'sort_order' => 'desc', // Sort by newest first
+                'sort_by' => 'transaction_initiation_date',
             ];
 
-            // Date filters
-            if (!empty($filters['from_date'])) {
-                $params['start_time'] = date('c', strtotime($filters['from_date']));
+            // Add filters if provided
+            if (!empty($filters['transaction_id'])) {
+                $params['transaction_id'] = $filters['transaction_id'];
             }
 
-            if (!empty($filters['to_date'])) {
-                $params['end_time'] = date('c', strtotime($filters['to_date'] . ' 23:59:59'));
+            if (!empty($filters['customer_email'])) {
+                $params['payer_email'] = $filters['customer_email'];
             }
 
-            // Get payments from PayPal API
-            $payments = \PayPal\Api\Payment::all($params, $apiContext);
+            if (!empty($filters['status'])) {
+                // Map status to PayPal's status codes
+                $statusMap = [
+                    'COMPLETED' => 'S',
+                    'PENDING' => 'P',
+                    'FAILED' => 'D'
+                ];
+                if (isset($statusMap[$filters['status']])) {
+                    $params['transaction_status'] = $statusMap[$filters['status']];
+                }
+            }
 
-            // Convert to a format similar to Stripe
+            // Log the parameters being sent to PayPal API for debugging
+            Log::info('PayPal API Request Parameters:', $params);
+
+            // Correct API endpoint: Reporting API for transactions
+            $url = 'https://api.paypal.com/v1/reporting/transactions';
+
+            // Call PayPal API via CURL
+            $response = $this->makePayPalApiRequest($url, $params, $apiContext);
+
+            // Check if the response contains any transactions
+            if (empty($response['transaction_details'])) {
+                Log::warning('No transactions found for the given filters.');
+            }
+
+            // Convert the response to a format similar to Stripe
             $paypalData = new \stdClass();
             $paypalData->data = [];
 
-            foreach ($payments->getPayments() as $payment) {
-                $transaction = new \stdClass();
-                $transaction->id = $payment->getId();
-                $transaction->status = $payment->getState();
-                $transaction->create_time = $payment->getCreateTime();
-                $transaction->amount = $payment->getTransactions()[0]->getAmount()->getTotal();
-                $transaction->currency_code = $payment->getTransactions()[0]->getAmount()->getCurrency();
-                $transaction->payer_email = $payment->getPayer()->getPayerInfo()->getEmail();
-                $transaction->payer_name = $payment->getPayer()->getPayerInfo()->getFirstName() . ' ' .
-                                          $payment->getPayer()->getPayerInfo()->getLastName();
+            if (isset($response['transaction_details']) && is_array($response['transaction_details'])) {
+                foreach ($response['transaction_details'] as $transaction) {
+                    $transactionInfo = $transaction['transaction_info'];
 
-                // Check for subscription ID (custom field often used for this)
-                $transaction->subscription_id = null;
-                if ($payment->getTransactions()[0]->getCustom()) {
-                    $transaction->subscription_id = $payment->getTransactions()[0]->getCustom();
+                    $transactionData = new \stdClass();
+                    $transactionData->id = $transactionInfo['transaction_id'] ?? null;
+
+                    // Mapiranje statusa
+                    $statusMap = [
+                        'S' => 'COMPLETED',
+                        'P' => 'PENDING',
+                        'D' => 'DENIED',
+                        'V' => 'VOIDED'
+                    ];
+                    $transactionStatus = $transactionInfo['transaction_status'] ?? null;
+                    $transactionData->status = $statusMap[$transactionStatus] ?? $transactionStatus;
+
+                    $transactionData->create_time = $transactionInfo['transaction_initiation_date'] ?? null;
+                    $transactionData->amount = $transactionInfo['transaction_amount']['value'] ?? null;
+                    $transactionData->currency_code = $transactionInfo['transaction_amount']['currency_code'] ?? null;
+
+                    // Pokušaj da dobiješ podatke o kupcu
+                    $paypalReferenceId = $transactionInfo['paypal_reference_id'] ?? null;
+                    $transactionData->subscription_id = null;
+
+                    // Proveri da li je ovo interni transfer (Deposit to account)
+                    $isInternalTransfer = ($transactionInfo['transaction_event_code'] ?? '') === 'T0006';
+
+                    if ($isInternalTransfer) {
+                        // Za interne transfere ne pokušavamo da dobijemo podatke o kupcu
+                        $transactionData->payer_email = 'Interni transfer';
+                        $transactionData->payer_name = 'Interni transfer';
+                    } else if ($paypalReferenceId && str_starts_with($paypalReferenceId, 'I-')) {
+                        // Ovo je pretplata - uzmi podatke iz subscription API-ja
+                        try {
+                            $subscriptionDetails = $this->getSubscriptionDetails($paypalReferenceId, $apiContext);
+                            if ($subscriptionDetails) {
+                                $transactionData->payer_email = $subscriptionDetails['subscriber']['email_address'] ?? 'Nepoznat email';
+                                $transactionData->payer_name = trim(($subscriptionDetails['subscriber']['name']['given_name'] ?? '') . ' ' . ($subscriptionDetails['subscriber']['name']['surname'] ?? ''));
+                                $transactionData->subscription_id = $paypalReferenceId;
+                            } else {
+                                $transactionData->payer_email = 'Nepoznat email';
+                                $transactionData->payer_name = 'Nepoznat kupac';
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Failed to get subscription details: ' . $e->getMessage());
+                            $transactionData->payer_email = 'Nepoznat email';
+                            $transactionData->payer_name = 'Nepoznat kupac';
+                        }
+                    } else {
+                        // Ovo nije pretplata - pokušaj da dobiješ podatke iz Payments API-ja
+                        try {
+                            $paymentDetails = $this->getPaymentDetails($transactionData->id, $apiContext);
+                            if ($paymentDetails) {
+                                $transactionData->payer_email = $paymentDetails['payer']['email_address'] ?? 'Nepoznat email';
+                                $transactionData->payer_name = trim(($paymentDetails['payer']['name']['given_name'] ?? '') . ' ' . ($paymentDetails['payer']['name']['surname'] ?? ''));
+                            } else {
+                                $transactionData->payer_email = 'Nepoznat email';
+                                $transactionData->payer_name = 'Nepoznat kupac';
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Failed to get payment details: ' . $e->getMessage());
+                            $transactionData->payer_email = 'Nepoznat email';
+                            $transactionData->payer_name = 'Nepoznat kupac';
+                        }
+                    }
+
+                    $paypalData->data[] = $transactionData;
                 }
-
-                $paypalData->data[] = $transaction;
+            } else {
+                Log::warning('No "transaction_details" key found in the PayPal API response.');
             }
 
-            // Client-side filtering
-            $dataArray = $paypalData->data;
-
-            // Filter by status
-            if (!empty($filters['status'])) {
-                $dataArray = array_filter($dataArray, function($transaction) use ($filters) {
-                    return $transaction->status === $filters['status'];
-                });
-            }
-
-            // Filter by transaction ID
-            if (!empty($filters['transaction_id'])) {
-                $dataArray = array_filter($dataArray, function($transaction) use ($filters) {
-                    return stripos($transaction->id, $filters['transaction_id']) !== false;
-                });
-            }
-
-            // Filter by customer email
-            if (!empty($filters['customer_email'])) {
-                $dataArray = array_filter($dataArray, function($transaction) use ($filters) {
-                    return isset($transaction->payer_email) &&
-                           stripos($transaction->payer_email, $filters['customer_email']) !== false;
-                });
-            }
-
-            // Reset array keys
-            $dataArray = array_values($dataArray);
-
-            // Create a filtered result similar to Stripe format
+            // Return filtered results similar to Stripe format
             $filteredPayments = new \stdClass();
-            $filteredPayments->data = $dataArray;
-            $filteredPayments->has_more = ($payments->getCount() >= $limit);
+            $filteredPayments->data = $paypalData->data;
+            $filteredPayments->has_more = !empty($response['transaction_details']) && (count($response['transaction_details']) >= $perPage);
             $filteredPayments->url = '';
             $filteredPayments->object = 'list';
 
@@ -1408,33 +1495,194 @@ class DashboardController extends Controller
         }
     }
 
-    private function formatPayPalPagination($transactions, $currentPage, $perPage)
+    // Nova metoda za dobijanje detalja o običnoj transakciji
+    private function getPaymentDetails($transactionId, $apiContext)
     {
-        if (!$transactions || !isset($transactions->data)) {
-            return [
-                'current_page' => $currentPage,
-                'per_page' => $perPage,
-                'has_more' => false,
-                'first_id' => null,
-                'last_id' => null,
-                'total' => 0,
-            ];
+        $accessToken = $this->getAccessToken($apiContext);
+
+        // Prvo pokušaj sa v2 payments API-jem za capture
+        $url = 'https://api.paypal.com/v2/payments/captures/' . $transactionId;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200) {
+            $data = json_decode($response, true);
+            if (isset($data['payer'])) {
+                return $data;
+            }
         }
 
-        $hasMore = isset($transactions->has_more) ? $transactions->has_more : false;
-        $firstId = count($transactions->data) > 0 ? $transactions->data[0]->id : null;
-        $lastId = count($transactions->data) > 0 ? end($transactions->data)->id : null;
+        // Pokušaj sa v2 payments API-jem za authorization
+        $url = 'https://api.paypal.com/v2/payments/authorizations/' . $transactionId;
 
-        return [
-            'current_page' => $currentPage,
-            'per_page' => $perPage,
-            'has_more' => $hasMore,
-            'first_id' => $firstId,
-            'last_id' => $lastId,
-            'total' => count($transactions->data),
-        ];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200) {
+            $data = json_decode($response, true);
+            if (isset($data['payer'])) {
+                return $data;
+            }
+        }
+
+        // Pokušaj sa v1 payments API-jem
+        $url = 'https://api.paypal.com/v1/payments/payment/' . $transactionId;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200) {
+            $data = json_decode($response, true);
+            return $data;
+        }
+
+        // Pokušaj sa v1 orders API-jem
+        $url = 'https://api.paypal.com/v1/checkout/orders/' . $transactionId;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200) {
+            $data = json_decode($response, true);
+            return $data;
+        }
+
+        Log::error('Failed to get payment details for transaction: ' . $transactionId);
+        return null;
     }
 
+    // Metoda za dobijanje detalja o pretplati
+    private function getSubscriptionDetails($subscriptionId, $apiContext)
+    {
+        $accessToken = $this->getAccessToken($apiContext);
+
+        $url = 'https://api.paypal.com/v1/billing/subscriptions/' . $subscriptionId;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+
+        if ($response === false) {
+            Log::error('CURL error: ' . curl_error($ch));
+            curl_close($ch);
+            return null;
+        }
+
+        curl_close($ch);
+
+        return json_decode($response, true);
+    }
+
+    // Helper function to make the API request using CURL
+    private function makePayPalApiRequest($url, $params, $apiContext)
+    {
+        $accessToken = $this->getAccessToken($apiContext);
+
+        // Build query string from params
+        $queryString = http_build_query($params);
+
+        // Initialize CURL
+        $ch = curl_init();
+
+        // Set CURL options
+        curl_setopt($ch, CURLOPT_URL, $url . '?' . $queryString);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $accessToken,
+            'Content-Type: application/json'
+        ]);
+
+        // Execute the request and get the response
+        $response = curl_exec($ch);
+
+        // Check for errors
+        if ($response === false) {
+            Log::error('CURL error: ' . curl_error($ch));
+        }
+
+        // Close the CURL session
+        curl_close($ch);
+
+        // Log the full response from PayPal for debugging purposes
+        //Log::info('PayPal API Response: ' . $response);
+
+        // Return the decoded response
+        return json_decode($response, true);
+    }
+
+    // Helper function to get the access token
+    private function getAccessToken($apiContext)
+    {
+        $url = 'https://api.paypal.com/v1/oauth2/token';
+
+        // Use CURL to get the access token
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERPWD, config('services.paypal.client_id') . ':' . config('services.paypal.secret'));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
+
+        $response = curl_exec($ch);
+
+        if ($response === false) {
+            Log::error('CURL error: ' . curl_error($ch));
+        }
+
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        // Return the access token
+        return $data['access_token'];
+    }
+
+    /**
+     * Metoda za dobijanje detalja PayPal transakcije
+     */
     public function paypalTransactionDetails($id)
     {
         try {
@@ -1446,29 +1694,120 @@ class DashboardController extends Controller
                 )
             );
 
-            // Set mode based on configuration
             $apiContext->setConfig([
-                'mode' => config('services.paypal.mode', 'sandbox')
+                'mode' => config('services.paypal.settings.mode', 'sandbox')
             ]);
 
-            // Get payment details from PayPal API
-            $payment = \PayPal\Api\Payment::get($id, $apiContext);
+            // Set date range to last 30 days
+            $startDate = now()->subDays(30)->setTime(0, 0, 0)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+            $endDate = now()->setTime(23, 59, 59)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+
+            $params = [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'page_size' => 100,
+                'page' => 1,
+            ];
+
+            $url = 'https://api.paypal.com/v1/reporting/transactions';
+            $response = $this->makePayPalApiRequest($url, $params, $apiContext);
+
+            if (empty($response['transaction_details'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transakcija nije pronađena.'
+                ], 404);
+            }
+
+            // Tražimo transakciju po ID-u
+            $foundTransaction = null;
+            foreach ($response['transaction_details'] as $transaction) {
+                if ($transaction['transaction_info']['transaction_id'] === $id) {
+                    $foundTransaction = $transaction;
+                    break;
+                }
+            }
+
+            if (!$foundTransaction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transakcija nije pronađena.'
+                ], 404);
+            }
+
+            $transactionInfo = $foundTransaction['transaction_info'];
+
+            // Mapiranje statusa
+            $statusMap = [
+                'S' => 'COMPLETED',
+                'P' => 'PENDING',
+                'D' => 'DENIED',
+                'V' => 'VOIDED'
+            ];
+            $transactionStatus = $transactionInfo['transaction_status'] ?? null;
+            $status = $statusMap[$transactionStatus] ?? $transactionStatus;
+
+            // Inicijalizujemo podatke o transakciji
+            $transactionData = [
+                'id' => $transactionInfo['transaction_id'],
+                'amount' => $transactionInfo['transaction_amount']['value'],
+                'currency_code' => $transactionInfo['transaction_amount']['currency_code'],
+                'status' => $status,
+                'create_time' => $transactionInfo['transaction_initiation_date'],
+                'description' => $transactionInfo['transaction_subject'] ?? 'Nema opisa',
+            ];
+
+            // Pokušaj da dobiješ podatke o kupcu
+            $paypalReferenceId = $transactionInfo['paypal_reference_id'] ?? null;
+            $transactionData['subscription_id'] = null;
+
+            // Proveri da li je ovo interni transfer (Deposit to account)
+            $isInternalTransfer = ($transactionInfo['transaction_event_code'] ?? '') === 'T0006';
+
+            if ($isInternalTransfer) {
+                // Za interne transfere
+                $transactionData['payer_email'] = 'Interni transfer';
+                $transactionData['payer_name'] = 'Interni transfer';
+            } else if ($paypalReferenceId && str_starts_with($paypalReferenceId, 'I-')) {
+                // Ovo je pretplata - uzmi podatke iz subscription API-ja
+                try {
+                    $subscriptionDetails = $this->getSubscriptionDetails($paypalReferenceId, $apiContext);
+                    if ($subscriptionDetails) {
+                        $transactionData['payer_email'] = $subscriptionDetails['subscriber']['email_address'] ?? 'Nepoznat email';
+                        $transactionData['payer_name'] = trim(($subscriptionDetails['subscriber']['name']['given_name'] ?? '') . ' ' . ($subscriptionDetails['subscriber']['name']['surname'] ?? ''));
+                        $transactionData['subscription_id'] = $paypalReferenceId;
+                    } else {
+                        $transactionData['payer_email'] = 'Nepoznat email';
+                        $transactionData['payer_name'] = 'Nepoznat kupac';
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to get subscription details: ' . $e->getMessage());
+                    $transactionData['payer_email'] = 'Nepoznat email';
+                    $transactionData['payer_name'] = 'Nepoznat kupac';
+                }
+            } else {
+                // Ovo nije pretplata - pokušaj da dobiješ podatke iz Payments API-ja
+                try {
+                    $paymentDetails = $this->getPaymentDetails($id, $apiContext);
+                    if ($paymentDetails) {
+                        $transactionData['payer_email'] = $paymentDetails['payer']['email_address'] ?? 'Nepoznat email';
+                        $transactionData['payer_name'] = trim(($paymentDetails['payer']['name']['given_name'] ?? '') . ' ' . ($paymentDetails['payer']['name']['surname'] ?? ''));
+                    } else {
+                        $transactionData['payer_email'] = 'Nepoznat email';
+                        $transactionData['payer_name'] = 'Nepoznat kupac';
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to get payment details: ' . $e->getMessage());
+                    $transactionData['payer_email'] = 'Nepoznat email';
+                    $transactionData['payer_name'] = 'Nepoznat kupac';
+                }
+            }
 
             return response()->json([
                 'success' => true,
-                'transaction' => [
-                    'id' => $payment->getId(),
-                    'amount' => number_format($payment->getTransactions()[0]->getAmount()->getTotal(), 2),
-                    'currency_code' => $payment->getTransactions()[0]->getAmount()->getCurrency(),
-                    'status' => $payment->getState(),
-                    'create_time' => \Carbon\Carbon::parse($payment->getCreateTime())->format('d.m.Y. H:i:s'),
-                    'payer_email' => $payment->getPayer()->getPayerInfo()->getEmail(),
-                    'payer_name' => $payment->getPayer()->getPayerInfo()->getFirstName() . ' ' .
-                                   $payment->getPayer()->getPayerInfo()->getLastName(),
-                    'subscription_id' => $payment->getTransactions()[0]->getCustom(),
-                    'description' => $payment->getTransactions()[0]->getDescription(),
-                ]
+                'html' => view('admin.partials.paypal_transaction_details', ['transaction' => (object)$transactionData])->render()
             ]);
+
         } catch (\Exception $e) {
             Log::error('PayPal Transaction Details Error: '.$e->getMessage());
             return response()->json([
@@ -1476,6 +1815,30 @@ class DashboardController extends Controller
                 'message' => 'Greška pri dobijanju detalja transakcije: '.$e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Formatira paginaciju za PayPal transakcije
+     */
+    private function formatPayPalPagination($transactions, $currentPage, $perPage)
+    {
+        if (!$transactions || !isset($transactions->data)) {
+            return [
+                'current_page' => $currentPage,
+                'per_page' => $perPage,
+                'has_more' => false,
+                'total' => 0,
+            ];
+        }
+
+        $hasMore = isset($transactions->has_more) ? $transactions->has_more : false;
+
+        return [
+            'current_page' => $currentPage,
+            'per_page' => $perPage,
+            'has_more' => $hasMore,
+            'total' => count($transactions->data),
+        ];
     }
 
 

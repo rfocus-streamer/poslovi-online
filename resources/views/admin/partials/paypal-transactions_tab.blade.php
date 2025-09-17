@@ -45,7 +45,7 @@
             </form>
 
             {{-- Tabela transakcija --}}
-            @if($paypalTransactions && count($paypalTransactions) > 0)
+            @if($paypalTransactions && property_exists($paypalTransactions, 'data') && count($paypalTransactions->data) > 0)
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -54,28 +54,32 @@
                                 <th>Iznos</th>
                                 <th>Status</th>
                                 <th>Kupac</th>
+                                <th>Email kupca</th>
                                 <th>Subscription ID</th>
                                 <th>Datum</th>
                                 <th>Akcije</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($paypalTransactions as $transaction)
+                            @foreach($paypalTransactions->data as $transaction)
                                 <tr>
                                     <td>{{ $transaction->id }}</td>
-                                    <td>{{ number_format($transaction->amount, 2) }} {{ $transaction->currency }}</td>
+                                    <td>{{ number_format($transaction->amount, 2) }} {{ $transaction->currency_code }}</td>
                                     <td>
                                         <span class="badge badge-{{ $transaction->status === 'COMPLETED' ? 'success' : ($transaction->status === 'PENDING' ? 'warning' : 'danger') }}">
                                             {{ $transaction->status }}
                                         </span>
                                     </td>
+                                    <td>{{ $transaction->payer_name }}</td>
+                                    <td>{{ $transaction->payer_email }}</td>
                                     <td>
-                                        {{ $transaction->payer_email }}
+                                        @if(!empty($transaction->subscription_id))
+                                            {{ $transaction->subscription_id }}
+                                        @else
+                                            Nema pretplate
+                                        @endif
                                     </td>
-                                    <td>
-                                        {{ $transaction->subscription_id ?? 'Nema pretplate' }}
-                                    </td>
-                                    <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('d.m.Y. H:i') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($transaction->create_time)->format('d.m.Y. H:i') }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-info view-paypal-transaction"
                                                 data-id="{{ $transaction->id }}">
@@ -88,8 +92,16 @@
                     </table>
                 </div>
 
-                {{-- Paginacija --}}
-                {{ $paypalTransactions->appends(request()->input())->links() }}
+                {{-- Paginacija - prilagoditi po potrebi --}}
+                @if(property_exists($paypalTransactions, 'has_more') && $paypalTransactions->has_more)
+                    <div class="d-flex justify-content-center mt-4">
+                        <form method="GET" action="{{ route('admin.dashboard') }}">
+                            <input type="hidden" name="tab" value="paypal_transactions">
+                            <input type="hidden" name="paypal_page" value="{{ (request('paypal_page', 1) + 1) }}">
+                            <button type="submit" class="btn btn-primary">Učitaj još transakcija</button>
+                        </form>
+                    </div>
+                @endif
             @else
                 <div class="alert alert-info">
                     Nema PayPal transakcija za odabrane filtere.
@@ -124,17 +136,25 @@ document.addEventListener('DOMContentLoaded', function() {
             var transactionId = this.getAttribute('data-id');
             var modal = new bootstrap.Modal(document.getElementById('paypalTransactionModal'));
 
+            // Show loading state
+            document.getElementById('paypalTransactionDetails').innerHTML =
+                '<div class="text-center p-4"><div class="spinner-border" role="status"><span class="visually-hidden">Učitavanje...</span></div><p class="mt-2">Učitavanje detalja transakcije...</p></div>';
+            modal.show();
+
             // Učitaj detalje transakcije
-            fetch('/admin/paypal-transactions/' + transactionId)
+            fetch('/admin/paypal-transactions/' + transactionId + '/details')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('paypalTransactionDetails').innerHTML = data.html;
-                    modal.show();
+                    if (data.success) {
+                        document.getElementById('paypalTransactionDetails').innerHTML = data.html;
+                    } else {
+                        document.getElementById('paypalTransactionDetails').innerHTML =
+                            '<div class="alert alert-danger">' + data.message + '</div>';
+                    }
                 })
                 .catch(error => {
                     document.getElementById('paypalTransactionDetails').innerHTML =
                         '<div class="alert alert-danger">Greška pri učitavanju detalja transakcije.</div>';
-                    modal.show();
                 });
         });
     });
