@@ -35,9 +35,9 @@ class StripeWebhookController extends Controller
         Log::info('Stripe Webhook - Event received', ['type' => $event->type]);
 
         switch ($event->type) {
-            case 'invoice.payment_succeeded':
-                $this->handleInvoicePaymentSucceeded($event->data->object);
-                break;
+            // case 'invoice.payment_succeeded':
+            //     $this->handleInvoicePaymentSucceeded($event->data->object);
+            //     break;
             case 'invoice.paid':
                 $this->handleInvoicePaid($event->data->object);
                 break;
@@ -72,22 +72,33 @@ class StripeWebhookController extends Controller
 
                 // Proveri da li je transakcija već obradena
                 $existingTransaction = Transaction::where('transaction_id', $invoice->payment_intent)->first();
-                if ($existingTransaction) {
-                    Log::info('Transaction already processed: '.$invoice->payment_intent);
-                    return;
-                }
 
-                // Kreiraj transakciju
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'subscription',
-                    'amount' => $invoice->amount_paid / 100,
-                    'currency' => strtoupper($invoice->currency),
-                    'payment_method' => 'stripe',
-                    'transaction_id' => $invoice->payment_intent,
-                    'status' => 'completed',
-                    'payload' => json_encode($invoice)
-                ]);
+                if ($existingTransaction) {
+                    // Ažuriraj postojeću transakciju
+                    $existingTransaction->update([
+                        'user_id' => $user->id,
+                        'type' => 'subscription',
+                        'amount' => $invoice->amount_paid / 100,
+                        'currency' => strtoupper($invoice->currency),
+                        'payment_method' => 'stripe',
+                        'status' => 'completed',
+                        'payload' => json_encode($invoice)
+                    ]);
+                    Log::info('Transaction updated: '.$invoice->payment_intent);
+                } else {
+                    // Kreiraj novu transakciju
+                    Transaction::create([
+                        'user_id' => $user->id,
+                        'type' => 'subscription',
+                        'amount' => $invoice->amount_paid / 100,
+                        'currency' => strtoupper($invoice->currency),
+                        'payment_method' => 'stripe',
+                        'transaction_id' => $invoice->payment_intent,
+                        'status' => 'completed',
+                        'payload' => json_encode($invoice)
+                    ]);
+                    Log::info('Transaction created: '.$invoice->payment_intent);
+                }
 
                 // Aktiviraj paket
                 $package = Package::where('id', $subscription->plan_id)->first();
@@ -136,22 +147,33 @@ class StripeWebhookController extends Controller
 
                 // Proveri da li je transakcija već obradena
                 $existingTransaction = Transaction::where('transaction_id', $invoice->payment_intent)->first();
-                if ($existingTransaction) {
-                    Log::info('Transaction already processed: '.$invoice->payment_intent);
-                    return;
-                }
 
-                // Kreiraj transakciju
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'subscription',
-                    'amount' => $invoice->amount_paid / 100,
-                    'currency' => strtoupper($invoice->currency),
-                    'payment_method' => 'stripe',
-                    'transaction_id' => $invoice->payment_intent,
-                    'status' => 'completed',
-                    'payload' => json_encode($invoice)
-                ]);
+                if ($existingTransaction) {
+                    // Ažuriraj postojeću transakciju
+                    $existingTransaction->update([
+                        'user_id' => $user->id,
+                        'type' => 'subscription',
+                        'amount' => $invoice->amount_paid / 100,
+                        'currency' => strtoupper($invoice->currency),
+                        'payment_method' => 'stripe',
+                        'status' => 'completed',
+                        'payload' => json_encode($invoice)
+                    ]);
+                    Log::info('Transaction updated: '.$invoice->payment_intent);
+                } else {
+                    // Kreiraj novu transakciju
+                    Transaction::create([
+                        'user_id' => $user->id,
+                        'type' => 'subscription',
+                        'amount' => $invoice->amount_paid / 100,
+                        'currency' => strtoupper($invoice->currency),
+                        'payment_method' => 'stripe',
+                        'transaction_id' => $invoice->payment_intent,
+                        'status' => 'completed',
+                        'payload' => json_encode($invoice)
+                    ]);
+                    Log::info('Transaction created: '.$invoice->payment_intent);
+                }
 
                 // Aktiviraj paket
                 $package = Package::find($subscription->plan_id);
