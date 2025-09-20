@@ -716,37 +716,41 @@ function getMessageHtml(msg) {
 
     // Zavisno o tome da li je poruka poslana ili primljena, odaberi odgovarajući raspored
     if (msg.sender_id === currentUser.id) {
+        // Zameni sve nove redove (\n) sa <br> tagovima
+        let formattedContent = msg.content.replace(/\n/g, '<br>');
+
         // Dodaj HTML za poruku
         let messageHtml = `
-                        <div class="conversation-list-right" data-message-id="${msg.id}" data-date="${date}">
-                            <div class="chat-avatar">
-                                <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
-                            </div>
+            <div class="conversation-list-right" data-message-id="${msg.id}" data-date="${date}">
+                <div class="chat-avatar">
+                    <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
+                </div>
 
-                            <div class="user-chat-content">
-                                <div class="conversation-name">
-                                    <span class="me-1 text-success">
-                                        <i class="bx bx-check-double bx-check"></i>
-                                    </span>
-                                    <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
-                                    <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
-                                </div>
-                                <div class="ctext-wrap">
-                                    <div class="ctext-wrap-content">
-                                        <p class="mb-0 rightChat">${msg.content}</p>
-                                    </div>
-                                    <!-- Prilog (ako postoji) -->
-                                    ${msg.attachment_path ? `
-                                    <div class="d-flex justify-content-end mt-1">
-                                        <small><a href="/${msg.attachment_path}" target="_blank" class="text-decoration-none">
-                                                    <i class="fa fa-download"></i> ${attach}
-                                        </a></small>
-                                    </div>
-                                    ` : ''}
-                                </div>
-                            </div>
+                <div class="user-chat-content">
+                    <div class="conversation-name">
+                        <span class="me-1 text-success">
+                            <i class="bx bx-check-double bx-check"></i>
+                        </span>
+                        <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
+                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                    </div>
+                    <div class="ctext-wrap">
+                        <div class="ctext-wrap-content">
+                            <p class="mb-0 rightChat">${formattedContent}</p>
                         </div>
-                    `;
+                        <!-- Prilog (ako postoji) -->
+                        ${msg.attachment_path ? `
+                        <div class="d-flex justify-content-end mt-1">
+                            <small><a href="/${msg.attachment_path}" target="_blank" class="text-decoration-none">
+                                        <i class="fa fa-download"></i> ${attach}
+                            </a></small>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
         // Ako je poruka pročitana, dodajemo status pročitano
         if (msg.read_at) {
             messageHtml = messageHtml.replace('<small class="read-status"></small>', `
