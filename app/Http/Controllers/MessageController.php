@@ -11,13 +11,17 @@ use App\Models\Favorite;
 use App\Models\CartItem;
 use App\Models\Service;
 use App\Models\BlockedUser;
+use App\Models\EmailMessageNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;  // Uvozimo DB fasadu
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use App\Mail\ContactMail;
+
 
 class MessageController extends Controller
 {
@@ -390,6 +394,7 @@ class MessageController extends Controller
                         }
                     }
                 }
+                EmailMessageNotification::where('user_id', $user->id)->delete();
             }
 
             $attachmentName = null;
@@ -410,6 +415,44 @@ class MessageController extends Controller
             $message->load('sender'); // Učitaj vezani model
 
             broadcast(new MessageSent($message))->toOthers();
+
+            // Provera da li korisnik nije online više od 5 minuta
+            $receiver = User::find($request->input('user_id'));
+            if ($receiver && !$receiver->is_online) {
+                // Provera da li je već poslat email u poslednjih 24 sata
+                $emailNotification = EmailMessageNotification::where('user_id', $receiver->id)->first();
+
+                if (!$emailNotification || Carbon::parse($emailNotification->last_sent_at)->diffInHours(Carbon::now()) >= 24) {
+                    // Ako nije, šaljemo email
+                    //Mail::to($receiver->email)->send(new MessageNotification($message));
+                    $templatePath = 'admin.emails.templates.messages.unread_messages';
+                    $details = [
+                        'first_name' => $receiver->firstname,
+                        'last_name' => $receiver->lastname,
+                        'email' => $receiver->email,
+                        'message' =>  '',
+                        'template' => $templatePath,
+                        'subject' => 'Imate nepročitane poruke',
+                        'from_email' => config('mail.from.address'),
+                        'from' => 'Poslovi Online',
+                        'unreadMessages' => true
+                    ];
+
+                    Mail::to($receiver->email)->send(new ContactMail($details));
+
+                    // Ažuriramo ili kreiramo zapis u tabeli email_notifications
+                    if ($emailNotification) {
+                        $emailNotification->last_sent_at = Carbon::now();
+                        $emailNotification->save();
+                    } else {
+                        EmailMessageNotification::create([
+                            'user_id' => $receiver->id,
+                            'message_id' => $message->id,
+                            'last_sent_at' => Carbon::now()
+                        ]);
+                    }
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -451,6 +494,7 @@ class MessageController extends Controller
                     }
                 }
             }
+            EmailMessageNotification::where('user_id', $user->id)->delete();
         }
 
         return response()->json([
