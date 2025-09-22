@@ -439,7 +439,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="servicesModalLabel">Izaberi uslugu</h5>
+                        <h5 class="modal-title" id="servicesModalLabel">Izaberi ponudu</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -489,7 +489,7 @@
         }
 
         const data = await response.json();
-        return data.last_message_time;  // Vraća vreme poslednje poruke
+        return data;  // Vraća vreme poslednje poruke
     }
 
     // Funkcija koja prikazuje usluge za kontakt
@@ -505,16 +505,29 @@
                 try {
                     // Čekamo da dobijemo poslednju poruku
                     let contactLastMessage = await getLastMessageContact(contactId, service.service_id);
-
                     const serviceItem = document.createElement('div');
                     serviceItem.className = 'service-item p-3 border-bottom';
                     serviceItem.style.cursor = 'pointer';
+
+                    // Kreiranje HTML sadržaja za element
+                    let unreadBadge = '';
+                    if (contactLastMessage.unread_count > 0) {
+                        unreadBadge = `
+                            <span data-user-unread-messages-id="${service.service_id}"
+                                  class="unread-badge badge bg-danger rounded-pill position-absolute top-50"
+                                  style="right: 0.8cm; transform: translateX(50%) translateY(-1.2cm);">
+                                ${contactLastMessage.unread_count}
+                            </span>
+                        `;
+                    }
+
                     serviceItem.innerHTML = `
+                        ${unreadBadge}
                         <div class="d-flex justify-content-between align-items-center" data-service-unread-messages-id="${service.service_id}">
                             <strong>${service.service_title}</strong>
                         </div>
                         <small class="text-muted">
-                            Poslednja poruka: ${contactLastMessage != null ? formatDate(contactLastMessage) : 'Nema poruka'}
+                            Poslednja poruka: ${contactLastMessage.last_message_time != null ? formatDate(contactLastMessage.last_message_time) : 'Nema poruka'}
                         </small>
                     `;
 
