@@ -1164,7 +1164,7 @@ document.getElementById('roleSwitch2').addEventListener('change', function() {
 <!-- Audio/Video poziv js -->
 
 <audio id="ringtone" loop preload="auto">
-    <source src="{{ 'storage/sounds/marimba_soft.mp3' }}" type="audio/mpeg">
+    <source src="{{ asset('storage/sounds/marimba_soft.mp3') }}" type="audio/mpeg">
 </audio>
 
 <script>

@@ -590,17 +590,14 @@
                     </div>
 
                     @auth
-                        @if(Auth::user()->role !== 'seller')
-                            <!-- Dugme za kontakt -->
-                            @php
-                                $encryptedServiceId = Crypt::encrypt($service->id);
-                            @endphp
+                        <!-- Dugme za kontakt -->
+                        @php
+                            $encryptedServiceId = Crypt::encrypt($service->id);
+                        @endphp
 
-                            <a href="{{ route('messages.index', ['service_id' => $encryptedServiceId]) }}" class="btn btn-success w-100">
-                                <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
-                            </a>
-
-                        @endif
+                        <a href="{{ route('messages.index', ['service_id' => $encryptedServiceId]) }}" class="btn btn-success w-100">
+                            <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
+                        </a>
                     @endauth
                 </div>
             </div>

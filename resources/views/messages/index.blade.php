@@ -443,6 +443,14 @@
             min-width: 95vw;
             min-height: 80vh;
         }
+
+        #videoCallModalLabel {
+            font-size: 0.8rem; /* Manja veličina fonta za mobilne */
+        }
+
+        #testPermissionsBtn.permissions-granted {
+            font-size: 0.5rem; /* Manja veličina fonta za mobilne */
+        }
     }
 
     /* Responsive stilovi */
@@ -783,6 +791,20 @@
             document.getElementById('user_id').value = directChatService.user_id;
             openChat(directChatService.user_id, directChatService.id);
             document.getElementById('topic').innerHTML = directChatService.title;
+
+            // Selektujte dugme
+            var button = document.querySelector('.btn.start-call');
+
+            // Promenite vrednosti za data-contactid i data-serviceid
+            button.setAttribute('data-contactid', directChatService.user_id);
+            button.setAttribute('data-serviceid', directChatService.id);
+
+            document.getElementById('buttonCall').style.display = 'block';
+            // Pronađi element sa ID-jem videoCallModalLabel (to je naslov u modal prozoru)
+            const titleElement = document.getElementById("videoCallModalLabel");
+
+            // Promeni tekst koji se nalazi u tom elementu
+            titleElement.innerHTML = '<i class="fas fa-video me-2"></i> '+directChatService.title;
         }
 
         // Proveri da li je Firefox i prikaži upozorenje ako jeste
