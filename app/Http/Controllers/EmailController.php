@@ -113,7 +113,7 @@ class EmailController extends Controller
                 $sentCount++;
                 $processedEmails[] = $email;
 
-                Log::info("Daily email sent to: {$email}");
+                //Log::info("Daily email sent to: {$email}");
 
             } catch (\Exception $e) {
                 $errorCount++;
@@ -124,7 +124,7 @@ class EmailController extends Controller
         // Obriši poslate emailove iz CSV fajla
         if (!empty($processedEmails)) {
             $this->removeEmailsFromCSV($csvPath, $processedEmails);
-            Log::info("Removed " . count($processedEmails) . " emails from CSV file");
+            //Log::info("Removed " . count($processedEmails) . " emails from CSV file");
         }
 
         $result = [
