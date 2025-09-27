@@ -77,11 +77,22 @@
                             href="#finances">
                             <i class="fas fa-chart-line "></i> Finansije
                         </a>
+                        <a class="nav-link text-white {{ $activeTab === 'cron_jobs' ? 'active' : '' }}"
+                            data-bs-toggle="tab"
+                            href="#cron_jobs">
+                            <i class="fas fa-clock "></i> Cron zadaci
+                        </a>
                         <a class="nav-link text-white {{ $activeTab === 'unusedfiles' ? 'active' : '' }}"
                             data-bs-toggle="tab"
                             href="#unusedfiles">
                             <i class="fa fa-folder-open"></i> Nepotrebni file-ovi
                         </a>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="dropdown-item"><a class="nav-link text-white">
+                                <i class="fas fa-sign-out-alt "></i> Odjava
+                            </a></button>
+                        </form>
                     </nav>
                 </div>
             </div>

@@ -219,6 +219,18 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/paypal-transactions/{id}/details', [DashboardController::class, 'paypalTransactionDetails'])
     ->name('admin.paypal.transaction.details');
+
+    // Cron management routes
+    Route::prefix('admin/cron')->group(function () {
+        Route::get('/jobs', [DashboardController::class, 'getCronJobs']);
+        Route::post('/jobs', [DashboardController::class, 'addCronJob']);
+        Route::post('/jobs/{index}/toggle', [DashboardController::class, 'toggleCronJob']);
+        Route::post('/jobs/{index}/run', [DashboardController::class, 'runCronJob']);
+        Route::delete('/jobs/{index}', [DashboardController::class, 'deleteCronJob']);
+        Route::get('/status', [DashboardController::class, 'getCronStatus']);
+        Route::get('/logs', [DashboardController::class, 'getCronLogs']);
+        Route::delete('/logs', [DashboardController::class, 'clearCronLogs']);
+    });
 });
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])

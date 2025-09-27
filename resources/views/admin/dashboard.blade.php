@@ -267,6 +267,9 @@
                     <!-- Email notification Tab -->
                     @include('admin.partials.email_notifications_tab')
 
+                    <!-- Cron Jobs Tab -->
+                    @include('admin.partials.cron_jobs_tab')
+
                     <!-- Nepotrebni file-ovi -->
                     <div class="tab-pane fade {{ $activeTab === 'unusedfiles' ? 'show active' : '' }}" id="unusedfiles">
                         <h2 class="mb-4">Nepotrebni fajlovi</h2>

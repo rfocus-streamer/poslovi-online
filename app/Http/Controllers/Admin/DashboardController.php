@@ -1843,6 +1843,238 @@ class DashboardController extends Controller
 
 
     /**
+     * Cron Management Methods
+     */
+    public function getCronJobs()
+    {
+        try {
+            // Pročitaj trenutne cron zadatke
+            $crontab = shell_exec('crontab -l 2>/dev/null');
+            $jobs = [];
+
+            if ($crontab) {
+                $lines = explode("\n", trim($crontab));
+                foreach ($lines as $index => $line) {
+                    if (trim($line) && !str_starts_with(trim($line), '#')) {
+                        $parts = preg_split('/\s+/', $line, 6);
+                        if (count($parts) >= 6) {
+                            $jobs[] = [
+                                'index' => $index,
+                                'schedule' => implode(' ', array_slice($parts, 0, 5)),
+                                'command' => $parts[5],
+                                'status' => 'active',
+                                'last_run' => $this->getLastCronRun($parts[5])
+                            ];
+                        }
+                    }
+                }
+            }
+
+            return response()->json(['jobs' => $jobs]);
+        } catch (\Exception $e) {
+            Log::error('Cron jobs error: ' . $e->getMessage());
+            return response()->json(['jobs' => []]);
+        }
+    }
+
+    public function addCronJob(Request $request)
+    {
+        $request->validate([
+            'schedule' => 'required|string',
+            'command' => 'required|string',
+            'description' => 'nullable|string'
+        ]);
+
+        try {
+            // Pročitaj postojeći crontab
+            $crontab = shell_exec('crontab -l 2>/dev/null');
+            $lines = $crontab ? explode("\n", trim($crontab)) : [];
+
+            // Dodaj komentar sa opisom ako postoji
+            if ($request->description) {
+                $lines[] = '# ' . $request->description;
+            }
+
+            // Dodaj novi cron zadatak
+            $lines[] = $request->schedule . ' ' . $request->command;
+
+            // Sačuvaj novi crontab
+            $tempFile = tempnam(sys_get_temp_dir(), 'cron');
+            file_put_contents($tempFile, implode("\n", $lines) . "\n");
+            shell_exec('crontab ' . $tempFile);
+            unlink($tempFile);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Add cron job error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function toggleCronJob($index)
+    {
+        try {
+            $crontab = shell_exec('crontab -l 2>/dev/null');
+            if (!$crontab) {
+                return response()->json(['success' => false]);
+            }
+
+            $lines = explode("\n", trim($crontab));
+            $actualIndex = 0;
+
+            foreach ($lines as $i => &$line) {
+                $trimmed = trim($line);
+                if ($trimmed && !str_starts_with($trimmed, '#')) {
+                    if ($actualIndex == $index) {
+                        // Komentariši/odkomentariši liniju
+                        if (str_starts_with($line, '#')) {
+                            $line = substr($line, 1); // Ukloni komentar
+                        } else {
+                            $line = '#' . $line; // Dodaj komentar
+                        }
+                        break;
+                    }
+                    $actualIndex++;
+                }
+            }
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'cron');
+            file_put_contents($tempFile, implode("\n", $lines) . "\n");
+            shell_exec('crontab ' . $tempFile);
+            unlink($tempFile);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Toggle cron job error: ' . $e->getMessage());
+            return response()->json(['success' => false]);
+        }
+    }
+
+    public function runCronJob($index)
+    {
+        try {
+            $crontab = shell_exec('crontab -l 2>/dev/null');
+            if (!$crontab) {
+                return response()->json(['success' => false]);
+            }
+
+            $lines = explode("\n", trim($crontab));
+            $actualIndex = 0;
+            $command = null;
+
+            foreach ($lines as $i => $line) {
+                $trimmed = trim($line);
+                if ($trimmed && !str_starts_with($trimmed, '#')) {
+                    if ($actualIndex == $index) {
+                        $parts = preg_split('/\s+/', $trimmed, 6);
+                        if (count($parts) >= 6) {
+                            $command = $parts[5];
+                            break;
+                        }
+                    }
+                    $actualIndex++;
+                }
+            }
+
+            if ($command) {
+                // Pokreni komandu u pozadini
+                shell_exec($command . ' > /dev/null 2>&1 &');
+                return response()->json(['success' => true]);
+            }
+
+            return response()->json(['success' => false]);
+        } catch (\Exception $e) {
+            Log::error('Run cron job error: ' . $e->getMessage());
+            return response()->json(['success' => false]);
+        }
+    }
+
+    public function deleteCronJob($index)
+    {
+        try {
+            $crontab = shell_exec('crontab -l 2>/dev/null');
+            if (!$crontab) {
+                return response()->json(['success' => false]);
+            }
+
+            $lines = explode("\n", trim($crontab));
+            $actualIndex = 0;
+            $newLines = [];
+
+            foreach ($lines as $i => $line) {
+                $trimmed = trim($line);
+                if ($trimmed) {
+                    if (str_starts_with($trimmed, '#')) {
+                        $newLines[] = $line; // Zadrži komentare
+                    } else {
+                        if ($actualIndex != $index) {
+                            $newLines[] = $line;
+                        }
+                        $actualIndex++;
+                    }
+                }
+            }
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'cron');
+            file_put_contents($tempFile, implode("\n", $newLines) . "\n");
+            shell_exec('crontab ' . $tempFile);
+            unlink($tempFile);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Delete cron job error: ' . $e->getMessage());
+            return response()->json(['success' => false]);
+        }
+    }
+
+    public function getCronStatus()
+    {
+        try {
+            // Proveri da li cron servis radi
+            $status = shell_exec('systemctl is-active cron 2>/dev/null') ?:
+                      shell_exec('service cron status 2>/dev/null');
+
+            $isActive = trim($status) === 'active' || str_contains($status, 'active (running)');
+
+            return response()->json(['status' => $isActive ? 'active' : 'inactive']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'unknown']);
+        }
+    }
+
+    public function getCronLogs()
+    {
+        try {
+            // Pročitaj cron logove
+            $logs = shell_exec('tail -50 /var/log/cron.log 2>/dev/null') ?:
+                    shell_exec('tail -50 /var/log/syslog | grep CRON 2>/dev/null') ?:
+                    'Logovi nisu dostupni';
+
+            return response($logs);
+        } catch (\Exception $e) {
+            return response('Greška pri čitanju logova: ' . $e->getMessage());
+        }
+    }
+
+    public function clearCronLogs()
+    {
+        try {
+            shell_exec('echo "" > /var/log/cron.log 2>/dev/null');
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false]);
+        }
+    }
+
+    private function getLastCronRun($command)
+    {
+        // Ova metoda bi trebala da prati poslednje izvršavanje cron zadatka
+        // Možete koristiti fajl za praćenje ili bazu podataka
+        return null;
+    }
+
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
