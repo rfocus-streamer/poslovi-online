@@ -14,7 +14,9 @@ class Message extends Model
         'service_id',
         'read_at',
         'attachment_path',
-        'attachment_name'
+        'attachment_name',
+        'type',
+        'call_data'
     ];
 
     public function sender()

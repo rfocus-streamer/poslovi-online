@@ -156,6 +156,40 @@ function appendNewMessage(msg) {
         }
     });
 
+    if(msg.type === 'call_invitation_missed' || msg.type === 'call_invitation_rejected')
+    {
+        // Pronađi element u chatHistory sa data-message-id koje odgovara msg.id
+        const message = chatHistory.querySelector(`[data-message-id="${msg.id}"]`);
+
+        // Ako je poruka pronađena, ukloni je
+        if (message) {
+            message.remove();
+        }
+
+        // Pozovi handleCallEnd ako postoji
+        if (typeof closeMiroTalkCall === 'function') {
+            handleCallEnd(); // Pozivanje funkcije ako je definisana
+            isCallActive = false;
+            // Fallback za slučaj da jQuery nije dostupan
+            const videoCallModal = document.getElementById('videoCallModal');
+            if (videoCallModal) {
+                videoCallModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                const modalBackdrop = document.querySelector('.modal-backdrop');
+                if (modalBackdrop) {
+                    modalBackdrop.remove();
+                }
+            }
+        }
+    }else if(msg.type === 'call_invitation_answered'){
+        // Pronađi element u chatHistory sa data-message-id koje odgovara msg.id
+        const message = chatHistory.querySelector(`[data-message-id="${msg.id}"]`);
+
+        // Ako je poruka pronađena, ukloni je
+        if (message) {
+            message.remove();
+        }
+    }
 
     const authUser = document.querySelector('meta[name="user_id"]').getAttribute('content')
     const isSentByCurrentUser = msg.sender_id === currentUser.id;
@@ -504,6 +538,12 @@ if (userMeta && userMeta.getAttribute('content') !== '') { // Provera da li je u
             let currentChat = document.querySelector(`[data-contact-id="${sender_id}"]`);
             if(currentChat || userMeta.getAttribute('content') == sender_id){
                 appendNewMessage(e.message);
+            }
+
+            let user_id = userMeta.getAttribute('content');
+
+            if (e.message.type === 'call_invitation' && e.message.receiver_id == user_id) {
+                showIncomingCall(e.message);
             }
         })
 

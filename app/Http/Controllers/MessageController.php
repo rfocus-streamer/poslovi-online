@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;  // Uvozimo DB fasadu
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Mail\ContactMail;
 
@@ -716,5 +717,152 @@ class MessageController extends Controller
             'blockedByHim' => $blockedByHim,
             'message' => 'Korisnik je uspešno odblokiran.'
         ], 200);
+    }
+
+    public function createMirotalkRoom(Request $request)
+    {
+        $userId = auth()->id();
+        $contactId = $request->input('contact_id');
+        $serviceId = $request->input('service_id');
+
+        if (!$contactId || !$serviceId) {
+            return response()->json(['error' => 'Nedostaju parametri.'], 422);
+        }
+
+        // Generišemo jedinstveni ID sobe
+        $service = Service::where('id', $serviceId)->first();
+        if($service){
+            $roomId = $service->title. '_' . time();
+        }else{
+            $roomId = $serviceId . '_' . $userId . '_' . $contactId . '_' . time();
+        }
+
+        $encodedRoomId = $roomId;
+
+        $userData = [
+            'id' => (string) auth()->id(),
+            'name' => auth()->user()->firstname . ' ' . auth()->user()->lastname,
+            'email' => auth()->user()->email,
+            'avatar' => auth()->user()->avatar ? Storage::url('user/' . auth()->user()->avatar) : '/images/default-avatar.png'
+        ];
+
+        // MiroTalk P2P URL sa parametrima
+        $baseUrl = 'https://p2p.mirotalk.com';
+
+        $roomUrl = $baseUrl . '/join/' . $encodedRoomId .
+            '?name=' . urlencode($userData['name']) .
+            //'&email=' . urlencode($userData['email']) .
+            '&video=false' .           // Video ISKLJUČEN na početku
+            '&audio=true' .            // Audio UKLJUČEN
+            '&notify=false';
+
+        $invitedUser = User::where('id', $contactId)->first();
+
+        $roomInvitationUrl = $baseUrl . '/join/' . $encodedRoomId .
+            '?name=' . ($invitedUser ? urlencode($invitedUser->firstname.' '.$invitedUser->lastname) : '') .
+            //'&email=' . ($invitedUser ? urlencode($invitedUser->email) : '') .
+            '&video=false' .           // Video ISKLJUČEN na početku
+            '&audio=true' .            // Audio UKLJUČEN
+            '&notify=false&contactId='.auth()->user()->id.'&serviceId='.$serviceId.'&title='.$service->title;
+
+        $call_data = [
+                    'room_id' => $encodedRoomId,
+                    'room_url' => $roomInvitationUrl,
+                    'service_title' => $service->title ?? 'Poziv',
+                    'caller_name' => auth()->user()->firstname . ' ' . auth()->user()->lastname,
+                    'caller_avatar' => auth()->user()->avatar ? Storage::url('user/' . auth()->user()->avatar) : '/images/default-avatar.png',
+                    'caller_id' => auth()->user()->id,
+                    'timestamp' => now()->timestamp
+                ];
+
+        $message = Message::create([
+                'sender_id' => auth()->id(),
+                'receiver_id' => $contactId,
+                'content' => '📞 Priprema poziva ...',
+                'service_id' =>  $serviceId,
+                'type' => 'call_invitation',
+                'call_data' => json_encode($call_data)
+        ]);
+
+        $message->load('sender');
+
+        broadcast(new MessageSent($message))->toOthers();
+
+        //$roomInvitationUrl treba poslati kroz message sent na kontakt
+        return response()->json([
+            'success' => true,
+            'roomId' => $encodedRoomId,
+            'roomUrl' => $roomUrl,
+            'apiUrl' => $baseUrl,
+            'user' => $userData,
+            'invitationMessage' => "Pozivam ".$invitedUser->firstname.' '.$invitedUser->lastname.' za ponudu '.$service->title
+        ]);
+    }
+
+    /**
+     * Ažuriraj poruku o pozivu kada korisnik ne odgovori ili odbije poziv
+     */
+    public function updateCallMessage(Request $request)
+    {
+        $request->validate([
+            'message_id' => 'required|integer|exists:messages,id',
+            'call_status' => 'required|in:missed,rejected,answered',
+            'call_duration' => 'nullable|integer'
+        ]);
+
+        try {
+            $message = Message::findOrFail($request->message_id);
+            $name = '';
+            $surname = '';
+
+            if($message)
+            {
+                // Dobijanje korisnika koji je primao poruku
+                $receiver = $message->receiver; // koristi 'receiver' vezu
+
+                // Ako je korisnik pronađen, uzmi ime i prezime
+                if ($receiver) {
+                    $name = $receiver->firstname;
+                    $surname = $receiver->lastname;
+                }else{
+                    $name = "korisnik";
+                }
+            }
+
+            $statusText = '';
+            switch ($request->call_status) {
+                case 'missed':
+                    $statusText = '📞 Poziv nije odgovoren - '.$name.' '.$surname.' se nije javio';
+                    break;
+                case 'rejected':
+                    $statusText = '📞 Poziv je odbijen od strane '.$name.' '.$surname;
+                    break;
+                case 'answered':
+                    //$duration = $request->call_duration ? " (trajao {$request->call_duration} sekundi)" : '';
+                    $statusText = "📞 Poziv je uspešno uspostavljen";
+                    break;
+            }
+
+            // Ažuriraj sadržaj poruke
+            $message->update([
+                'content' => $statusText,
+                'updated_at' => now(),
+                'type' => 'call_invitation_'.$request->call_status
+            ]);
+
+            broadcast(new MessageSent($message))->toOthers();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'updated_content' => $statusText
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Greška pri ažuriranju poruke: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

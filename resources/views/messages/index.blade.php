@@ -2,10 +2,8 @@
 <title>Poslovi Online | Poruke</title>
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<!-- Ostali meta tagovi i linkovi -->
 <!-- Toastify CSS -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
 <!-- Toastify JS -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
@@ -267,7 +265,7 @@
         transform: translateX(153px);
     }
 
- /* Poboljšan vertikalni skrollbar SAMO za kontakt listu */
+    /* Poboljšan vertikalni skrollbar SAMO za kontakt listu */
     .contacts::-webkit-scrollbar {
         width: 12px;
     }
@@ -289,6 +287,164 @@
         scrollbar-color: #9c1c2c #f1f1f1;
     }
 
+    /* Stilovi za resizable modal */
+    .modal-dialog-resizable {
+        resize: both;
+        overflow: auto;
+        min-width: 800px;
+        min-height: 700px;
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+
+    .modal-dialog-resizable .modal-content {
+        height: 100%;
+        min-height: 100%;
+    }
+
+    .modal-dialog.modal-fullscreen {
+        resize: none;
+        max-width: none;
+        max-height: none;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        margin: 0;
+        z-index: 1050; /* Dodaj visok z-index da bude ispred drugih elemenata */
+    }
+
+    .modal-header .modal-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    #maximizeModal {
+        border: none;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* MiroTalk P2P optimizacije */
+    .mirotalk-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .permission-request {
+        text-align: center;
+        padding: 20px;
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        margin: 10px;
+    }
+
+    #mirotalk-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 8px;
+        background: #000;
+        min-height: 600px;
+    }
+
+    /* Sakrij scrollbar za iframe */
+    #mirotalk-iframe::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Dodatni stilovi za button stanja */
+    .btn-call-loading {
+        position: relative;
+        pointer-events: none;
+    }
+
+    .btn-call-loading::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .btn-call-active {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+    }
+
+    /* Stilovi za permisije dugme */
+    #testPermissionsBtn.permissions-granted {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+
+    #testPermissionsBtn.permissions-denied {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    #testPermissionsBtn.permissions-unknown {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: black;
+    }
+
+    /* Pomeranje emotikona desno */
+    #emojiPalette {
+        position: absolute;  /* Postavljanje emotikona izvan toka dokumenta */
+        right: 2px;            /* Poravnanje sa desnim ivicom */
+        top: -15px;           /* Podesiti razmak od vrha, po potrebi */
+        background-color: #fff; /* Pozadinska boja za bolju vidljivost */
+        border: 1px solid #ccc;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        display: none; /* Početno sakrivanje emotikona */
+        z-index: 1000; /* Da bude ispred drugih elemenata */
+        cursor: pointer;
+    }
+
+    #messageForm {
+        position: relative;  /* Da bi se pozicionirali emotikoni unutar ove forme */
+    }
+
+    iframe {
+      /*pointer-events: none;*/
+    }
+
+    /* Mobile optimizacija */
+    @media (max-width: 768px) {
+        #mirotalk-iframe {
+            min-height: 400px;
+        }
+
+        .modal-dialog-resizable {
+            min-width: 95vw;
+            min-height: 80vh;
+        }
+    }
+
     /* Responsive stilovi */
     @media (max-width: 767px) {
         .chat-container {
@@ -300,11 +456,9 @@
         .contacts {
             height: 200px;
             border-bottom: 1px solid #dee2e6;
-            /* Podebljani skrollbar za mobilne uređaje */
-            scrollbar-width: thick; /* Firefox */
+            scrollbar-width: thick;
         }
 
-        /* Veći skrollbar za mobilne uređaje */
         .contacts::-webkit-scrollbar {
             width: 14px;
         }
@@ -332,7 +486,6 @@
             height: calc(100vh - 200px);
         }
 
-        /* Manje vidljiv skrollbar na desktopu */
         .contacts::-webkit-scrollbar {
             width: 8px;
         }
@@ -405,10 +558,25 @@
 
                 <!-- Chat Box -->
                 <div class="chat-box">
-                    <div class="d-flex text-secondary p-3 border-bottom">
-                        <i class="fas fa-comment-dots mt-1 text-info"></i> &nbsp;
-                        <h6 id="topic"><span class="text-secondary d-block d-md-none">Izaberi kontakt sa kojim želiš da započneš razgovor.</span></h6>
+
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-comment-dots mt-1 text-info"></i> &nbsp;
+                            <h6 id="topic" style="margin-top:8px" class="text-decoration-none text-secondary">
+                                <span class="text-secondary d-block d-md-none">Izaberi kontakt sa kojim želiš da započneš razgovor.</span>
+                            </h6>
+                        </div>
+
+                        <button class="btn start-call" data-contactid="" data-serviceid="" style="display: none;" id="buttonCall"  title="Pokreni poziv kroz MiroTalk integraciju">
+                            <span class="btn btn-file record-chat-audio chat_optns" data-record="0" data-chat-tab="1">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" class="select-color" style="color: rgb(198, 77, 83);">
+                                    <path fill="#c64d53" d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" style="fill: rgb(198, 77, 83);"></path>
+                                </svg>
+                                <span class="text-muted">Pozovi</span>
+                            </span>
+                        </button>
                     </div>
+
                     <div id="chatHistory" class="chat-history" data-contact-id="0">
                         <h6 class="text-secondary d-none d-md-block">Izaberi kontakt sa kojim želiš da započneš razgovor.</h6>
                     </div>
@@ -422,12 +590,73 @@
                                 <textarea name="content" id="content" class="form-control" rows="3" placeholder="Unesi poruku..." required></textarea>
                             </div>
 
+                            <!-- Paleta emotikona (skrivena inicijalno) -->
+                            <div id="emojiPalette" class="emoji-palette" style="display: none;">
+                                <div class="emoji-category">
+                                    <span class="emoji" data-emoji="😀">😀</span>
+                                    <span class="emoji" data-emoji="😃">😃</span>
+                                    <span class="emoji" data-emoji="😄">😄</span>
+                                    <span class="emoji" data-emoji="😁">😁</span>
+                                    <span class="emoji" data-emoji="😆">😆</span>
+                                    <span class="emoji" data-emoji="😅">😅</span>
+                                    <span class="emoji" data-emoji="😂">😂</span>
+                                    <span class="emoji" data-emoji="🤣">🤣</span>
+                                    <span class="emoji" data-emoji="😊">😊</span>
+                                    <span class="emoji" data-emoji="😇">😇</span>
+                                </div>
+                                <div class="emoji-category">
+                                    <span class="emoji" data-emoji="😉">😉</span>
+                                    <span class="emoji" data-emoji="😌">😌</span>
+                                    <span class="emoji" data-emoji="😍">😍</span>
+                                    <span class="emoji" data-emoji="🥰">🥰</span>
+                                    <span class="emoji" data-emoji="😘">😘</span>
+                                    <span class="emoji" data-emoji="😗">😗</span>
+                                    <span class="emoji" data-emoji="😙">😙</span>
+                                    <span class="emoji" data-emoji="😚">😚</span>
+                                    <span class="emoji" data-emoji="😋">😋</span>
+                                    <span class="emoji" data-emoji="😛">😛</span>
+                                </div>
+                                <div class="emoji-category">
+                                    <span class="emoji" data-emoji="😎">😎</span>
+                                    <span class="emoji" data-emoji="🤓">🤓</span>
+                                    <span class="emoji" data-emoji="🧐">🧐</span>
+                                    <span class="emoji" data-emoji="🥳">🥳</span>
+                                    <span class="emoji" data-emoji="😏">😏</span>
+                                    <span class="emoji" data-emoji="😒">😒</span>
+                                    <span class="emoji" data-emoji="😞">😞</span>
+                                    <span class="emoji" data-emoji="😔">😔</span>
+                                    <span class="emoji" data-emoji="😟">😟</span>
+                                    <span class="emoji" data-emoji="😕">😕</span>
+                                </div>
+                                <div class="emoji-category">
+                                    <span class="emoji" data-emoji="👍">👍</span>
+                                    <span class="emoji" data-emoji="👎">👎</span>
+                                    <span class="emoji" data-emoji="❤️">❤️</span>
+                                    <span class="emoji" data-emoji="🔥">🔥</span>
+                                    <span class="emoji" data-emoji="🎉">🎉</span>
+                                    <span class="emoji" data-emoji="🙏">🙏</span>
+                                    <span class="emoji" data-emoji="💯">💯</span>
+                                    <span class="emoji" data-emoji="✨">✨</span>
+                                    <span class="emoji" data-emoji="🌟">🌟</span>
+                                    <span class="emoji" data-emoji="✅">✅</span>
+                                </div>
+                            </div>
+
                             <div class="d-flex align-items-center justify-content-between gap-2">
                                 <input type="file" name="attachment" class="form-control form-control-sm w-50">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i> Pošalji
-                                </button>
+
+                                <div class="d-flex gap-2">
+                                    <!-- Dugme za emotikone -->
+                                    <button type="button" class="btn btn-outline-secondary" id="emojiToggle">
+                                        <i class="far fa-smile"></i>
+                                    </button>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i> Pošalji
+                                    </button>
+                                </div>
                             </div>
+
                         </div>
                     </form>
                 </div>
@@ -444,32 +673,158 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+
                     <div class="modal-body" id="servicesList">
                         <!-- Services will be listed here -->
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Video call Modal -->
+        <div class="modal fade" id="videoCallModal" tabindex="-1" aria-labelledby="videoCallModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-resizable">
+            <div class="modal-content">
+              <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="videoCallModalLabel">
+                    <i class="fas fa-video me-2"></i>Video Poziv
+                </h5>
+                <div class="modal-controls">
+                  <!-- Dodajemo dugme za testiranje permisija -->
+                  <button type="button" class="btn btn-sm btn-outline-warning me-2" id="testPermissionsBtn" title="Proveri dozvole za kameru i mikrofon">
+                    <i class="fas fa-camera"></i> Testiraj Dozvole
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-light me-2" id="maximizeModal" style="display: none;">
+                    <i class="fas fa-expand"></i>
+                  </button>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori" onclick="closeMiroTalkCall()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+              </div>
+              <div class="modal-body p-0">
+                <div id="jitsi-container" style="width: 100%; height: 700px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permission Modal -->
+        <div class="modal fade" id="permissionModal" tabindex="-1" aria-labelledby="permissionModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="permissionModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Dozvola za kameru i mikrofon
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="permission-request">
+                    <i class="fas fa-camera fa-3x text-warning mb-3"></i>
+                    <h4>Dozvolite pristup kameri i mikrofonu</h4>
+                    <p class="mb-3">Da biste koristili poziv, morate dozvoliti pristup kameru i mikrofonu.</p>
+
+                    <div class="alert alert-info">
+                        <strong>Uputstvo:</strong>
+                        <ol class="mt-2">
+                            <li>Kliknite na ikonicu kamere/mikrofona u address bar-u vašeg browser-a</li>
+                            <li>Izaberite "Allow" ili "Dozvoli" za kameru i mikrofon</li>
+                            <li>Osvežite stranicu (F5) ili ponovo pokrenite poziv</li>
+                        </ol>
+                    </div>
+
+                    <div id="firefoxWarning" style="display: none;">
+                        <div class="alert alert-warning">
+                            <strong>Napomena za Firefox korisnike:</strong>
+                            <p class="mb-0 mt-2">Firefox može imati problema sa pozivima. Ako poziv ne radi, pokušaj da osvežiš stranicu (F5) ili koristi Chrome browser.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-primary me-2" onclick="testPermissions()">
+                            <i class="fas fa-check"></i> Testiraj dozvole
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="openMiroTalkInNewTab()">
+                            <i class="fas fa-external-link-alt"></i> Otvori u novom tabu
+                        </button>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
     </div>
 </div>
 
 <script>
     // Initialize modal variable
-    let currentPage = 2;  // Početna stranica
+    let currentPage = 2;
     let servicesModal = null;
     const currentUser = @json(auth()->user());
-    let isLoading = false;  // Flag koji sprečava višestruko učitavanje u isto vreme
+    let isLoading = false;
     let directChatService = @json($directChatService);
     const chatHistoryContainer = document.getElementById('chatHistory');
+    let mirotalkIframe = null;
+    let currentRoomUrl = null;
+    window.isCallActive = false;
+    let callButtonOriginalHTML = null;
+    window.videoCallModal = document.getElementById('videoCallModal');
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Sačuvaj originalno stanje dugmeta
+        callButtonOriginalHTML = document.getElementById('buttonCall').innerHTML;
+
         if (directChatService !== null) {
             document.getElementById('service_id').value = directChatService.id;
             document.getElementById('user_id').value = directChatService.user_id;
             openChat(directChatService.user_id, directChatService.id);
             document.getElementById('topic').innerHTML = directChatService.title;
         }
+
+        // Proveri da li je Firefox i prikaži upozorenje ako jeste
+        const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+        if (isFirefox) {
+            document.getElementById('firefoxWarning').style.display = 'block';
+        }
     });
+
+    // Funkcija za resetovanje dugmeta na originalno stanje
+    window.resetCallButton = function() {
+        const button = document.getElementById('buttonCall');
+        button.innerHTML = callButtonOriginalHTML;
+        button.classList.remove('btn-call-loading', 'btn-call-active');
+        button.disabled = false;
+        isCallActive = false;
+
+        // Ponovo dodaj event listener
+        button.addEventListener('click', handleCallButtonClick);
+    }
+
+    // Funkcija za ažuriranje teksta dugmeta
+    function updateCallButtonText(text, isLoading = false, isActive = false) {
+        const button = document.getElementById('buttonCall');
+        const textSpan = button.querySelector('.text-muted');
+
+        if (textSpan) {
+            textSpan.textContent = text;
+        }
+
+        button.classList.remove('btn-call-loading', 'btn-call-active');
+
+        if (isLoading) {
+            button.classList.add('btn-call-loading');
+            button.disabled = true;
+        } else if (isActive) {
+            button.classList.add('btn-call-active');
+            button.disabled = true;
+        } else {
+            button.disabled = false;
+        }
+    }
 </script>
 
 <script type="text/javascript">
@@ -489,7 +844,7 @@
         }
 
         const data = await response.json();
-        return data;  // Vraća vreme poslednje poruke
+        return data;
     }
 
     // Funkcija koja prikazuje usluge za kontakt
@@ -500,16 +855,13 @@
         if (services.length === 0) {
             servicesList.innerHTML = '<p>Nema dostupnih usluga za ovog korisnika</p>';
         } else {
-            // Za svaku uslugu pozivamo asinhronu funkciju da dobijemo poslednju poruku
             for (let service of services) {
                 try {
-                    // Čekamo da dobijemo poslednju poruku
                     let contactLastMessage = await getLastMessageContact(contactId, service.service_id);
                     const serviceItem = document.createElement('div');
                     serviceItem.className = 'service-item p-3 border-bottom';
                     serviceItem.style.cursor = 'pointer';
 
-                    // Kreiranje HTML sadržaja za element
                     let unreadBadge = '';
                     if (contactLastMessage.unread_count > 0) {
                         unreadBadge = `
@@ -532,22 +884,35 @@
                     `;
 
                     serviceItem.addEventListener('click', () => {
-                        // Prikazivanje indikatora učitavanja
                         let loadingMsg = '<i class="fa fa-spinner fa-spin"></i> Učitavanje poruka...';
                         document.getElementById('service_id').value = service.service_id;
                         document.getElementById('user_id').value = contactId;
                         document.getElementById('chatHistory').innerHTML = '<div class="text-center p-3">'+loadingMsg+'</div>';
                         openChat(contactId, service.service_id);
+
+                        // Selektujte dugme
+                        var button = document.querySelector('.btn.start-call');
+
+                        // Promenite vrednosti za data-contactid i data-serviceid
+                        button.setAttribute('data-contactid', contactId);
+                        button.setAttribute('data-serviceid', service.service_id);
+
+                        document.getElementById('buttonCall').style.display = 'block';
+                        // Pronađi element sa ID-jem videoCallModalLabel (to je naslov u modal prozoru)
+                        const titleElement = document.getElementById("videoCallModalLabel");
+
+                        // Promeni tekst koji se nalazi u tom elementu
+                        titleElement.innerHTML = '<i class="fas fa-video me-2"></i> '+service.service_title;
+
                         if (servicesModal) {
                             servicesModal.hide();
-                            document.getElementById('topic').innerHTML = '<a href="/ponuda/'+service.service_id+'" class="text-decoration-none text-secondary">'+service.service_title+'</a>';
+                            document.getElementById('topic').innerHTML = service.service_title;
                         }
                     });
 
                     servicesList.appendChild(serviceItem);
                 } catch (error) {
                     console.error('Greška pri dobijanju poslednje poruke za uslugu:', error);
-                    // Ako ne uspemo da dobijemo poslednju poruku, možemo prikazati poruku
                     const serviceItem = document.createElement('div');
                     serviceItem.className = 'service-item p-3 border-bottom';
                     serviceItem.style.cursor = 'pointer';
@@ -564,7 +929,6 @@
             }
         }
 
-        // Inicijalizacija ili prikazivanje modalnog prozora
         if (!servicesModal) {
             servicesModal = new bootstrap.Modal(document.getElementById('servicesModal'));
         }
@@ -575,14 +939,12 @@
 <script type="text/javascript">
 // Function to open the chat and display history for the selected contact
 async function openChat(contactId, serviceId) {
-         event.preventDefault(); // Sprečava standardnu akciju linka
-    const apiToken = "{{ $token }}";  // Token koji se koristi za autentifikaciju
+    //event.preventDefault();
+    const apiToken = "{{ $token }}";
 
     try {
-        // Resetuj prikazane datume svaki put kada se otvori modal
         displayedDates = [];
 
-        // API poziv za preuzimanje poruka
         const response = await fetch(`/api/get-messages?contact_id=${contactId}&service_id=${serviceId}`, {
             method: 'GET',
             headers: {
@@ -596,35 +958,24 @@ async function openChat(contactId, serviceId) {
         }
 
         const data = await response.json();
-        // Prvo proveravamo da li postoji "data" unutar "messages"
         if (data.messages && data.messages.length > 0) {
-            chatHistoryContainer.innerHTML = '';  // Očisti prethodne poruke
+            chatHistoryContainer.innerHTML = '';
 
             const chatMessages = data.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-            // Iteracija kroz sve poruke u "data" nizu
             chatMessages.forEach(message => {
                 const messageDiv = document.createElement('div');
-                messageDiv.innerHTML = getMessageHtml(message);  // Pretpostavljamo da postoji funkcija koja generiše HTML za poruku
+                messageDiv.innerHTML = getMessageHtml(message);
                 chatHistoryContainer.appendChild(messageDiv)
 
-                // Kreiraj observer koji će pratiti vidljivost div-ova
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach((entry, index) => {
-                        // Ako je element postao vidljiv i tab je vidljiv
                         if (entry.isIntersecting && document.visibilityState === 'visible') {
-
-
-                            // Uzimanje childNodes
                             const childNodes = entry.target.childNodes;
-
-                            // Pronađi child element koji sadrži 'data-message-id'
                             childNodes.forEach(node => {
                                 if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('data-message-id')) {
                                     const messageId = node.getAttribute('data-message-id');
-                                    // Onda možeš koristiti messageId za dalju obradu
                                     const message = data.messages.find(msg => msg.id === parseInt(messageId));
-
                                     if (message) {
                                         if(!message.read_at){
                                             sendWhisper(message);
@@ -635,85 +986,56 @@ async function openChat(contactId, serviceId) {
                                 }
                             });
                         }
-
                     });
-                }, { threshold: 0.5 });  // Element mora biti 50% vidljiv da bi bio aktiviran
+                }, { threshold: 0.5 });
 
                 if (messageDiv) {
-                    observer.observe(messageDiv);  // Posmatraj div koji odgovara ovoj poruci
+                    observer.observe(messageDiv);
                 }
-
-
             });
             chatHistoryContainer.setAttribute('data-contact-id', contactId);
         } else {
-            // Ako nema poruka, prikaži odgovarajuću poruku u modalu
             document.getElementById('chatHistory').innerHTML = '<p class="text-center">Nema poruka za ovu uslugu.</p>';
         }
 
-        // Proveravamo blokadu s obe strane
         if (data.blockedByHim) {
-            // Ako je korisnik blokirao vas
             const chatArea = document.getElementById('chatArea');
             const messageForm = document.getElementById('messageForm');
-
-            // Sakrij formular za slanje poruka
             chatArea.style.display = 'none';
-
-            // Prikazivanje obavestenja da vas je korisnik blokirao
             const blockMessage = document.createElement('div');
                   blockMessage.classList.add('alert', 'alert-warning', 'text-center', 'mt-3');
                   blockMessage.textContent = 'Ovaj korisnik te blokirao i ne možeš slati poruke.';
-
-                // Dodajte obaveštenje ispod forme (ako je forma još uvek u DOM-u)
                 messageForm.parentNode.insertBefore(blockMessage, messageForm.nextSibling);
         } else if (data.blockedByYou) {
-                // Ako ste vi blokirali korisnika
                 const chatArea = document.getElementById('chatArea');
                 const messageForm = document.getElementById('messageForm');
-
-                // Sakrij formular za slanje poruka
                 chatArea.style.display = 'none';
-
-                // Prikazivanje obavestenja da ste vi blokirali korisnika
                 const blockMessage = document.createElement('div');
                       blockMessage.classList.add('alert', 'alert-warning', 'text-center', 'mt-3');
                       blockMessage.textContent = 'Ti si blokirao ovog korisnika i ne možeš slati poruke.';
-
-                // Dodajte obaveštenje ispod forme (ako je forma još uvek u DOM-u)
                 messageForm.parentNode.insertBefore(blockMessage, messageForm.nextSibling);
         } else {
-                // Ako nijedna blokada nije postavljena, prikazujemo formular za slanje poruka
                 const chatArea = document.getElementById('chatArea');
                 chatArea.style.display = 'block';
-
-                // Uklonite obaveštenje o blokadi (ako postoji)
                 const existingBlockMessage = document.querySelector('.alert-warning');
                 if (existingBlockMessage) {
                     existingBlockMessage.remove();
                 }
         }
 
-        // Selektuj sve poruke koje imaju klasu "unreadMessagesDiv"
         const unreadMessagesDiv = chatHistoryContainer.querySelectorAll('.unreadMessagesDiv');
-
-        // Ako postoje nepročitane poruke, skroluj do poslednje
         if (unreadMessagesDiv.length > 0) {
-            const lastUnreadMessage = unreadMessagesDiv[unreadMessagesDiv.length - 1];  // Poslednja nepročitana poruka
-
-            // Skroluj do te poruke
+            const lastUnreadMessage = unreadMessagesDiv[unreadMessagesDiv.length - 1];
             lastUnreadMessage.scrollIntoView({
-                behavior: 'smooth',   // Glatko skrolovanje
-                block: 'nearest'      // Podesi poziciju poruke na vidljivo područje (ne mora biti na samom vrhu)
+                behavior: 'smooth',
+                block: 'nearest'
             });
         } else {
-            // Ako nema nepročitanih poruka, skroluj na dno chat-a
             chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
         }
-        adjustDateSeparators(); // Dodajte ovaj poziv
+        adjustDateSeparators();
     } catch (error) {
         console.error('Greška prilikom preuzimanja poruka:', error);
-        //alert('Došlo je do greške prilikom učitavanja poruka.');
     }
 }
 </script>
@@ -721,18 +1043,12 @@ async function openChat(contactId, serviceId) {
 <script type="text/javascript">
 // Funkcija za generisanje HTML-a poruke
 function getMessageHtml(msg) {
-    // Formatiraj datum i vreme
     const formattedDate = formatDate(msg.created_at);
-    const [date, time] = formattedDate.split(' ');  // Razdvaja datum (YYYY-MM-DD) i vreme (HH:MM)
-
+    const [date, time] = formattedDate.split(' ');
     let attach = `${msg.attachment_name}`;
 
-    // Zavisno o tome da li je poruka poslana ili primljena, odaberi odgovarajući raspored
     if (msg.sender_id === currentUser.id) {
-        // Zameni sve nove redove (\n) sa <br> tagovima
         let formattedContent = msg.content.replace(/\n/g, '<br>');
-
-        // Dodaj HTML za poruku
         let messageHtml = `
             <div class="conversation-list-right" data-message-id="${msg.id}" data-date="${date}">
                 <div class="chat-avatar">
@@ -745,13 +1061,12 @@ function getMessageHtml(msg) {
                             <i class="bx bx-check-double bx-check"></i>
                         </span>
                         <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
-                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                        <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small>
                     </div>
                     <div class="ctext-wrap">
                         <div class="ctext-wrap-content">
                             <p class="mb-0 rightChat">${formattedContent}</p>
                         </div>
-                        <!-- Prilog (ako postoji) -->
                         ${msg.attachment_path ? `
                         <div class="d-flex justify-content-end mt-1">
                             <small><a href="/${msg.attachment_path}" target="_blank" class="text-decoration-none">
@@ -764,18 +1079,15 @@ function getMessageHtml(msg) {
             </div>
         `;
 
-        // Ako je poruka pročitana, dodajemo status pročitano
         if (msg.read_at) {
             messageHtml = messageHtml.replace('<small class="read-status"></small>', `
                 <i class="fas fa-check-double text-primary" title="Pročitano ${formatDate(msg.read_at)}"></i>
             `);
-            // Dodajemo klasu "read" za označavanje da je poruka pročitana
             messageHtml = messageHtml.replace('<div class="conversation-list-right"', '<div class="conversation-list-right read"');
         }
 
         return messageHtml;
     } else {
-        // Dodaj HTML za poruku
         let messageHtml = `
                         <div class="conversation-list" data-message-id="${msg.id}" data-date="${date}">
                             <div class="chat-avatar">
@@ -788,13 +1100,12 @@ function getMessageHtml(msg) {
                                         <i class="bx bx-check-double bx-check"></i>
                                     </span>
                                     <strong>${msg.sender.firstname} ${msg.sender.lastname}</strong>
-                                    <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small><!-- Samo vreme -->
+                                    <small class="text-muted mb-0 me-2">${time}</small> <small class="read-status"></small>
                                 </div>
                                 <div class="ctext-wrap">
                                     <div class="ctext-wrap-content">
                                         <p class="mb-0 leftChat">${msg.content}</p>
                                     </div>
-                                    <!-- Prilog (ako postoji) -->
                                     ${msg.attachment_path ? `
                                     <div class="d-flex justify-content-end mt-1">
                                         <small><a href="/${msg.attachment_path}" target="_blank" class="text-decoration-none">
@@ -808,7 +1119,6 @@ function getMessageHtml(msg) {
                     `;
         if (!msg.read_at) {
             messageHtml = messageHtml.replace('<small class="read-status"></small>', `<small class="read-status unreadMessagesDiv"></small>`);
-            // Dodajemo klasu "read" za označavanje da je poruka pročitana
             messageHtml = messageHtml.replace('<div class="conversation-list-right"', '<div class="conversation-list-left"');
         }
 
@@ -821,22 +1131,17 @@ function getMessageHtml(msg) {
 function formatDate(dateString) {
     if (!dateString) return 'Invalid date';
     const date = new Date(dateString);
-
-    // Opcije za formatiranje datuma i vremena
     const options = {
-        timeZone: 'Europe/Belgrade', // Postavljanje vremenske zone na Beograd
+        timeZone: 'Europe/Belgrade',
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false // Koristi 24-časovni format
+        hour12: false
     };
-
-    // Formater koji koristi vremensku zonu i daje željeni format
     const formattedDate = new Intl.DateTimeFormat('sr-RS', options).format(date);
-
     return formattedDate;
 }
 </script>
@@ -844,30 +1149,25 @@ function formatDate(dateString) {
 <script type="text/javascript">
 async function toggleBlockStatus(checkbox) {
     const contactId = checkbox.getAttribute('data-contact-id');
-    const isBlocked = checkbox.checked;  // true ako je označen, false ako nije
+    const isBlocked = checkbox.checked;
 
-    // Dobijanje CSRF tokena iz meta taga
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    // URL na osnovu da li blokiramo ili odblokiramo korisnika
     const apiUrl = isBlocked
-        ? `/api/messages/block/${contactId}`  // Za blokiranje
-        : `/api/messages/unblock/${contactId}`;  // Za odblokiranje
+        ? `/api/messages/block/${contactId}`
+        : `/api/messages/unblock/${contactId}`;
 
      const apiToken = "{{ $token }}";
 
-    // Pozovite backend API da blokirate ili odblokirate korisnika
     const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiToken}`,  // Dodajte Bearer token
+            'Authorization': `Bearer ${apiToken}`,
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken  // Dodajte CSRF token
+            'X-CSRF-TOKEN': csrfToken
         },
         body: JSON.stringify({ user_id: contactId }),
     });
 
-    // Provera odgovora
     if (!response.ok) {
         throw new Error('Greška prilikom promene statusa blokiranja');
     }
@@ -877,55 +1177,41 @@ async function toggleBlockStatus(checkbox) {
     if (data.success) {
         Toastify({
                 text: isBlocked ? "Korisnik je blokiran." : "Korisnik je odblokiran.",
-                duration: 3000,  // Dužina prikaza toasta u milisekundama
-                gravity: "top",  // Prikaz na vrhu stranice
-                position: "right",  // Pozicija desno
+                duration: 3000,
+                gravity: "top",
+                position: "right",
                 backgroundColor: isBlocked ? "linear-gradient(to right, #ff5f6d, #ffc3a0)" : "linear-gradient(to right, #4CAF50, #8BC34A)",
-                stopOnFocus: true,  // Pauza na toastu kad korisnik pređe mišem
+                stopOnFocus: true,
             }).showToast();
 
-        // Ako je ID kontakta isti kao data-receiver-id, menjaćemo status
         const chatHistoryDiv = document.getElementById('chatHistory');
-        const receiverId = chatHistoryDiv.dataset.contactId; // ili .getAttribute('data-contact-id')
+        const receiverId = chatHistoryDiv.dataset.contactId;
 
-        // Ako odgovara, pozivamo funkciju za prikazivanje obaveštenja
         if (receiverId == contactId) {
             if (data.blockedByHim) {
-                // Ako vas je korisnik blokirao
                 showBlockMessage('Ovaj korisnik te blokirao i ne možeš slati poruke.', 'none');
             } else if (data.blockedByYou) {
-                // Ako ste vi blokirali korisnika
                 showBlockMessage('Ti si blokirao ovog korisnika i ne možeš slati poruke.', 'none');
             } else {
-                // Ako nijedna blokada nije postavljena, omogućavamo slanje poruka
                 showBlockMessage('', 'block');
             }
         }
     }
 }
 
-
-// Funkcija koja prikazuje ili sakriva formular i obaveštenje
 function showBlockMessage(message, displayType) {
     const chatArea = document.getElementById('chatArea');
     const messageForm = document.getElementById('messageForm');
-
-    // Sakrij formular za slanje poruka
     chatArea.style.display = displayType;
-
-    // Ako postoji obaveštenje, uklonite ga
     const existingBlockMessage = document.querySelector('.alert-warning');
     if (existingBlockMessage) {
         existingBlockMessage.remove();
     }
 
     if (message) {
-        // Kreiramo novo obaveštenje o blokadi
         const blockMessage = document.createElement('div');
         blockMessage.classList.add('alert', 'alert-warning', 'text-center', 'mt-3');
         blockMessage.textContent = message;
-
-        // Dodajemo obaveštenje ispod forme
         messageForm.parentNode.insertBefore(blockMessage, messageForm.nextSibling);
     }
 }
@@ -937,16 +1223,13 @@ function showBlockMessage(message, displayType) {
 chatHistoryContainer.addEventListener('scroll', async () => {
     const contactId = chatHistoryContainer.getAttribute('data-contact-id');
     const serviceId = document.getElementById('service_id').value;
-    // Ako je skrolovanje došlo do dna i još nismo učitali poruke
-    const nearTop = chatHistoryContainer.scrollTop <= 10;  // Blizu vrha (neka mala tolerancija)
+    const nearTop = chatHistoryContainer.scrollTop <= 10;
 
     if (nearTop && !isLoading) {
-        isLoading = true;  // Sprečava višestruko učitavanje
-
-         const apiToken = "{{ $token }}";  // Token za autentifikaciju
+        isLoading = true;
+         const apiToken = "{{ $token }}";
 
         try {
-            // API poziv za novije poruke (pretpostavljamo paginaciju)
             const response = await fetch(`/api/get-messages?contact_id=${contactId}&service_id=${serviceId}&page=${currentPage}`, {
                 method: 'GET',
                 headers: {
@@ -960,31 +1243,26 @@ chatHistoryContainer.addEventListener('scroll', async () => {
             }
 
             const data = await response.json();
-            // Sortiramo poruke od starijih ka novijim
             chatMessages = data.messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            currentPage += 1;
 
-            currentPage += 1;  // Uvećavamo broj stranice za sledeći API poziv
-
-            // Dodajemo novije poruke na kraj
             chatMessages.forEach(msg => {
                 const messageDiv = document.createElement('div');
-                messageDiv.innerHTML = getMessageHtml(msg);  // Pretpostavka: postoji funkcija koja generiše HTML
+                messageDiv.innerHTML = getMessageHtml(msg);
                 chatHistoryContainer.insertBefore(messageDiv, chatHistoryContainer.firstChild);
             });
 
-            adjustDateSeparators(); // Dodajte ovaj poziv
+            adjustDateSeparators();
 
         } catch (error) {
             console.error('Error fetching messages:', error);
         }
 
-        isLoading = false;  // Omogućava novo učitavanje
+        isLoading = false;
     }
 });
 
-
 function adjustDateSeparators() {
-    // Ukloni postojeće separatore
     const existingSeparators = chatHistoryContainer.querySelectorAll('.date-separator-container');
     existingSeparators.forEach(separator => separator.remove());
 
@@ -1009,5 +1287,625 @@ function adjustDateSeparators() {
         }
     });
 }
+</script>
+
+<script>
+// Firefox error handling za MiroTalk
+function setupFirefoxErrorHandling() {
+    // Proveri da li je Firefox
+    const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+
+    if (isFirefox) {
+        console.log('Firefox detected - setting up MiroTalk error handling');
+
+        // Globalni error handler za MiroTalk greške
+        window.addEventListener('error', function(e) {
+            if (e.filename && (e.filename.includes('speechRecognition.js') || e.filename.includes('videoGrid.js'))) {
+                //console.warn('MiroTalk error suppressed for Firefox:', e.message);
+                e.preventDefault();
+                return true;
+            }
+        }, true);
+
+        // Error handler za promise greške
+        window.addEventListener('unhandledrejection', function(e) {
+            if (e.reason && e.reason.toString().includes('getId')) {
+                //console.warn('MiroTalk getId promise error suppressed');
+                e.preventDefault();
+                return true;
+            }
+        });
+    }
+}
+
+// Funkcija za dobijanje optimizovanog MiroTalk URL-a
+function getOptimizedMiroTalkUrl(roomUrl) {
+    let optimizedUrl = roomUrl;
+    const params = [
+        'hideLeaveBtn=true',
+        'minimalUI=true',
+        'autoJoin=true',
+        'speechRecognition=false',
+        'startWithVideoMuted=true',
+        'startWithAudioMuted=true',
+        'disableSimulcast=true',        // Dodajte i za sve browsere
+        'enableNoAudioDetection=false', // Onemogući automatsku detekciju audio problema
+        'enableNoisyMicDetection=false', // Onemogući detekciju bučnog mikrofona
+        'avatar=0&audio=1&video=0&screen=0&chat=0&hide=0&notify=0'
+    ];
+
+    // Proveri da li URL već ima parametre
+    if (roomUrl.includes('?')) {
+        optimizedUrl += '&' + params.join('&');
+    } else {
+        optimizedUrl += '?' + params.join('&');
+    }
+
+    return optimizedUrl;
+}
+
+// Ažurirana MiroTalk P2P integracija
+document.addEventListener('DOMContentLoaded', function () {
+    let isFullscreen = false;
+    const modalEl = document.getElementById('videoCallModal');
+    const container = document.getElementById('jitsi-container');
+    const maximizeBtn = document.getElementById('maximizeModal');
+    const testPermissionsBtn = document.getElementById('testPermissionsBtn');
+    const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
+
+    // Provera da li treba automatski otvoriti video modal
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldOpenVideoCall = urlParams.get('openVideoCall');
+    const contactId = urlParams.get('contactId');
+    const serviceId = urlParams.get('serviceId');
+
+    if (shouldOpenVideoCall === 'true') {
+        const title = urlParams.get('title').trim();
+        const room_url = urlParams.get('room_url');
+
+        // // Ukloni parametre iz URL-a da se ne bi ponovilo pri osvežavanju
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // // Sačekaj da se stranica potpuno učita
+        setTimeout(() => {
+            if (contactId && serviceId) {
+                // Postavi vrednosti za kontakt i servis
+                let loadingMsg = '<i class="fa fa-spinner fa-spin"></i> Učitavanje poruka...';
+                document.getElementById('service_id').value = serviceId;
+                document.getElementById('user_id').value = contactId;
+                document.getElementById('chatHistory').innerHTML = '<div class="text-center p-3">'+loadingMsg+'</div>';
+                // Otvori chat pre pokretanja poziva
+                openChat(contactId, serviceId);
+
+                // Postavi podatke na dugme za poziv
+                const button = document.querySelector('.btn.start-call');
+                button.setAttribute('data-contactid', contactId);
+                button.setAttribute('data-serviceid', serviceId);
+                document.getElementById('buttonCall').style.display = 'block';
+                document.getElementById('topic').innerHTML = '<a href="#">'+title+'</a>';
+                document.getElementById('videoCallModalLabel').innerText = title;
+
+
+                // Proveri dozvole pre pokretanja poziva
+                checkAndUpdatePermissions().then((hasPermissions) => {
+                    if (hasPermissions) {
+                        //Koristi optimizovani URL za Firefox
+                        const finalUrl = getOptimizedMiroTalkUrl(room_url);
+                        openMiroTalkInModal(finalUrl);
+                    } else {
+                        Toastify({
+                            text: "🔒 Molimo proveri dozvole pre pokretanja poziva.",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "linear-gradient(to right, #ffa726, #ff9800)",
+                        }).showToast();
+                        permissionModal.show();
+                    }
+                });
+            }
+        }, 500);
+    }
+
+    // Postavi Firefox error handling
+    setupFirefoxErrorHandling();
+
+    // Funkcija za proveru i ažuriranje statusa dozvola
+    async function checkAndUpdatePermissions() {
+        try {
+            const hasPermissions = await checkMediaPermissionsWithRefresh();
+
+            // Provera da li je korisnik u Firefoxu
+            const isFirefox = /firefox/i.test(navigator.userAgent);
+
+            if (isFirefox) {
+                // Ako je Firefox, prikazujemo specifičnu poruku
+                testPermissionsBtn.classList.remove('permissions-denied', 'permissions-unknown');
+                testPermissionsBtn.classList.add('permissions-granted');
+                testPermissionsBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Firefox može imati problema sa pozivima';
+                testPermissionsBtn.title = "Ako poziv ne radi, pokušaj da osvežiš stranicu (F5) ili koristi Chrome browser.";
+                return true;
+            } else if (hasPermissions) {
+                // Ako je dozvola data
+                testPermissionsBtn.classList.remove('permissions-denied', 'permissions-unknown');
+                testPermissionsBtn.classList.add('permissions-granted');
+                testPermissionsBtn.innerHTML = '<i class="fas fa-check-circle"></i> Dozvole OK';
+                testPermissionsBtn.title = "Dozvole za kameru i mikrofon su podešene";
+                return true;
+            } else {
+                // Ako dozvola nije data
+                testPermissionsBtn.classList.remove('permissions-granted', 'permissions-unknown');
+                testPermissionsBtn.classList.add('permissions-denied');
+                testPermissionsBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Problemi sa dozvolama';
+                testPermissionsBtn.title = "Klikni da rešiš probleme sa dozvolama";
+                return false;
+            }
+        } catch (error) {
+            // Ako dođe do greške
+            testPermissionsBtn.classList.remove('permissions-granted', 'permissions-denied');
+            testPermissionsBtn.classList.add('permissions-unknown');
+            testPermissionsBtn.innerHTML = '<i class="fas fa-question-circle"></i> Proveri Dozvole';
+            testPermissionsBtn.title = "Status dozvola nije poznat";
+            return false;
+        }
+    }
+
+    // Provera dozvola sa osvežavanjem
+    async function checkMediaPermissionsWithRefresh() {
+        try {
+            // Prvo probaj da pristupiš medijima da osvežiš permisije
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: true
+            });
+
+            // Oslobodi stream odmah
+            stream.getTracks().forEach(track => track.stop());
+
+            // Sada proveri status permisija
+            let microphoneGranted = false;
+            let cameraGranted = false;
+
+            if (navigator.permissions) {
+                try {
+                    const micPermission = await navigator.permissions.query({ name: 'microphone' });
+                    const camPermission = await navigator.permissions.query({ name: 'camera' });
+                    microphoneGranted = micPermission.state === 'granted';
+                    cameraGranted = camPermission.state === 'granted';
+                } catch (e) {
+                    // Fallback ako Permission API nije podržan
+                    console.log('Permission API not fully supported, using media access as indicator');
+                    microphoneGranted = true;
+                    cameraGranted = true;
+                }
+            } else {
+                // Ako Permission API nije dostupan, verujemo da su dozvole date
+                microphoneGranted = true;
+                cameraGranted = true;
+            }
+
+            return microphoneGranted && cameraGranted;
+        } catch (error) {
+            console.log('Media access denied:', error);
+            return false;
+        }
+    }
+
+    // Poboljšana funkcija za testiranje dozvola
+    window.testPermissions = async function() {
+        const hasAccess = await checkMediaPermissionsWithRefresh();
+
+        // Ažuriraj status dugmeta
+        await checkAndUpdatePermissions();
+
+        if (hasAccess) {
+            Toastify({
+                text: "✅ Dozvole su uspešno podešene!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+            }).showToast();
+            permissionModal.hide();
+
+            // Ponovo pokreni poziv sa osveženim permisijama
+            if (currentRoomUrl) {
+                openMiroTalkInModal(currentRoomUrl);
+            }
+        } else {
+            Toastify({
+                text: "❌ Dozvole nisu dodeljene. Prati uputstvo iznad.",
+                duration: 4000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc3a0)",
+            }).showToast();
+
+            // Prikaži detaljnije uputstvo u modalu
+            const permissionInstructions = document.querySelector('.permission-request');
+            if (permissionInstructions && !permissionInstructions.querySelector('#individualPermissions')) {
+                permissionInstructions.innerHTML += `
+                    <div class="alert alert-danger mt-3" id="individualPermissions">
+                        <strong>Trenutni status:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Kamera: <span id="cameraStatus">Nije dozvoljena</span></li>
+                            <li>Mikrofon: <span id="microphoneStatus">Nije dozvoljen</span></li>
+                        </ul>
+                    </div>
+                `;
+
+                // Dodaj dinamičku proveru statusa
+                checkIndividualPermissions();
+            }
+        }
+    }
+
+    // Funkcija za proveru individualnih dozvola
+    async function checkIndividualPermissions() {
+        try {
+            // Provera kamere
+            try {
+                const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('cameraStatus').textContent = '✅ Dozvoljena';
+                document.getElementById('cameraStatus').className = 'text-success';
+                cameraStream.getTracks().forEach(track => track.stop());
+            } catch (e) {
+                document.getElementById('cameraStatus').textContent = '❌ Nije dozvoljena';
+                document.getElementById('cameraStatus').className = 'text-danger';
+            }
+
+            // Provera mikrofona
+            try {
+                const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                document.getElementById('microphoneStatus').textContent = '✅ Dozvoljen';
+                document.getElementById('microphoneStatus').className = 'text-success';
+                microphoneStream.getTracks().forEach(track => track.stop());
+            } catch (e) {
+                document.getElementById('microphoneStatus').textContent = '❌ Nije dozvoljen';
+                document.getElementById('microphoneStatus').className = 'text-danger';
+            }
+        } catch (error) {
+            console.error('Error checking individual permissions:', error);
+        }
+    }
+
+    // Event listener za dugme za testiranje dozvola u modalu
+    testPermissionsBtn.addEventListener('click', function() {
+        // Proveri permisije i prikaži modal ako je potrebno
+        checkAndUpdatePermissions().then((hasPermissions) => {
+            if (!hasPermissions) {
+                permissionModal.show();
+            } else {
+                Toastify({
+                    text: "✅ Dozvole su već podešene!",
+                    duration: 2000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
+            }
+        });
+    });
+
+    // Funkcija za rukovanje klikom na dugme poziva
+    window.handleCallButtonClick = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const contactId = this.getAttribute('data-contactid');
+        const serviceId = this.getAttribute('data-serviceid');
+
+        if (!contactId || !serviceId) {
+            Toastify({
+                text: "Moraš prvo izabrati kontakt i ponudu pre pokretanja poziva.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc3a0)",
+            }).showToast();
+            return;
+        }
+
+        // Proveri dozvole pre pokretanja poziva
+        checkAndUpdatePermissions().then((hasPermissions) => {
+            if (hasPermissions) {
+                startMiroTalkCall(contactId, serviceId, this);
+            } else {
+                Toastify({
+                    text: "🔒 Molimo proveri dozvole pre pokretanja poziva.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ffa726, #ff9800)",
+                }).showToast();
+                permissionModal.show();
+            }
+        });
+    }
+
+    // Ažurirana funkcija za pokretanje poziva
+    function startMiroTalkCall(contactId, serviceId, buttonElement) {
+        const apiToken = "{{ $token }}";
+
+        // Ažuriraj dugme na "Priprema poziva..."
+        updateCallButtonText('Priprema poziva...', true, false);
+
+        fetch("{{ route('create.mirotalk.room') }}", {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiToken}`,
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                contact_id: contactId,
+                service_id: serviceId
+            })
+        })
+        .then(async response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(async data => {
+            if (!data.success) {
+                throw new Error(data.error || 'Došlo je do greške');
+            }
+
+            currentRoomUrl = data.roomUrl;
+
+            // Koristi optimizovani URL za Firefox
+            const finalUrl = getOptimizedMiroTalkUrl(currentRoomUrl);
+
+            openMiroTalkInModal(finalUrl);
+
+            // Pošalji pozivnicu tek kada se veza uspostavi
+            setTimeout(() => {
+                if (isCallActive) {
+                    sendCallInvitation(contactId, serviceId, data.invitationMessage);
+                }
+            }, 3000);
+
+        })
+        .catch(error => {
+            console.error('Greška:', error);
+            Toastify({
+                text: "Došlo je do greške pri pokretanju poziva: " + error.message,
+                duration: 5000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc3a0)",
+            }).showToast();
+            resetCallButton();
+        });
+    }
+
+    // Ažurirana funkcija za otvaranje MiroTalk P2P u modalu
+    function openMiroTalkInModal(roomUrl) {
+        const container = document.getElementById('jitsi-container');
+        const maximizeBtn = document.getElementById('maximizeModal');
+        maximizeBtn.click();
+
+        container.innerHTML = `
+            <div class="mirotalk-loading text-center p-5">
+                <i class="fas fa-video fa-spin fa-3x text-primary"></i>
+                <p class="mt-3">Uspostavljam video vezu...</p>
+                <small class="text-muted">Molimo sačekajte dok se poziv ne uspostavi.</small>
+            </div>
+        `;
+
+        const iframe = document.createElement('iframe');
+        iframe.src = roomUrl;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '8px';
+        iframe.allow = 'microphone; fullscreen; display-capture; autoplay;camera;';
+       // iframe.deny = 'camera;';
+        iframe.allowFullscreen = true;
+        iframe.title = 'Video Poziv - MiroTalk';
+        iframe.id = 'mirotalk-iframe';
+
+        iframe.onload = function() {
+            //console.log('MiroTalk iframe loaded - veza se uspostavlja');
+            mirotalkIframe = iframe;
+            isCallActive = true;
+
+            // Ažuriraj dugme na "Razgovor u toku" kada se iframe učita
+            updateCallButtonText('Razgovor u toku', false, true);
+
+            // Ažuriraj status dozvola
+            checkAndUpdatePermissions();
+
+            // Dodaj event listener za praćenje stanja poziva
+            window.addEventListener('message', function(event) {
+                if (event.data === 'mirotalk-call-ended' || event.data === 'mirotalk-call-failed') {
+                    handleCallEnd();
+                }
+            });
+        };
+
+        iframe.onerror = function(error) {
+            console.error('MiroTalk iframe error:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger text-center p-5">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <h4>Greška pri učitavanju poziva</h4>
+                    <p>Molimo vas da proverite dozvole za kameru i mikrofon.</p>
+                    <div class="mt-3">
+                        <button class="btn btn-warning me-2" onclick="openMiroTalkInNewTab()">
+                            <i class="fas fa-external-link-alt"></i> Otvori u novom tabu
+                        </button>
+                        <button class="btn btn-info" onclick="retryMiroTalkConnection()">
+                            <i class="fas fa-redo"></i> Pokušaj ponovo
+                        </button>
+                    </div>
+                </div>
+            `;
+            handleCallEnd();
+        };
+
+        container.innerHTML = '';
+        container.appendChild(iframe);
+
+        const modalEl = document.getElementById('videoCallModal');
+        const bootstrapModal = new bootstrap.Modal(modalEl);
+        bootstrapModal.show();
+
+        // Ažuriraj status dozvola kada se modal otvori
+        checkAndUpdatePermissions();
+
+        // Kada se modal zatvori
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            handleCallEnd();
+        });
+    }
+
+    // Funkcija za rukovanje završetkom poziva
+    window.handleCallEnd = function() {
+        isCallActive = false;
+        closeMiroTalkCall();
+        resetCallButton();
+    }
+
+    // Ažurirana funkcija za zatvaranje MiroTalk poziva
+    window.closeMiroTalkCall = function() {
+        if (mirotalkIframe) {
+            try {
+                mirotalkIframe.contentWindow.postMessage({
+                    action: 'leaveRoom',
+                    type: 'mirotalk-leave'
+                }, '*');
+            } catch (e) {
+                console.log('Cannot send leave command due to CORS');
+            }
+
+            const container = document.getElementById('jitsi-container');
+            container.innerHTML = '<div class="text-center p-5"><i class="fas fa-video fa-3x text-muted"></i><p class="mt-3">Poziv je završen</p></div>';
+            mirotalkIframe = null;
+            currentRoomUrl = null;
+        }
+        resetCallButton();
+    }
+
+    // Funkcija za slanje pozivnice (samo kada je veza uspostavljena)
+    function sendCallInvitation(contactId, serviceId, invitationMessage) {
+        if (!isCallActive) return; // Pošalji samo ako je poziv aktivan
+
+        Toastify({
+            text: invitationMessage,
+            duration: 4000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+        }).showToast();
+
+    }
+
+    // Funkcija za otvaranje u novom tabu
+    window.openMiroTalkInNewTab = function() {
+        if (currentRoomUrl) {
+            window.open(currentRoomUrl, '_blank', 'width=1200,height=800');
+            permissionModal.hide();
+            resetCallButton();
+        }
+    }
+
+    // Funkcija za ponovno pokretanje veze
+    window.retryMiroTalkConnection = function() {
+        if (currentRoomUrl) {
+            const optimizedUrl = getOptimizedMiroTalkUrl(currentRoomUrl);
+            openMiroTalkInModal(optimizedUrl);
+        }
+    }
+
+    // Funkcija za maksimiziranje/minimiziranje modala
+    maximizeBtn.addEventListener('click', function() {
+        const modalDialog = modalEl.querySelector('.modal-dialog');
+
+        if (!isFullscreen) {
+            modalDialog.classList.remove('modal-xl', 'modal-dialog-resizable');
+            modalDialog.classList.add('modal-fullscreen');
+            maximizeBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            isFullscreen = true;
+        } else {
+            modalDialog.classList.remove('modal-fullscreen');
+            modalDialog.classList.add('modal-xl', 'modal-dialog-resizable');
+            maximizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            isFullscreen = false;
+        }
+    });
+
+    // Dodaj event listener na dugme za poziv
+    document.getElementById('buttonCall').addEventListener('click', handleCallButtonClick);
+
+    //console.log('MiroTalk P2P sistem je inicijalizovan');
+
+    // Dodajemo event listener za zatvaranje modala ( izvan okvira )
+    $('#videoCallModal').on('hidden.bs.modal', function (e) {
+       handleCallEnd();
+    });
+});
+
+// Funkcionalnost za emotikone
+document.addEventListener('DOMContentLoaded', function() {
+    const emojiToggle = document.getElementById('emojiToggle');
+    const emojiPalette = document.getElementById('emojiPalette');
+    const messageTextarea = document.getElementById('content');
+
+    if (emojiToggle && emojiPalette && messageTextarea) {
+        // Prikaz/skrivanje palete emotikona
+        emojiToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            emojiPalette.style.display = emojiPalette.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Klik na emotikon
+        emojiPalette.addEventListener('click', function(e) {
+            if (e.target.classList.contains('emoji')) {
+                const emoji = e.target.getAttribute('data-emoji');
+                insertEmoji(emoji);
+            }
+        });
+
+        // Funkcija za ubacivanje emotikona u textarea
+        function insertEmoji(emoji) {
+            const start = messageTextarea.selectionStart;
+            const end = messageTextarea.selectionEnd;
+            const text = messageTextarea.value;
+
+            messageTextarea.value = text.substring(0, start) + emoji + text.substring(end);
+            messageTextarea.focus();
+            messageTextarea.selectionStart = messageTextarea.selectionEnd = start + emoji.length;
+
+            // Sakrij paletu nakon ubacivanja emotikona
+            emojiPalette.style.display = 'none';
+
+            // Pokreni event za promenu (ako je potrebno)
+            messageTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // Sakrij paletu kada se klikne van nje
+        document.addEventListener('click', function(e) {
+            if (!emojiPalette.contains(e.target) && e.target !== emojiToggle) {
+                emojiPalette.style.display = 'none';
+            }
+        });
+
+        // Sakrij paletu kada se šalje poruka
+        document.getElementById('messageForm').addEventListener('submit', function() {
+            emojiPalette.style.display = 'none';
+        });
+
+        // Sakrij paletu na Escape tipku
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                emojiPalette.style.display = 'none';
+            }
+        });
+    }
+});
 </script>
 @endsection

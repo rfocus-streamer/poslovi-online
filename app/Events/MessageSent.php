@@ -45,6 +45,10 @@ class MessageSent implements ShouldBroadcast
         ->whereNull('read_at')
         ->count();
 
+        // Ručno dodavanje dinamičkih propertija 'type' i 'call_data'
+        $messageType = $this->message->type ?? 'text'; // Ako nije postavljeno, koristi default
+        $callData = $this->message->call_data ?? null;
+
         return [
             'message' => [
                 'id' => $this->message->id,
@@ -55,6 +59,8 @@ class MessageSent implements ShouldBroadcast
                 'created_at' => $this->message->created_at,
                 'attachment' => $this->message->attachment_path,
                 'attachment_name' => $this->message->attachment_name,
+                'type' => $messageType, // Dinamički property
+                'call_data' => $callData, // Dinamički property
                 'totalUnreadMessages' => $totalUnreadMessages,
                 'totalSenderUnreadMessages' => $totalSenderUnreadMessages,
                 'unreadMessagesPerService' => $unreadMessagesPerService,

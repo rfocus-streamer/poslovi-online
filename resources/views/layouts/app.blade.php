@@ -198,6 +198,13 @@
             border-color: #198754 !important;
         }
 
+        #callerAvatar {
+            width: 80px !important;
+            height: 80px !important;
+            border-radius: 50% !important;
+            flex-shrink: 0;
+        }
+
         /* Prilagodbe za mobilne uređaje */
         @media (max-width: 767px) {
             .add-service-title2 {
@@ -749,6 +756,33 @@
     <!-- Glavni sadržaj -->
     <main class="py-4">
         @yield('content')
+
+        <!-- Incoming Call Modal -->
+        <div class="modal fade" id="incomingCallModal" tabindex="-1" aria-labelledby="incomingCallModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h6 class="modal-title" id="incomingCallModalLabel">
+                            <i class="fas fa-phone me-2"></i>Dolazni poziv
+                        </h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img id="callerAvatar" src="" alt="Caller" class="rounded-circle mb-3" width="80" height="80" onerror="this.src='/storage/user/user.jpg'">
+                        <h4 id="callerName"></h4>
+                        <p class="text-muted" id="callService"></p>
+                        <div class="call-buttons mt-4">
+                            <button class="btn btn-success me-3" id="acceptCallBtn">
+                                <i class="fas fa-phone me-2"></i> Prihvati
+                            </button>
+                            <button class="btn btn-danger" id="declineCallBtn">
+                                <i class="fas fa-phone-slash me-2"></i> Odbij
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -1125,7 +1159,156 @@ document.getElementById('roleSwitch2').addEventListener('change', function() {
         console.error('Greška u AJAX pozivu:', error);
     });
 });
-
 </script>
+
+<!-- Audio/Video poziv js -->
+
+<audio id="ringtone" loop preload="auto">
+    <source src="{{ 'storage/sounds/marimba_soft.mp3' }}" type="audio/mpeg">
+</audio>
+
+<script>
+// Globalne varijable
+let incomingCall = null;
+let callModal = null;
+let callTimeout = null;
+
+// Inicijalizacija
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCallSystem();
+});
+
+function initializeCallSystem() {
+    // Inicijalizacija modala
+    const modalElement = document.getElementById('incomingCallModal');
+    if (modalElement) {
+        callModal = new bootstrap.Modal(modalElement);
+
+        // Event listeneri
+        document.getElementById('acceptCallBtn').addEventListener('click', acceptIncomingCall);
+        document.getElementById('declineCallBtn').addEventListener('click', declineIncomingCall);
+
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            if (incomingCall) declineIncomingCall();
+        });
+    }
+}
+
+// Funkcije za upravljanje pozivima (iste kao gore)
+function showIncomingCall(message) {
+    if (incomingCall) declineIncomingCall();
+
+    incomingCall = message;
+
+    document.getElementById('callerAvatar').src = JSON.parse(message.call_data).caller_avatar;
+    document.getElementById('callerName').textContent = JSON.parse(message.call_data).caller_name;
+    document.getElementById('callService').textContent = `Poziv za: ${JSON.parse(message.call_data).service_title}`;
+
+    playRingtone();
+
+    if (callModal) callModal.show();
+
+    callTimeout = setTimeout(() => {
+        if (incomingCall) {
+            declineIncomingCall('missed');
+            Toastify({ text: "Poziv automatski odbijen", duration: 4000 }).showToast();
+        }
+    }, 45000);
+}
+
+function playRingtone() {
+    const ringtone = document.getElementById('ringtone');
+    if (ringtone) ringtone.play().catch(e => console.log('Greška pri ringtone-u:', e));
+}
+
+function stopRingtone() {
+    const ringtone = document.getElementById('ringtone');
+    if (ringtone) {
+        ringtone.pause();
+        ringtone.currentTime = 0;
+    }
+}
+
+function acceptIncomingCall() {
+    if (!incomingCall) return;
+
+    stopRingtone();
+    if (callModal) callModal.hide();
+
+    const roomUrl = incomingCall.call_data.room_url;
+    // Koristimo postojeći modal za video poziv
+    openExistingVideoCallModal(JSON.parse(incomingCall.call_data));
+
+    clearTimeout(callTimeout);
+    updateCallStatus(incomingCall.id, 'answered');
+    incomingCall = null;
+}
+
+function openExistingVideoCallModal(call_data) {
+
+    // Kreiraj URL za messages stranicu sa parametrima
+    let redirectUrl = '{{ route("messages.index") }}?openVideoCall=true';
+
+    redirectUrl += '&room_url='+call_data.room_url;
+
+    // Redirektuj na messages stranicu
+    window.location.href = redirectUrl;
+}
+
+function declineIncomingCall(status = null) {
+    if (!incomingCall) return;
+
+    stopRingtone();
+    if (callModal) callModal.hide();
+
+    if (typeof Toastify !== "undefined") {
+        Toastify({ text: "Poziv odbijen", duration: 3000 }).showToast();
+    }
+
+    clearTimeout(callTimeout);
+    if(status == 'missed'){
+        updateCallStatus(incomingCall.id, 'missed');
+    }else{
+        updateCallStatus(incomingCall.id, 'rejected');
+    }
+    incomingCall = null;
+}
+
+/**
+ * Ažuriraj status poziva na serveru
+ */
+async function updateCallStatus(messageId, callStatus, callDuration = null) {
+    try {
+        const response = await fetch('/messages/update-call-status', {
+            method: 'POST',
+            headers: {
+                //'Authorization': `Bearer ${apiToken}`,
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                message_id: messageId,
+                call_status: callStatus,
+                call_duration: callDuration
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('Status poziva ažuriran:', callStatus);
+            return true;
+        } else {
+            console.error('Greška pri ažuriranju statusa poziva:', data.message);
+            return false;
+        }
+    } catch (error) {
+        console.error('Greška u komunikaciji sa serverom:', error);
+        return false;
+    }
+}
+</script>
+
 </body>
 </html>

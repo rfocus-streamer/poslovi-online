@@ -127,6 +127,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/send-message', [MessageController::class, 'send'])->name('send.message');
     Route::post('/mark-as-read', [MessageController::class, 'markAsRead'])->name('messages.read');
+    Route::post('/create-room', [MessageController::class, 'createMirotalkRoom'])->name('create.mirotalk.room');
+    Route::post('/messages/update-call-status', [MessageController::class, 'updateCallMessage'])
+    ->middleware('auth:sanctum');
+    //Route::post('/validate-room', [MessageController::class, 'validateRoom'])->name('validate.room');
 
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/invoice/{id}', [InvoiceController::class, 'getPDF'])->name('invoice.download');
