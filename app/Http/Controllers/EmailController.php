@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\EmailNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -136,7 +137,10 @@ class EmailController extends Controller
             'timestamp' => now()
         ];
 
-        Log::info('Daily email process completed', $result);
+        //Log::info('Daily email process completed', $result);
+
+        //pozivanje funkcije za neaktivne korisnike (slanje emaila)
+        $this->sendInactivityReminder30d();
 
         return $result;
     }
@@ -280,6 +284,104 @@ class EmailController extends Controller
             'emails' => $emails
         ];
     }
+
+     /**
+     * Mejlovi za neaktivne korisnike (30 dana)
+     */
+    private function sendInactivityReminder30d()
+    {
+        $type = 'inactivity_30d';
+        $dailyLimit = 50;
+        $template = 'inactive_users';
+        $days = 30;
+        $sentCount = 0;
+        $errorCount = 0;
+
+        $templatePath = 'admin.emails.templates.inactive.' . $template;
+        if (!view()->exists($templatePath)) {
+            Log::error("Template '{$templatePath}' does not exist");
+            return ['success' => false, 'sent' => 0, 'errors' => 0];
+        }
+
+        $inactiveThreshold = Carbon::now()->subDays($days);
+
+        $users = User::where(function($query) use ($inactiveThreshold) {
+                $query->whereNull('last_seen_at')
+                      ->orWhere('last_seen_at', '<', $inactiveThreshold);
+            })
+            ->where('active', 1)
+            ->get();
+
+        foreach ($users as $user) {
+            if ($this->shouldSkipNotification($user->id, $type, $days * 24)) {
+                continue;
+            }
+
+            try {
+                $details = [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                    'template' => $templatePath,
+                    'subject' => 'Vratite se - vaš nalog vas čeka',
+                    'from_email' => config('mail.from.address'),
+                    'from' => config('app.name'),
+                    'inactive_days' => $days,
+                    'last_seen' => $user->last_seen_at ? $user->last_seen_at->diffForHumans() : 'Nikada'
+                ];
+
+                if($sentCount <= $dailyLimit){
+                    Mail::to($user->email)->send(new ContactMail($details));
+                }
+
+                $sentCount++;
+                $this->recordNotification($user->id, $type);
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                Log::error("Failed to send {$type} to {$user->email}: " . $e->getMessage());
+            }
+        }
+
+        return [
+            'success' => true,
+            'sent' => $sentCount,
+            'errors' => $errorCount,
+            'type' => $type,
+            'days_threshold' => $days
+        ];
+    }
+
+     /**
+     * Provera da li treba preskočiti slanje notifikacije
+     */
+    private function shouldSkipNotification($userId, $type, $hoursThreshold)
+    {
+        $lastNotification = EmailNotification::where('user_id', $userId)
+            ->where('type', $type)
+            ->where('last_sent_at', '>=', Carbon::now()->subHours($hoursThreshold))
+            ->first();
+
+        return $lastNotification !== null;
+    }
+
+    /**
+     * Beleženje slanja notifikacije
+     */
+    private function recordNotification($userId, $type)
+    {
+        EmailNotification::updateOrCreate(
+            [
+                'user_id' => $userId,
+                'type' => $type
+            ],
+            [
+                'last_sent_at' => now(),
+                'sent_count' => \DB::raw('sent_count + 1')
+            ]
+        );
+    }
+
 
     /**
      * Dodatna metoda za specifične tipove emailova
