@@ -399,7 +399,7 @@ class EmailController extends Controller
                     'last_name' => $user->last_name,
                     'email' => $user->email,
                     'template' => $templatePath,
-                    'subject' => 'Još uvek niste postavili uslugu',
+                    'subject' => 'Još uvek niste postavili ponudu',
                     'from_email' => config('mail.from.address'),
                     'from' => config('app.name'),
                     'days' => $days,
