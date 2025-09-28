@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Service;
 use App\Models\EmailNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -327,6 +328,7 @@ class EmailController extends Controller
                     'from_email' => config('mail.from.address'),
                     'from' => config('app.name'),
                     'inactive_days' => $days,
+                    'unreadMessages' => true,
                     'last_seen' => $user->last_seen_at ? $user->last_seen_at->diffForHumans() : 'Nikada'
                 ];
 
@@ -349,6 +351,83 @@ class EmailController extends Controller
             'errors' => $errorCount,
             'type' => $type,
             'days_threshold' => $days
+        ];
+    }
+
+    /**
+     * Mejlovi za one koji nisu postavili gig nakon 7 dana
+     */
+    private function sendGigReminder7d()
+    {
+        $type = 'gig_reminder_7d';
+        $dailyLimit = 50;
+        $template = 'unused_subscriptions';
+        $days = 7;
+        $sentCount = 0;
+        $errorCount = 0;
+
+        $templatePath = 'admin.emails.templates.subscriptions.' . $template;
+        if (!view()->exists($templatePath)) {
+            Log::error("Template '{$templatePath}' does not exist");
+            return ['success' => false, 'sent' => 0, 'errors' => 0];
+        }
+
+        $gigThreshold = Carbon::now()->subDays($days);
+
+        // Get users with active subscriptions but no services
+        $users = User::whereHas('subscriptions', function($query) {
+            $query->where('status', 'active');
+        })->whereDoesntHave('services')->get();
+
+        foreach ($users as $user) {
+            // Proveri da li je već poslat email u poslednjih 24h
+            if ($this->shouldSkipNotification($user->id, $type, $days * 24)) {
+                continue;
+            }
+
+            // Proveri da li korisnik već ima postavljen gig koristeći Service model
+            $hasService = Service::where('user_id', $user->id)->exists();
+
+            // Ako korisnik već ima servis, preskoči slanje
+            if ($hasService) {
+                continue;
+            }
+
+            try {
+                $details = [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                    'template' => $templatePath,
+                    'subject' => 'Još uvek niste postavili uslugu',
+                    'from_email' => config('mail.from.address'),
+                    'from' => config('app.name'),
+                    'days' => $days,
+                    'unreadMessages' => true,
+                ];
+
+                if($sentCount <= $dailyLimit){
+                    Mail::to($user->email)->send(new ContactMail($details));
+                }
+
+                $sentCount++;
+                $this->recordNotification($user->id, $type);
+
+                //Log::info("Gig reminder sent to: {$user->email}");
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                Log::error("Failed to send {$type} to {$user->email}: " . $e->getMessage());
+            }
+        }
+
+        return [
+            'success' => true,
+            'sent' => $sentCount,
+            'errors' => $errorCount,
+            'type' => $type,
+            'days_threshold' => $days,
+            'users_checked' => $users->count()
         ];
     }
 

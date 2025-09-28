@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poslovi Online - Podsetnik za pretplatu</title>
+    <title>Poslovi Online - Iskoristite svoj paket</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -67,43 +67,23 @@
             <h1>Poštovani, {{ $first_name }} {{ $last_name }}!</h1>
 
             <div class="highlight">
-                <p>Primetili smo da još uvek <strong>niste iskoristili svoju pretplatu</strong> za publikovanje gig-a (ponude) na našoj platformi.</p>
+                <p>Hvala Vam što ste odabrali paket na platformi <strong>Poslovi Online</strong>!</p>
             </div>
 
-            <p class="message">Vaša pretplata vam omogućava da:</p>
+            <p class="message">Vaša investicija Vam već sada omogućava da:</p>
             <ul>
-                <li>Postavljate ograničen broj ponuda</li>
-                <li>Istaknete svoje ponude među prvima</li>
-                <li>Povećate vidljivost vaših usluga</li>
-                <li>Ostvarite veći broj poslova</li>
+                <li>Privučete više klijenata</li>
+                <li>Budete vidljiviji na platformi</li>
+                <li>Postavite svoju ponudu i započnete sa radom</li>
             </ul>
 
-            <p>Kliknite na dugme ispod kako biste počeli da koristite svoju pretplatu i postavili prvu ponudu:</p>
+            <p>Da biste aktivirali svoj paket u potpunosti i iskoristili sve prednosti, potrebno je da postavite svoju ponudu. Nemojte čekati – što pre postavite svoju ponudu, to brže će Vas pronaći oni kojima su Vaše usluge potrebne.</p>
 
             <p style="text-align: center;">
-                <a href="{{ route('services.create') }}" class="button">Postavi ponudu</a>
+                <a href="{{ route('services.create') }}" class="button">Postavite ponudu odmah</a>
             </p>
 
-            <p>Ako već imate postavljene ponude, možete ih ažurirati i unaprediti:</p>
-
-            <p style="text-align: center; ">
-                <a style="display: inline-block; padding: 5px 10px; font-size: 12px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px;" href="{{ route('services.index') }}">Tvoje ponude</a>
-            </p>
-
-
-            @if(!empty($message))
-                <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid #eee;">
-                    <p><strong>Dodatna poruka:</strong></p>
-                    <p>{{ $message }}</p>
-                </div>
-            @endif
-
-            <p>Ukoliko vam je potrebna pomoć ili imate pitanja o korišćenju platforme, naš tim za podršku vam stoji na raspolaganju kroz tiket sistem.</p>
-            <p style="text-align: center; ">
-                    <a style="display: inline-block; padding: 5px 10px; font-size: 12px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;" href="{{ route('tickets.create') }}">Otvori tiket</a>
-            </p>
-
-            <p>Pozdrav, <br> Tim <strong>Poslovi Online</strong></p>
+            <p>Srdačan pozdrav, <br> Vaš <strong>Poslovi Online tim</strong></p>
         </div>
 
         <div class="footer">
