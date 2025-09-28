@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
 
         // Dnevno slanje emailova u 10:30
         $schedule->command('emails:daily')
-                 ->dailyAt('11:20')
+                 ->dailyAt('11:40')
                  ->onOneServer() // Važno ako koristite više servera
                  ->timezone('Europe/Belgrade'); // Prilagodite vašoj vremenskoj zoni
 
