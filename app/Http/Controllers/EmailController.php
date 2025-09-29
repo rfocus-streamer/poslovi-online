@@ -142,7 +142,10 @@ class EmailController extends Controller
 
         //pozivanje funkcije za neaktivne korisnike (slanje emaila)
         $this->sendInactivityReminder30d();
-
+        //pozivanje funkcije za postavljenje gigova clanova koji imaju pretplatu
+        $this->sendGigReminder7d();
+        //pozivanje funkcije za uplatu pretplate
+        $this->sendRegistrationReminder24h();
         return $result;
     }
 
@@ -428,6 +431,70 @@ class EmailController extends Controller
             'type' => $type,
             'days_threshold' => $days,
             'users_checked' => $users->count()
+        ];
+    }
+
+    /**
+     * Mejlovi za one koji su se registrovali, ali nisu platili (24h)
+     */
+    private function sendRegistrationReminder24h()
+    {
+        $type = 'registration_24h';
+        $dailyLimit = 50;
+        $template = 'registration_reminder_24h';
+        $hours = 24;
+        $sentCount = 0;
+        $errorCount = 0;
+
+        $templatePath = 'admin.emails.templates.reminders.' . $template;
+        if (!view()->exists($templatePath)) {
+            Log::error("Template '{$templatePath}' does not exist");
+            return ['success' => false, 'sent' => 0, 'errors' => 0];
+        }
+
+        $registrationThreshold = Carbon::now()->subHours($hours);
+
+        $users = User::whereDoesntHave('subscriptions')  // Korisnici koji nemaju nijednu pretplatu
+             ->whereDoesntHave('services')     // Korisnici koji nemaju usluge
+             ->get();
+
+        foreach ($users as $user) {
+            if ($this->shouldSkipNotification($user->id, $type, $hours)) {
+                continue;
+            }
+
+            try {
+                $details = [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                    'template' => $templatePath,
+                    'subject' => 'Završite registraciju - imate 24h',
+                    'from_email' => config('mail.from.address'),
+                    'from' => config('app.name'),
+                    'hours' => $hours,
+                    'unreadMessages' => true,
+                ];
+
+                if($sentCount <= $dailyLimit){
+                    Mail::to($user->email)->send(new ContactMail($details));
+                }
+
+                $sentCount++;
+                $this->recordNotification($user->id, $type);
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                Log::error("Failed to send {$type} to {$user->email}: " . $e->getMessage());
+            }
+        }
+
+        return [
+            'success' => true,
+            'sent' => $sentCount,
+            'errors' => $errorCount,
+            'type' => $type,
+            'hours_threshold' => $hours
         ];
     }
 
