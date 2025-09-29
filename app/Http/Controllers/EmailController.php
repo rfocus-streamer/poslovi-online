@@ -146,6 +146,8 @@ class EmailController extends Controller
         $this->sendGigReminder7d();
         //pozivanje funkcije za uplatu pretplate
         $this->sendRegistrationReminder24h();
+        //pozivanje funkcije za obnovu pretplate
+        $this->sendSubscriptionExpiredReminder();
         return $result;
     }
 
@@ -325,6 +327,7 @@ class EmailController extends Controller
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
                     'email' => $user->email,
+                    'message' => '',
                     'template' => $templatePath,
                     'subject' => 'Vratite se - vaš nalog vas čeka',
                     'from_email' => config('mail.from.address'),
@@ -398,6 +401,7 @@ class EmailController extends Controller
                 $details = [
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
+                    'message' => '',
                     'email' => $user->email,
                     'template' => $templatePath,
                     'subject' => 'Još uvek niste postavili ponudu',
@@ -465,6 +469,7 @@ class EmailController extends Controller
                 $details = [
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
+                    'message' => '',
                     'email' => $user->email,
                     'template' => $templatePath,
                     'subject' => 'Završite registraciju - imate 24h',
@@ -493,6 +498,73 @@ class EmailController extends Controller
             'errors' => $errorCount,
             'type' => $type,
             'hours_threshold' => $hours
+        ];
+    }
+
+    /**
+     * Mejlovi za članove kojima je istekla pretplata
+     */
+    private function sendSubscriptionExpiredReminder()
+    {
+        $type = 'subscription_expired';
+        $dailyLimit = 50;
+        $template = 'subscription_expired';
+        $sentCount = 0;
+        $errorCount = 0;
+
+        $templatePath = 'admin.emails.templates.reminders.' . $template;
+        if (!view()->exists($templatePath)) {
+            Log::error("Template '{$templatePath}' does not exist");
+            return ['success' => false, 'sent' => 0, 'errors' => 0];
+        }
+
+        // Pronađi korisnike kojima je istekla pretplata
+        $users = User::whereNotNull('package_id') // Imali su pretplatu
+            ->whereNotNull('package_expires_at') // Imao je datum isteka
+            ->where('package_expires_at', '<', now()) // Pretplata je istekla
+            ->get();
+
+        foreach ($users as $user) {
+            // Proveri da li je već poslat email u poslednjih 7 dana
+            if ($this->shouldSkipNotification($user->id, $type, 24 * 7)) { // 7 dana
+                continue;
+            }
+
+            try {
+                $details = [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'message' => '',
+                    'email' => $user->email,
+                    'template' => $templatePath,
+                    'subject' => 'Vaša pretplata je istekla',
+                    'from_email' => config('mail.from.address'),
+                    'from' => config('app.name'),
+                    'expired_date' => $user->package_expires_at ? $user->package_expires_at->format('d.m.Y.') : null,
+                    'days_since_expired' => $user->package_expires_at ? now()->diffInDays($user->package_expires_at) : 0,
+                    'unreadMessages' => true,
+                ];
+
+                if($sentCount <= $dailyLimit){
+                    Mail::to($user->email)->send(new ContactMail($details));
+                }
+                $sentCount++;
+                $this->recordNotification($user->id, $type);
+
+                //Log::info("Subscription expired reminder sent to: {$user->email}");
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                Log::error("Failed to send {$type} to {$user->email}: " . $e->getMessage());
+            }
+        }
+
+        return [
+            'success' => true,
+            'sent' => $sentCount,
+            'errors' => $errorCount,
+            'type' => $type,
+            'users_checked' => $users->count()
         ];
     }
 
