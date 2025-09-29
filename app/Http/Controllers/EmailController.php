@@ -331,7 +331,6 @@ class EmailController extends Controller
                     'from' => config('app.name'),
                     'inactive_days' => $days,
                     'unreadMessages' => true,
-                    'last_seen' => $user->last_seen_at ? $user->last_seen_at->diffForHumans() : 'Nikada'
                 ];
 
                 if($sentCount <= $dailyLimit){
