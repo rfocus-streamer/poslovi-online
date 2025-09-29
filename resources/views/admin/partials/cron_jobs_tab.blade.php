@@ -4,14 +4,15 @@
     <!-- Status servera -->
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">Status Cron Servisa</h5>
+            <h5 class="card-title">Status cron servisa</h5>
             <div class="d-flex gap-3">
                 <button type="button" class="btn btn-outline-primary" id="checkCronStatus">
-                    <i class="fas fa-sync-alt"></i> Proveri Status
+                    <i class="fas fa-sync-alt"></i> Proveri status
                 </button>
-                <span id="cronServiceStatus" class="badge bg-secondary">Nepoznat status</span>
+                <span id="cronServiceStatus" class="badge bg-secondary" style="font-size: 1.2rem !important">Nepoznat status</span>
             </div>
         </div>
+
     </div>
 
     <!-- Trenutni cron zadaci -->
@@ -19,7 +20,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Trenutni cron zadaci</h5>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCronModal">
-                <i class="fas fa-plus"></i> Dodaj Novi Cron
+                <i class="fas fa-plus"></i> Dodaj novi cron
             </button>
         </div>
         <div class="card-body">
@@ -31,7 +32,6 @@
                             <th>Raspored</th>
                             <th>Komanda</th>
                             <th>Status</th>
-                            <th>Poslednje izvršavanje</th>
                             <th>Akcije</th>
                         </tr>
                     </thead>
@@ -48,15 +48,15 @@
     <!-- Cron Logovi -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Cron Logovi</h5>
+            <h5 class="mb-0">Cron logovi</h5>
         </div>
         <div class="card-body">
             <div class="mb-3">
                 <button type="button" class="btn btn-outline-secondary" id="refreshLogs">
-                    <i class="fas fa-refresh"></i> Osveži Logove
+                    <i class="fas fa-refresh"></i> Osveži logove
                 </button>
                 <button type="button" class="btn btn-outline-danger" id="clearLogs">
-                    <i class="fas fa-trash"></i> Obriši Logove
+                    <i class="fas fa-trash"></i> Obriši logove
                 </button>
             </div>
             <div class="log-container" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px;">
@@ -167,7 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     ${job.status === 'active' ? 'Aktivan' : 'Neaktivan'}
                                 </span>
                             </td>
-                            <td>${job.last_run || 'Nikad'}</td>
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-primary" onclick="toggleCronJob(${index})" title="${job.status === 'active' ? 'Zaustavi' : 'Pokreni'}">
