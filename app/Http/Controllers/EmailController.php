@@ -313,7 +313,6 @@ class EmailController extends Controller
                 $query->whereNull('last_seen_at')
                       ->orWhere('last_seen_at', '<', $inactiveThreshold);
             })
-            ->where('active', 1)
             ->get();
 
         foreach ($users as $user) {
