@@ -10,6 +10,7 @@ use App\Models\Subscription;
 use App\Models\Package;
 use App\Services\StripeService;
 use Symfony\Component\HttpFoundation\Response;
+use Carbon\Carbon;
 
 class StripeWebhookController extends Controller
 {
@@ -103,7 +104,17 @@ class StripeWebhookController extends Controller
                 // Aktiviraj paket
                 $package = Package::where('id', $subscription->plan_id)->first();
                 if ($package) {
-                    app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+                    //app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+
+                    // Dobijanje datuma kada pretplata ističe
+                    $subscriptionEndTimestamp = $invoice['lines']['data'][0]['period']['end'];
+                    $subscriptionEndDate = Carbon::createFromTimestamp($subscriptionEndTimestamp);
+
+                    // Aktiviraj paket za korisnika
+                    $user->package_id = $subscription->plan_id;
+                    $user->package_expires_at = $subscriptionEndDate; // Postavljamo datum isteka
+                    $user->save();
+
                     Log::info("Package activated for user {$user->id}: {$package->name}");
 
                     // Ažuriraj status pretplate
@@ -178,7 +189,17 @@ class StripeWebhookController extends Controller
                 // Aktiviraj paket
                 $package = Package::find($subscription->plan_id);
                 if ($package) {
-                    app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+                    //app(\App\Http\Controllers\PackageController::class)->activatePackage($package);
+
+                    // Dobijanje datuma kada pretplata ističe
+                    $subscriptionEndTimestamp = $invoice['lines']['data'][0]['period']['end'];
+                    $subscriptionEndDate = Carbon::createFromTimestamp($subscriptionEndTimestamp);
+
+                    // Aktiviraj paket za korisnika
+                    $user->package_id = $subscription->plan_id;
+                    $user->package_expires_at = $subscriptionEndDate; // Postavljamo datum isteka
+                    $user->save();
+
                     Log::info("Package activated for user {$user->id}: {$package->name}");
                 } else {
                     Log::error('Package not found for subscription: '.$subscription->id);
