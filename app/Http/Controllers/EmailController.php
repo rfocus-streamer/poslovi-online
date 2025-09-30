@@ -540,8 +540,8 @@ class EmailController extends Controller
                     'subject' => 'Vaša pretplata je istekla',
                     'from_email' => config('mail.from.address'),
                     'from' => config('app.name'),
-                    'expired_date' => $user->package_expires_at ? $user->package_expires_at->format('d.m.Y.') : null,
-                    'days_since_expired' => $user->package_expires_at ? now()->diffInDays($user->package_expires_at) : 0,
+                    'expired_date' => $user->package_expires_at,
+                    'days_since_expired' => $user->package_expires_at,
                     'unreadMessages' => true,
                 ];
 
