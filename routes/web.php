@@ -44,7 +44,7 @@ Route::get('/ponuda/{id}-{slug}', [ServiceController::class, 'show'])->name('ser
 
 Route::get('/verify/{id}/{hash}', [RegisteredUserController::class, 'verify'])
     ->name('verification.email');
-Route::get('email/verify/resend/{email}', [RegisteredUserController::class, 'resendVerificationEmail'])->name('verification.resend');
+Route::get('verify/resend/{email}', [RegisteredUserController::class, 'resendVerificationEmail'])->name('verification.resend');
 
 // Rute za logovane korisnike
 Route::middleware('auth')->group(function () {
@@ -176,8 +176,8 @@ Route::middleware('auth')->group(function () {
 
     // Admin route
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('forced-services', [ForcedServiceController::class, 'index'])
-        ->name('admin.forced-services.index');
+    // Route::get('forced-services', [ForcedServiceController::class, 'index'])
+    //     ->name('admin.forced-services.index');
 
     Route::post('forced-services/update', [DashboardController::class, 'updateForcedServices'])
         ->name('dashboard.forced-services.update');

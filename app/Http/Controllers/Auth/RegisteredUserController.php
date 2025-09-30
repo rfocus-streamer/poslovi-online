@@ -130,9 +130,9 @@ class RegisteredUserController extends Controller
     {
         $user = \App\Models\User::findOrFail($email);
 
-        // Proveravamo da li se hash poklapa sa korisničkim emailom
-        if (sha1($user->email) !== $hash) {
-            abort(403, 'Ovaj link je nevažeći.');
+        // Proveravamo da li se poklapa sa korisničkim emailom
+        if (!$user) {
+            abort(403, 'Ovaj email je nevažeći.');
         }
 
         // Ako je već verifikovan, vraćamo poruku
