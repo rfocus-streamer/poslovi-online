@@ -126,6 +126,26 @@ class RegisteredUserController extends Controller
         return redirect('/login')->with('success', 'Uspešno si verifikovao svoj email.Možeš se sada prijaviti.');
     }
 
+    public function resendVerificationEmail($email)
+    {
+        $user = \App\Models\User::findOrFail($email);
+
+        // Proveravamo da li se hash poklapa sa korisničkim emailom
+        if (sha1($user->email) !== $hash) {
+            abort(403, 'Ovaj link je nevažeći.');
+        }
+
+        // Ako je već verifikovan, vraćamo poruku
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->route('home')->with('message', 'Tvoj nalog je već verifikovan.');
+        }
+
+        // Pozivamo tvoju funkciju za slanje emaila
+        $this->sendEmail($user);
+
+        return back()->with('message', 'Verifikacioni email je ponovo poslat. Proveri svoj inbox.');
+    }
+
     private function sendEmail($user)
     {
         $verificationUrl = URL::temporarySignedRoute(

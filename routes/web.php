@@ -44,6 +44,7 @@ Route::get('/ponuda/{id}-{slug}', [ServiceController::class, 'show'])->name('ser
 
 Route::get('/verify/{id}/{hash}', [RegisteredUserController::class, 'verify'])
     ->name('verification.email');
+Route::get('email/verify/resend/{email}', [RegisteredUserController::class, 'resendVerificationEmail'])->name('verification.resend');
 
 // Rute za logovane korisnike
 Route::middleware('auth')->group(function () {

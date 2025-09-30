@@ -32,13 +32,21 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         if (! Auth::user()->is_verified) {
+            $email = Auth::user()->email; // Uzimamo email trenutnog korisnika
+
+             // Generišemo link za ponovno slanje verifikacije
+            $resendLink = route('verification.resend', ['email' => $email]);
+
             Auth::logout();
 
-            return back()->with('error', 'Pre prijave potrebno je da verifikuješ email adresu putem linka koji ti je poslat.');
+            //return back()->with('error', 'Pre prijave potrebno je da verifikuješ email adresu putem linka koji ti je poslat.');
+            return back()->with('error', 'Pre prijave potrebno je da verifikuješ email adresu putem linka koji ti je poslat. ' .
+            'Ako nisi dobio/la email, možeš ga ponovo poslati <a href="' . $resendLink . '">ovde</a>.');
         }
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }
+
 
     /**
      * Destroy an authenticated session.
