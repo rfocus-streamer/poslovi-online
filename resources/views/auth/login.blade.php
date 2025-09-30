@@ -39,7 +39,7 @@
                  <!-- Prikaz poruka -->
                 @if(session('error'))
                     <div id="login-message-danger" class="alert alert-danger text-center">
-                        {{ session('error') }}
+                        {!! session('error') !!}
                     </div>
                 @endif
             </div>
