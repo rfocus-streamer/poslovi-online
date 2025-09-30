@@ -768,7 +768,7 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-center">
-                        <img id="callerAvatar" src="" alt="Caller" class="rounded-circle mb-3" width="80" height="80" onerror="this.src='/storage/user/user.jpg'">
+                        <img id="callerAvatar" src="" alt="Caller" class="rounded-circle mb-3" width="80" height="80" onerror="this.src='/storage/user/user.png'">
                         <h4 id="callerName"></h4>
                         <p class="text-muted" id="callService"></p>
                         <div class="call-buttons mt-4">
