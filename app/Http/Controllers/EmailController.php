@@ -472,7 +472,7 @@ class EmailController extends Controller
                     'message' => '',
                     'email' => $user->email,
                     'template' => $templatePath,
-                    'subject' => 'Završite registraciju - imate 24h',
+                    'subject' => 'Postavite svoju ponudu već danas!',
                     'from_email' => config('mail.from.address'),
                     'from' => config('app.name'),
                     'hours' => $hours,

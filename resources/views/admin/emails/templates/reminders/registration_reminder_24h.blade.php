@@ -72,7 +72,7 @@
 
             <p class="message">Da biste što pre počeli da koristite sve pogodnosti koje nudimo, podsećamo Vas da postavite svoju ponudu. Na taj način ćete povećati vidljivost i doći do potencijalnih saradnika ili klijenata.</p>
 
-            <p class="message">👉 <a href="{{ route('services.create') }}" class="button">Kliknite OVDE i dodajte svoju ponudu već danas</a></p>
+            <p class="message">👉 <a href="{{ route('packages.index') }}" class="button">Kliknite OVDE</a> i dodajte svoju ponudu već danas</p>
 
             <p>Vaš profil je prvi korak, a ponuda je ono što će Vas istaknuti!</p>
 
