@@ -77,7 +77,7 @@ class RegisteredUserController extends Controller
             'city' => $request->city,
             'country' => $request->country,
             'role' => 'buyer', // Ubacujemo rolu
-            'avatar' => 'user.png',
+            'avatar' => 'poslovi_user_avatar.png',
             'affiliate_code' => $this->generateUniqueAffiliateCode(),
             'referred_by' => $referredById,
         ]);

@@ -71,7 +71,9 @@ class ProfileController extends Controller
         if ($request->hasFile('avatar')) {
             // Brisanje starog avatara ako postoji
             if ($user->avatar && Storage::exists('public/user/' . $user->avatar)) {
-                Storage::delete('public/user/' . $user->avatar);
+                if ($user->avatar !== 'poslovi_user_avatar.png') {
+                    Storage::delete('public/user/' . $user->avatar);
+                }
             }
 
             // Čuvanje novog avatara
