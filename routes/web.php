@@ -42,9 +42,9 @@ Route::get('/api/load-more-services', [ServiceController::class, 'loadMoreServic
 //Route::get('/ponuda/{id}', [ServiceController::class, 'show'])->name('services.show');
 Route::get('/ponuda/{id}-{slug}', [ServiceController::class, 'show'])->name('services.show');
 
+Route::get('email/resend-verify/{email}', [RegisteredUserController::class, 'resendVerificationEmail'])->name('verification.resend');
 Route::get('/verify/{id}/{hash}', [RegisteredUserController::class, 'verify'])
     ->name('verification.email');
-Route::get('verify/resend/{email}', [RegisteredUserController::class, 'resendVerificationEmail'])->name('verification.resend');
 
 // Rute za logovane korisnike
 Route::middleware('auth')->group(function () {

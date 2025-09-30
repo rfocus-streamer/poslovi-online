@@ -128,8 +128,8 @@ class RegisteredUserController extends Controller
 
     public function resendVerificationEmail($email)
     {
-        $user = \App\Models\User::findOrFail($email);
 
+        $user = User::where('email', $email)->first();
         // Proveravamo da li se poklapa sa korisničkim emailom
         if (!$user) {
             abort(403, 'Ovaj email je nevažeći.');
@@ -137,13 +137,13 @@ class RegisteredUserController extends Controller
 
         // Ako je već verifikovan, vraćamo poruku
         if ($user->hasVerifiedEmail()) {
-            return redirect()->route('home')->with('message', 'Tvoj nalog je već verifikovan.');
+            return redirect()->route('login')->with('success', 'Tvoj nalog je već verifikovan.');
         }
 
         // Pozivamo tvoju funkciju za slanje emaila
         $this->sendEmail($user);
 
-        return back()->with('message', 'Verifikacioni email je ponovo poslat. Proveri svoj inbox.');
+        return redirect()->route('login')->with('success', 'Verifikacioni email je ponovo poslat. Proveri svoj inbox.');
     }
 
     private function sendEmail($user)
