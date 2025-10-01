@@ -461,7 +461,10 @@ class EmailController extends Controller
              ->get();
 
         foreach ($users as $user) {
-            if ($this->shouldSkipNotification($user->id, $type, $hours)) {
+            $lastNotification = EmailNotification::where('user_id', $user->id)
+                ->where('type', $type)
+                ->first();
+            if ($lastNotification) {
                 continue;
             }
 
