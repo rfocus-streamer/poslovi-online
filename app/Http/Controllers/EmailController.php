@@ -521,7 +521,7 @@ class EmailController extends Controller
         // Pronađi korisnike kojima je istekla pretplata
         $users = User::whereNotNull('package_id') // Imali su pretplatu
             ->whereNotNull('package_expires_at') // Imao je datum isteka
-            ->where('package_expires_at', '<', now()) // Pretplata je istekla
+            ->where('package_expires_at', '<', now()->subDays(2)) // Pretplata je istekla pre dva dana
             ->get();
 
         foreach ($users as $user) {
