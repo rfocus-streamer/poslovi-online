@@ -67,6 +67,17 @@ class RegisteredUserController extends Controller
             }
         }
 
+        // Ako affiliateCode nije prisutan ili nije validan, proveri referrer
+        if (!$referredById && $request->has('referrer')) {
+            $referrer = User::where('affiliate_code', $request->affiliateCode)->first();
+
+            if ($referrer && $referrer->id !== auth()->id()) {
+                $referredById = $referrer->id;
+            } else {
+                Log::warning("Invalid or self-referral referrer: " . $request->referrer);
+            }
+        }
+
         $user = User::create([
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,

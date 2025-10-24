@@ -195,6 +195,24 @@
                         </div>
                     </div>
 
+                    <div class="row mb-3">
+                         <!-- Polje za osobu koja je preporučila registraciju -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="referrer" class="form-label">
+                                    <i class="fas fa-user-friends me-1"></i> Osoba koja vas je preporučila ( opciono )
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <input type="text"
+                                       id="referrer"
+                                       name="referrer"
+                                       class="form-control"
+                                       value="{{ old('referrer') }}">
+                        </div>
+                    </div>
 
                     <!-- CAPTCHA -->
                     <div class="form-group d-flex align-items-center w-100">
