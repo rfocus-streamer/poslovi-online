@@ -200,7 +200,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="referrer" class="form-label">
-                                    <i class="fas fa-user-friends me-1"></i> Osoba koja vas je preporučila ( opciono )
+                                    <i class="fas fa-tags me-1"></i> Promo kod ( opciono )
                                 </label>
                             </div>
                         </div>
