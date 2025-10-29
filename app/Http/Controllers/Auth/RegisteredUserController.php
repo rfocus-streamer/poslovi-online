@@ -11,12 +11,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use App\Mail\ContactMail;
+use Carbon\Carbon;
 
 
 class RegisteredUserController extends Controller
@@ -55,8 +57,10 @@ class RegisteredUserController extends Controller
             ]
         );
 
-       // Proveri i obradi affiliate kod PRE kreiranja korisnika
+        // Proveri i obradi affiliate kod PRE kreiranja korisnika
         $referredById = null;
+        $packageId = null;
+        $packageExpiresAt = null;
         if ($request->affiliateCode) {
             $referrer = User::where('affiliate_code', $request->affiliateCode)->first();
 
@@ -73,6 +77,13 @@ class RegisteredUserController extends Controller
 
             if ($referrer && $referrer->id !== auth()->id()) {
                 $referredById = $referrer->id;
+
+                // Proveri da li je referrer 'nemanjabata'
+                if ($referrer->affiliate_code == 'nemanjabata') {
+                    // Postavi package_id i expires_at ako je referrer 'nemanjabata'
+                    $packageId = 4;
+                    $packageExpiresAt = Carbon::now()->addMonth();  // Dodaj mesec dana
+                }
             }
         }
 
@@ -89,6 +100,8 @@ class RegisteredUserController extends Controller
             'avatar' => 'poslovi_user_avatar.png',
             'affiliate_code' => $this->generateUniqueAffiliateCode(),
             'referred_by' => $referredById,
+            'package_id' => $packageId, // Dodeljujemo paket ako je postavljen
+            'package_expires_at' => $packageExpiresAt, // Datum isteka paketa
         ]);
 
         event(new Registered($user));
