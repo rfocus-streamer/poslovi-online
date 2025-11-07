@@ -581,7 +581,7 @@ class EmailController extends Controller
     {
         $type = 'new_user_promo_package';
         $dailyLimit = 50;
-        $template = 'promo_package'; // Novi template za promo paket
+        $template = 'new_user_promo_package'; // Novi template za promo paket
         $sentCount = 0;
         $errorCount = 0;
 
