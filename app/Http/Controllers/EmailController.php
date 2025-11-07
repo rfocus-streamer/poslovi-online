@@ -603,8 +603,8 @@ class EmailController extends Controller
             }
 
             try {
-                // Ažuriraj package_id na 4, koji predstavlja promo paket
-                $user->package_id = 4;
+                // Ažuriraj package_id na 8 (promo), koji predstavlja promo paket
+                $user->package_id = 8;
                 $user->save();
 
                 // Priprema podataka za slanje emaila
