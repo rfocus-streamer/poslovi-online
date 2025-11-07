@@ -54,6 +54,7 @@
                     @endphp
 
                     @foreach($packages as $key => $package)
+                        @if($package->id != 8)
                         <div class="col-md-4 mb-4">  <!-- Dodajemo mb-4 za razmak između redova -->
                             <div class="card h-100 position-relative">
                                 <!-- Ukoso u gornjem levom uglu - Godisnji popust -->
@@ -146,6 +147,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @endforeach
                     <small><i class="fas fa-info-circle"></i> Promena godišnje ili mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
                     </div>
