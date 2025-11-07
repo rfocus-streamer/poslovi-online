@@ -148,6 +148,8 @@ class EmailController extends Controller
         $this->sendRegistrationReminder24h();
         //pozivanje funkcije za obnovu pretplate
         $this->sendSubscriptionExpiredReminder();
+        //pozivanje promo funkcije za pretplatu
+        $this->sendPromoPackageToNewUsers();
         return $result;
     }
 
@@ -384,7 +386,7 @@ class EmailController extends Controller
         })->whereDoesntHave('services')->get();
 
         foreach ($users as $user) {
-            // Proveri da li je već poslat email u poslednjih 24h
+            // Proveri da li je već poslat email
             if ($this->shouldSkipNotification($user->id, $type, $days * 24)) {
                 continue;
             }
@@ -528,8 +530,8 @@ class EmailController extends Controller
             ->get();
 
         foreach ($users as $user) {
-            // Proveri da li je već poslat email u poslednjih 7 dana
-            if ($this->shouldSkipNotification($user->id, $type, 24 * 7)) { // 7 dana
+            // Proveri da li je već poslat email u poslednjih 30 dana
+            if ($this->shouldSkipNotification($user->id, $type, 24 * 30)) { // 30 dana
                 continue;
             }
 
@@ -555,6 +557,78 @@ class EmailController extends Controller
                 $this->recordNotification($user->id, $type);
 
                 //Log::info("Subscription expired reminder sent to: {$user->email}");
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                Log::error("Failed to send {$type} to {$user->email}: " . $e->getMessage());
+            }
+        }
+
+        return [
+            'success' => true,
+            'sent' => $sentCount,
+            'errors' => $errorCount,
+            'type' => $type,
+            'users_checked' => $users->count()
+        ];
+    }
+
+
+    /**
+     * Mejlovi za korisnike koji nisu imali paket i registrovani su pre više od 4 dana, koji dobijaju promo paket
+     */
+    private function sendPromoPackageToNewUsers()
+    {
+        $type = 'new_user_promo_package';
+        $dailyLimit = 50;
+        $template = 'promo_package'; // Novi template za promo paket
+        $sentCount = 0;
+        $errorCount = 0;
+
+        $templatePath = 'admin.emails.templates.reminders.' . $template;
+        if (!view()->exists($templatePath)) {
+            Log::error("Template '{$templatePath}' does not exist");
+            return ['success' => false, 'sent' => 0, 'errors' => 0];
+        }
+
+        // Pronađi korisnike koji nisu imali paket i registrovani su pre više od 4 dana
+        $users = User::whereNull('package_id') // Nisu imali paket
+            ->where('created_at', '<', now()->subDays(4)) // Registrovani su pre više od 4 dana
+            ->get();
+
+        foreach ($users as $user) {
+            // Proveri da li je već poslat email u poslednjih 30 dana
+            if ($this->shouldSkipNotification($user->id, $type, 24 * 30)) { // 30 dana
+                continue;
+            }
+
+            try {
+                // Ažuriraj package_id na 4, koji predstavlja promo paket
+                $user->package_id = 4;
+                $user->save();
+
+                // Priprema podataka za slanje emaila
+                $details = [
+                    'first_name' => $user->firstname,
+                    'last_name' => $user->lastname,
+                    'message' => 'Čestitamo! Kao naš novi korisnik, dobili ste promo paket.',
+                    'email' => $user->email,
+                    'template' => $templatePath,
+                    'subject' => 'Dobili ste promo paket!',
+                    'from_email' => config('mail.from.address'),
+                    'from' => config('app.name'),
+                    'expired_date' => now(), // Ovdje možemo postaviti trenutno vreme jer nemaju još nikakvu pretplatu
+                    'days_since_expired' => 0, // Jer nisu imali paket pre
+                    'unreadMessages' => true,
+                ];
+
+                // Ako nije prešao dnevni limit, šaljemo email
+                if($sentCount <= $dailyLimit){
+                    Mail::to($user->email)->send(new ContactMail($details));
+                }
+
+                $sentCount++;
+                $this->recordNotification($user->id, $type); // Zabeleži notifikaciju
 
             } catch (\Exception $e) {
                 $errorCount++;
