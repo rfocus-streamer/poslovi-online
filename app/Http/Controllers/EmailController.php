@@ -605,6 +605,7 @@ class EmailController extends Controller
             try {
                 // Ažuriraj package_id na 8 (promo), koji predstavlja promo paket
                 $user->package_id = 8;
+                $user->package_expires_at = now()->addMonth();
                 $user->save();
 
                 // Priprema podataka za slanje emaila
