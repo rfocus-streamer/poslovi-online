@@ -50,7 +50,7 @@ class Project extends Model
 
     public function commission()
     {
-        return $this->belongsTo(Commission::class, 'buyer_id');
+        return $this->hasMany(Commission::class);
     }
 
     public function files()

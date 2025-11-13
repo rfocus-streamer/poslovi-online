@@ -180,7 +180,7 @@
                         $encryptedUserId = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
 
                         // Dinamički izračun provizije
-                        $sellerCommissionAmount = ($project->reserved_funds * (($project->commission->seller_percentage ?? 0) / 100));
+                        $sellerCommissionAmount = ($project->reserved_funds * (($project->commision[0]->seller_percentage ?? 0) / 100));
                         $reservedAmount = $project->reserved_funds - $sellerCommissionAmount;
                     @endphp
 
@@ -275,7 +275,7 @@
                     $msgLink = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
 
                     // Dinamički izračun provizije
-                    $sellerCommissionAmount = $project->reserved_funds * (($project->commission->seller_percentage ?? 0) / 100);
+                    $sellerCommissionAmount = $project->reserved_funds * (($project->commission[0]->seller_percentage ?? 0) / 100);
                     $reservedAmount = $project->reserved_funds - $sellerCommissionAmount;
                 @endphp
                 <div class="card mb-3 shadow-sm">
