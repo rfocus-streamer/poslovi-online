@@ -1,6 +1,115 @@
 @extends('layouts.app')
 <title>Poslovi Online | Poslovi</title>
 @section('content')
+<style type="text/css">
+    .table thead th {
+        color: var(--text-color);
+        border-color: var(--border-color);
+        background-color: var(--menu-bg);
+    }
+
+    .table tbody td {
+        border-color: var(--border-color);
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    .table tbody td a {
+        color: var(--primary-color) !important;
+        text-decoration: none;
+    }
+
+    .table tbody td a:hover {
+        color: var(--primary-color);
+    }
+
+    .mobile-div div {
+        color: var(--text-color);
+    }
+
+    .mobile-div a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .alert {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .alert-danger {
+        background-color: var(--danger-bg);
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .alert-success {
+        background-color: var(--success-bg);
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+        box-shadow: 0 0.125rem 0.25rem var(--shadow);
+    }
+
+    .card-header {
+        background-color: var(--menu-bg) !important;
+        border-bottom-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .bg-light {
+        background-color: var(--menu-bg) !important;
+        color: var(--text-color);
+    }
+
+    .border {
+        border-color: var(--border-color) !important;
+    }
+
+    .rounded {
+        border-color: var(--border-color);
+    }
+
+    .btn-outline-light {
+        border-color: var(--border-color);
+        color: var(--text-color);
+        background-color: transparent;
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--menu-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-link {
+        color: var(--primary);
+    }
+
+    .btn-link:hover {
+        color: var(--primary);
+    }
+
+    .modal-content {
+        background-color: var(--menu-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    #modalUserImage {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%; /* Okrugli oblik */
+        object-fit: cover; /* Obezbeđuje da slika popuni celu površinu bez distorzije */
+    }
+
+</style>
 @php
     use Illuminate\Support\Facades\Crypt;
 @endphp
@@ -21,9 +130,9 @@
     <div class="d-flex flex-column">
         <!-- Desktop prikaz -->
         <div class="d-none d-md-flex justify-content-between align-items-center">
-            <h4 class="mb-0">
+            <h5 class="mb-1">
                 <i class="fas fa-handshake"></i> Tvoji poslovi
-            </h4>
+            </h5>
             <h6 class="text-secondary mb-0">
                 <i class="fas fa-credit-card"></i> Ukupna mesečna zarada:
                 <strong class="text-success">
@@ -71,7 +180,7 @@
                         $encryptedUserId = route('messages.index', ['service_id' => $encryptedServiceId, 'buyer_id' => $encryptedUserId]);
 
                         // Dinamički izračun provizije
-                        $sellerCommissionAmount = $project->reserved_funds * ($project->commission->seller_percentage / 100);
+                        $sellerCommissionAmount = ($project->reserved_funds * (($project->commission->seller_percentage ?? 0) / 100));
                         $reservedAmount = $project->reserved_funds - $sellerCommissionAmount;
                     @endphp
 
@@ -96,7 +205,7 @@
                         <td>{{ $project->end_date ? $project->end_date : 'N/A' }}</td>
                         <td class="text-center">{{ number_format($reservedAmount, 2) }}</td>
                         <td class="text-center">{{ number_format($sellerCommissionAmount, 2) }}</td>
-                        <td style="float: right;">
+                        <td>
                             @if(Auth::user()->role == 'seller')
                                 <div class="d-flex gap-2 justify-content-center">
                                     @switch($project->status)
@@ -158,7 +267,7 @@
         </table>
 
         <!-- MOBILNI PRIKAZ -->
-        <div class="d-block d-md-none">
+        <div class="d-block d-md-none mobile-div">
             @foreach($projects as $project)
                 @php
                     $encryptedServiceId = Crypt::encrypt($project->service->id);
@@ -186,7 +295,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}"><h6 class="card-title mb-1 text-dark"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a>
+                        <a href="{{ route('services.show', ['id' => $project->service->id, 'slug' => Str::slug($project->service->title)]) }}"><h6 class="card-title mb-1"><i class="fas fa-briefcase"></i> {{ $project->service->title }}</h6></a>
                         <p class="mb-1"><strong>Količina:</strong> {{ $project->quantity }}</p>
                         <p class="mb-1"><strong>Početak:</strong> {{ $project->start_date ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Završetak:</strong> {{ $project->end_date ?? 'N/A' }}</p>
@@ -300,7 +409,7 @@
                     </div>
                     <div class="modal-body text-center">
                         <!-- Profilna slika (menja se dinamički) -->
-                        <img id="modalUserImage" src="" alt="Profilna slika" class="rounded-circle img-thumbnail mb-3" width="120">
+                        <img id="modalUserImage" src="" alt="Profilna slika" class="rounded-circle mb-3" width="120">
 
                         <!-- Ime i prezime (menja se dinamički) -->
                         <h4 id="modalUserName" class="mb-3"></h4>

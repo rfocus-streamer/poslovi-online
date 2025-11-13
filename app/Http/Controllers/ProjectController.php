@@ -128,7 +128,7 @@ class ProjectController extends Controller
         $totalEarnings = 0;
 
         if ($user->role == 'buyer') {
-            $projects = Project::where('buyer_id', $user->id)->with('service')->orderBy('created_at', 'desc')->get();
+            $projects = Project::where('buyer_id', $user->id)->with('service', 'commission')->orderBy('created_at', 'desc')->get();
         } elseif ($user->role == 'seller' or $user->role == 'both') {
             $projects = Project::where('seller_id', $user->id)->with('service', 'buyer', 'commission')->orderBy('created_at', 'desc')->get();
         }
