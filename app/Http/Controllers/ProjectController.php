@@ -47,7 +47,7 @@ class ProjectController extends Controller
         if ($user->role == 'buyer') {
             $projects = Project::where('buyer_id', $user->id)->with('service', 'commission')->orderBy('created_at', 'desc')->get();
         } elseif ($user->role == 'seller') {
-            $projects = Project::where('seller_id', $user->id)->with('service')->orderBy('created_at', 'desc')->get();
+            $projects = Project::where('seller_id', $user->id)->with('service', 'commission')->orderBy('created_at', 'desc')->get();
         }
 
         return view('projects.index', compact('projects', 'reserved_amount'));
