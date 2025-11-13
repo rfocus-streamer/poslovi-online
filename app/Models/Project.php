@@ -50,7 +50,7 @@ class Project extends Model
 
     public function commission()
     {
-        return $this->hasMany(Commission::class);
+        return $this->hasOne(Commission::class);
     }
 
     public function files()
