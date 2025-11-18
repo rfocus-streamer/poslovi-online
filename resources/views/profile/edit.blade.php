@@ -13,6 +13,11 @@
     .blinking-alert {
         animation: blink 1s infinite;
     }
+
+    .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
 </style>
 
 <div class="container py-5">
@@ -62,7 +67,7 @@
                 @endif
 
             <div class="card mb-3">
-                <div class="card-body">
+                <div class="card-body" style="color: var(--primary-color); background-color: var(--bg-color);">
                     <div class="row">
 
                     <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
@@ -137,7 +142,7 @@
 
         <div class="col-md-4">
             <div class="card mb-3">
-                <div class="card-body">
+                <div class="card-body" style="color: var(--primary-color); background-color: var(--bg-color);">
                     <div class="row">
 
                         <div class="text-center mb-4">

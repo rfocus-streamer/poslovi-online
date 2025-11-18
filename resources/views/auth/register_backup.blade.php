@@ -9,13 +9,7 @@
 <!-- Dodajte jQuery (ako već nije uključeno u vašem projektu) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 @section('content')
-<style type="text/css">
-    .form-control{
-        background-color: var(--card-bg) !important;
-        color: var(--text-color) !important;
-    }
 
-</style>
 <!-- Hero sekcija sa pozadinom -->
 <div class="hero-section">
     <div class="hero-content text-center text-white">
@@ -27,7 +21,7 @@
 <!-- Register Modal -->
 <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content col-md-8 mx-auto" style="color: var(--primary-color); background-color: var(--bg-color);">
+        <div class="modal-content col-md-8 mx-auto">
             <div class="modal-header border-0 pb-0">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori">
                     <span aria-hidden="true">&times;</span>
@@ -40,7 +34,7 @@
                      width="50"
                      height="50">
             </div>
-            <span class="hero-subtitle text-center text-dark fw-bold" style="color: var(--primary-color) !important;">Registracija novog korisnika</span>
+            <span class="hero-subtitle text-center text-dark fw-bold">Registracija novog korisnika</span>
             <div class="modal-body p-5">
 
                 <!-- Prikaz poruke sa anchor ID -->

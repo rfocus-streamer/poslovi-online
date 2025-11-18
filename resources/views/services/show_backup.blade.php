@@ -60,7 +60,7 @@
         <!-- Mobile -->
         @auth
             @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
-                <div id="favoriteBtn" class="d-md-none col-12 col-md-8 text-end">
+                <div id="favoriteBtn" class="d-md-none col-12 col-md-8 text-end"> <!-- Ovo gura dugmad na desno -->
                     @php
                         $favorite = Auth::user()->favorites->firstWhere('service_id', $service->id);
                     @endphp
@@ -138,7 +138,7 @@
                 </div>
             </div>
 
-            <div class="col-11 ml-2 col-md-8 d-flex flex-wrap align-items-center mb-4 mt-3">
+            <div class="col-11 ml-2 col-md-8 d-flex flex-wrap align-items-center mb-4 mt-1">
                 <div class="d-flex align-items-center me-auto ms-2">
                 <span class="badge bg-primary me-2">{{ $service->category->name }}</span>
                     @if($service->subcategory)
@@ -150,7 +150,7 @@
             <!-- Dekstop -->
             @auth
                 @if(Auth::user()->role !== 'seller' and Auth::user()->role !== 'support')
-                    <div id="favoriteBtn" class="d-none d-md-block col-12 col-md-8 text-end">
+                    <div id="favoriteBtn" class="d-none d-md-block col-12 col-md-8 text-end"> <!-- Ovo gura dugmad na desno -->
                         @php
                             $favorite = Auth::user()->favorites->firstWhere('service_id', $service->id);
                         @endphp
@@ -230,8 +230,8 @@
                 </div>
             </div>
 
-            <!-- Ocene usluge -->
-            <div class="card mb-3 ratings-section">
+        <!-- Ocene usluge -->
+            <div class="card mb-3">
                 <div class="card-body">
                     <div class="row">
                         <!-- Ocena -->
@@ -245,26 +245,28 @@
                                     @endif
                                 @endfor
                             </div>
-                            <p class="text-secondary">{{ $service->average_rating }}/5 (od {{count($service->reviews) }} recenzija)</p>
+                            <p>
+                                <p>{{ $service->average_rating }}/5 (od {{count($service->reviews) }} recenzija)</p>
+                            </p>
                         </div>
 
-                        <!-- Mogućnost reklamacije -->
+                        <!-- Mogućnos reklamacije -->
                         <div class="col-md-4 text-center">
                             <i class="fas fa-clipboard-list fa-2x mb-2 text-secondary"></i>
-                            <p class="mb-0 text-secondary">Mogućnost reklamacije</p>
+                            <p class="mb-0">Mogućnost reklamacije</p>
                         </div>
 
                         <!-- Dostupnost -->
                         <div class="col-md-4 text-center">
                             <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
-                            <p class="mb-0 text-secondary">Dostupno</p>
+                            <p class="mb-0">Dostupno</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Opis usluge -->
-            <div class="card mb-3 service-description">
+             <!-- Opis usluge -->
+            <div class="card mb-3">
                 <div class="card-body">
                     <h5 class="card-title mb-4 text-success">Opis</h5>
                     <p>{!! nl2br(e($service->description)) !!}</p>
@@ -281,11 +283,8 @@
                         }
                     @endphp
 
-                    <div class="new-section-with-badge">
-                        <div class="new-section-badge card-title">Odaberi Paket</div>
-                    </div>
-
-                    <h5 class="card-title mb-5 green_under"></h5>
+                    <p class="choos-label">Odaberi</p>
+                    <h5 class="card-title mb-4 service-package">Paket</h5>
 
                     <!-- Desktop Display - Cards Row for larger screens -->
                     <div class="row d-none d-md-flex">
@@ -303,7 +302,7 @@
                                     <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->basic_delivery_days }} dana</p>
 
                                     @auth
-                                       @if(Auth::user()->role !== 'admin' or Auth::user()->role !== 'support')
+                                      @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
                                         @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Basic'))
                                             <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Basic')->first()->id ?? 0) }}" method="POST">
                                                 @csrf
@@ -337,7 +336,7 @@
                                         <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->standard_delivery_days }} dana</p>
 
                                         @auth
-                                          @if(Auth::user()->role !== 'admin' or Auth::user()->role !== 'support')
+                                          @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
                                             @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Standard'))
                                                 <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Standard')->first()->id ?? 0) }}" method="POST">
                                                     @csrf
@@ -371,7 +370,7 @@
                                         <p><strong><i class="fas fa-credit-card text-secondary"></i> Cena:</strong> {{ number_format($service->premium_price, 0, ',', '.') }} <i class="fas fa-euro-sign"></i></p>
                                         <p><strong><i class="fas fa-hourglass-start text-secondary"></i> Rok:</strong> {{ $service->premium_delivery_days }} dana</p>
                                         @auth
-                                           @if(Auth::user()->role !== 'admin' or Auth::user()->role !== 'support')
+                                          @if(Auth::user()->role === 'buyer' or Auth::user()->role === 'both')
                                             @if(Auth::user()->cartItems->where('service_id', $service->id)->contains('package', 'Premium'))
                                                 <form action="{{ route('cart.destroy', $service->cartItems->where('user_id', Auth::id())->where('package', 'Premium')->first()->id ?? 0) }}" method="POST">
                                                     @csrf
@@ -544,7 +543,7 @@
                     <h4 class="card-title text-center text-success">O prodavcu</h4>
 
                     <!-- Osnovne informacije -->
-                    <div class="d-flex align-items-center mb-3 seller-info">
+                    <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
                             <img src="{{ Storage::url('user/' . $service->user->avatar) }}"
                                  class="rounded-circle avatar-img"
@@ -562,6 +561,7 @@
                                     3 => 'Level 2 prodavac',
                                     4 => 'Top Rated prodavac',
                                 ];
+
                                 $sellerLevelName = $sellerLevels[$service->user->seller_level] ?? 'Nepoznat nivo';
                             @endphp
                             <small class="text-center">{{ $sellerLevelName }}</small>
@@ -599,12 +599,6 @@
                             <i class="fas fa-envelope me-2"></i>Kontaktiraj prodavca
                         </a>
                     @endauth
-
-                    @guest
-                        <p class="text-secondary">
-                            Niste ulogovani? <a href="{{ route('login') }}" class="text-success" style="text-decoration: none !important;">Prijavite se</a> ili <a href="{{ route('register') }}" class="text-success" style="text-decoration: none !important;">Registrujte</a> da biste kontaktirali prodavca.
-                        </p>
-                    @endguest
                 </div>
             </div>
         </div>
@@ -653,7 +647,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 5000); // Poruka će početi da nestaje nakon 5s
     }
 
-    const textElement = document.querySelector("p.text-sm.text-gray-700");
+    const textElement = document.querySelector("p.text-sm.text-gray-700"); // Selektujemo element koji sadrži tekst
     if (textElement) {
         let text = textElement.textContent.trim();
 
@@ -663,10 +657,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (matches && matches.length === 3) {
             let translatedText = `Prikazuje od ${matches[0]} do ${matches[1]} od ukupno ${matches[2]} rezultata`;
             textElement.textContent = translatedText;
-
-            // Dodaj boju teme
-            textElement.style.color = 'var(--text-color)';
-            textElement.style.opacity = '0.8';
         }
     }
 
@@ -713,6 +703,7 @@ document.addEventListener("DOMContentLoaded", function () {
         imageCounter.textContent = `Slika ${currentIndex+1} od ${images.length}`;
     }
 </script>
+
 
 <script>
     function copyLink() {

@@ -1,5 +1,6 @@
+/* Stilovi preuzeti iz default.css i prilagođeni za temu */
 .btn-service-details {
-    background: linear-gradient(45deg, #9c1c2c, #c82333);
+    background: linear-gradient(45deg, var(--secondary-color), #c82333);
     background-color: rgba(0, 0, 0, 0);
     color: white !important;
     border: none;
@@ -14,6 +15,21 @@
     color: white;
 }
 
+.btn-service-choose {
+    background: linear-gradient(45deg, var(--secondary-color), #c82333);
+    color: white !important;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-service-choose:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(156,28,44,0.3);
+    color: white;
+}
+
 /* Stil za cenu */
 .service-price {
     display: flex;
@@ -22,17 +38,18 @@
 
 .price-label {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-color);
+    opacity: 0.8;
 }
 
 .price-value {
     font-size: 1.2rem;
-    color: #28a745;
+    color: var(--primary-color);
     font-weight: bold;
 }
 
 .package-category {
-  color: #9c1c2c !important;
+  color: var(--secondary-color) !important;
   font-weight: bold;
   font-size: 14px !important;
   text-transform: uppercase;
@@ -42,56 +59,159 @@
   text-align: right;
 }
 
- /* Hero sekcija */
-/*.hero-section {
-    position: relative;
-    height: 400px;
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-    url('https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}*/
-
-.hero-section {
-  background: linear-gradient(to bottom, #003366, #99ccff); /* plavi gradient */
-  height: 100vh; /* visina hero sekcije */
-  background-size: cover;
-  background-position: center center;
+.service-package{
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    margin: 20px auto;
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--secondary-color) !important;
+    font-size: 30px;
 }
 
-
-.hero-title {
-    font-size: 3.5rem;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+.choos-label {
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 13px;
+    margin-bottom: -30px;
 }
 
-.hero-title mark {
-    background: linear-gradient(120deg, #4CAF50 0%, #45a049 100%);
-    color: white;
-    padding: 0 10px;
-    border-radius: 5px;
+/* Stilovi za kartice */
+.card {
+    background-color: var(--menu-bg);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.search-container {
-    max-width: 600px;
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-title {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.card-text {
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+/* Stilovi za slike */
+.service-image {
+    width: 100%;
+    height: 200px !important;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.service-image:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.gallery-image {
+    transition: transform 0.3s ease;
+}
+
+.gallery-image:hover {
+    transform: scale(1.05);
+}
+
+/* Stilovi za modal */
+.modal-content {
+    background-color: var(--menu-bg);
+    border: 1px solid var(--border-color);
+}
+
+.modal-body img {
+    max-height: 80vh;
+    width: auto;
     margin: 0 auto;
 }
 
-@keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
+.modal-title {
+    color: var(--text-color);
 }
 
-.blinking-alert {
-    animation: blink 1s infinite;
+/* Stilovi za prodavca */
+.avatar-img {
+    border: 2px solid var(--primary-color);
+    object-fit: cover;
 }
 
+/* Stilovi za recenzije */
+.text-warning {
+    color: #ffc107 !important; /* Ova boja ostaje ista bez obzira na temu */
+}
 
+/* Stilovi za poruke */
+.fade-out {
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+}
+
+.fade-out.hide {
+    opacity: 0;
+}
+
+/* Paginacija - prilagođena temi */
+.pagination-buttons nav, section {
+  display: block;
+  text-align: center;
+}
+
+.pagination-buttons .relative {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    padding: 1px;
+    height: 30px;
+    border: none;
+    text-decoration: none;
+    transition: background 0.2s ease-in-out;
+}
+
+.pagination-buttons .relative a {
+    background-color: var(--secondary-color) !important;
+    color: white;
+    padding: 5px 10px;
+    margin: 0 2px;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.pagination-buttons .relative a:hover {
+    background-color: #7a131f !important;
+}
+
+.pagination-buttons .relative span {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    padding: 5px 10px;
+    margin: 0 2px;
+    border-radius: 4px;
+}
+
+.pagination-buttons .relative a[rel="prev"],
+.pagination-buttons .relative a[rel="next"] {
+    background-color: var(--primary-color) !important;
+    color: white;
+    height: 30px;
+}
+
+.pagination-buttons .relative a[rel="prev"]:hover,
+.pagination-buttons .relative a[rel="next"]:hover {
+    background-color: #267c3e !important;
+}
+
+span[aria-disabled="true"] {
+    display: none;
+}
+
+/* Share buttons */
 .share-buttons {
     display: flex;
     flex-wrap: wrap;
@@ -128,16 +248,52 @@
 .linkedin { background-color: #0077b5; }
 .whatsapp { background-color: #25d366; }
 
-.fade-out {
-    opacity: 1;
-    transition: opacity 1s ease-in-out;
+/* Badges */
+.badge {
+    color: white;
 }
 
-.fade-out.hide {
-    opacity: 0;
+.bg-primary {
+    background-color: var(--primary-color) !important;
 }
 
-/*Paginacija stilizacija*/
+.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+/* Osnovne informacije o prodavcu */
+.seller-info h6,
+.seller-info small,
+.seller-info p {
+    color: var(--text-color) !important;
+}
+
+/* Ocene usluge */
+.ratings-section p,
+.ratings-section .text-secondary {
+    color: var(--text-color) !important;
+    opacity: 0.8;
+}
+
+/* Opis usluge */
+.service-description p {
+    color: var(--text-color) !important;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+/* Dodatno za sve tekstualne elemente koji mogu biti zaboravljeni */
+.text-secondary {
+    color: var(--text-color) !important;
+    opacity: 0.7;
+}
+
+.text-muted {
+    color: var(--text-color) !important;
+    opacity: 0.6;
+}
+
+/**Paginacija stilizacija*/
 /* Sakrij default Laravel paginaciju */
 nav .flex.justify-between.flex-1.sm\:hidden {
     display: none;
@@ -212,203 +368,78 @@ a[rel="prev"]::before {
     margin-right: 10px;
     padding-left: 10px;
 }
-/*Paginacija stilizacija*/
 
-.upload-progress {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
+.pagination-buttons .relative span {
+    border-radius: 0.5rem;
+    background-color: initial !important;
+    color: var(--text-color) !important;
 }
 
-.progress-bar {
-    transition: width 0.3s ease;
+.pagination-buttons .relative span {
+    padding-right: 0px;
+    padding-left: 0px;
 }
 
-/* Stilovi za slike */
-.service-image {
-    width: 100%;
-    height: 200px !important; /* Fiksna visina */
-    object-fit: cover; /* Obezbeđuje da slika popuni prostor */
-    transition: transform 0.3s ease;
-}
-
-.service-image:hover {
-    transform: scale(1.05);
-    cursor: pointer;
-}
-
-/* Stilovi za modal */
-.modal-content {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.modal-body img {
-    max-height: 80vh; /* Ograničava visinu slike u modalu */
-    width: auto;
-    margin: 0 auto;
-}
-
-/* Stilovi za prodavca */
-.card-title {
-    color: #9c1c2c;
-}
-
-.btn-primary {
-    background-color: #9c1c2c;
-    border: none;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #7a1623;
-}
-
-.modal-footer{
-    justify-content: center !important;
-}
-
-/* Stilovi za informacije ispod opisa */
-.card-body .row > div {
-    border-right: 1px solid #eee;
-}
-
-.card-body .row > div:last-child {
-    border-right: none;
-}
-
-/* Stilovi za pakete */
-.card.h-100 {
-    transition: transform 0.3s ease;
-}
-
-.card.h-100:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary {
-    background-color: #9c1c2c;
-    border: none;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #7a1623;
-}
-
-/* Stil za dugme */
-.btn-service-choose {
-    background: linear-gradient(45deg, #9c1c2c, #c82333);
-    color: white !important;
-    border: none;
-    padding: 0.5rem 1.5rem;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-}
-
-.btn-service-choose:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(156,28,44,0.3);
-    color: white;
-}
-
-.service-package{
-    border-bottom: 2px solid green;
-    padding-bottom: 10px;
-    margin: 20px auto;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #9c1c2c !important;
-    font-size: 30px;
-}
-
-.choos-label {
-    text-align: center;
-    color: rgba(44, 132, 20, 0.9);
-    font-size: 13px;
-    margin-bottom: -30px;
-}
-
-.upload-progress {
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.progress-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px; /* Da bi tekst bio vidljiv i za 0% */
-}
-
-.progress-text {
-    font-size: 14px;
-    pointer-events: none;
-    user-select: none;
-}
-
-.error-list {
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 0.5rem;
-}
-.error-list li {
-    color: #dc3545;
-    font-size: 0.9em;
-    padding: 2px 0;
-}
-
-.disabled-upload {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.rating-input {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-}
-
-.rating-input input {
-    display: none;
-}
-
-.rating-input label {
+/* Stilovi za Novosti sekciju sa badge-om */
+.new-section-with-badge {
     position: relative;
-    width: 1.1em;
-    font-size: 1.3rem;
-    color: #FFD700;
-    cursor: pointer;
-    margin-right: 5px;
+    margin-top: 60px;
+    margin-bottom: 30px;
 }
 
-.rating-input label:hover,
-.rating-input label:hover ~ label,
-.rating-input input:checked ~ label {
-    color: #ffb900;
+.new-section-badge {
+    position: absolute;
+    top: -19px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--secondary-color));
+    color: white;
+    padding: 8px 25px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 10px rgba(41, 128, 185, 0.3);
+    z-index: 10;
+    white-space: nowrap;
 }
 
-.rating-input label i {
-    transition: all 0.2s ease;
+.new-section-content {
+    background: var(--menu-bg);
+    border: 2px solid var(--secondary-color);
+    border-radius: 15px;
+    padding: 15px 20px 5px 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
 }
 
-.avatar-img {
-    object-fit: cover;
+.new-section-header {
+    text-align: center;
 }
 
-.btn-poslovi
-{
-    color: #fff !important;
-    background-color: #9c1c2c !important;
-    border-color: #9c1c2c !important;
+.new-section-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    opacity: 0.9;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.4;
 }
 
-.btn-poslovi-green
-{
-    color: #fff !important;
-    background-color: #198754 !important;
-    border-color: #198754 !important;
+.green_under {
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 40px;
+  margin: 20px auto;
+  margin-bottom: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--secondary-color) !important;
+  font-size: 30px;
+  margin-top: -39px !important;
 }
+
+/*Paginacija stilizacija*/
 
 /* Responzivni stilovi */
 @media (max-width: 768px) {
@@ -420,5 +451,13 @@ a[rel="prev"]::before {
     #favoriteBtn{
         margin-top: -18px !important;
         right: 20px !important;
+    }
+
+    .service-package {
+        font-size: 24px;
+    }
+
+    .py-5 {
+        padding-top: initial !important;
     }
 }

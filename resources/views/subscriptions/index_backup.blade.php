@@ -14,25 +14,6 @@
     .form-check-input:checked {
         background-color: #198754; /* Bootstrap "success" zelena */
     }
-
-    #desktopTable
-    {
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-        color: var(--text-color);
-    }
-
-    .form-select{
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-        color: var(--text-color);
-    }
-
-    #payMethodInfo *{
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-        color: var(--text-color);
-    }
 </style>
 <div class="container py-5">
     <div class="row">
@@ -50,7 +31,7 @@
                     {{ session('error') }}
                 </div>
             @endif
-            <div class="card mb-1" id="desktopTable">
+            <div class="card mb-1">
                 <div class="card-header text-center card-header text-white" style="background-color: #198754">
                     <i class="fas fa-credit-card"></i> Odaberi pretplatu
                 </div>
@@ -137,7 +118,7 @@
             </div>
         </div>
 
-        <div class="col-md-4" id="payMethodInfo">
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <ul class="list-unstyled">
@@ -152,7 +133,7 @@
                       <li>✅ Debitna kartica</li>
                     </ul>
 
-                    <p class="mt-5">Pretplatu možeš otkazati u bilo kom trenutku, bez dodatnih troškova ili obaveza.</p>
+                    <p class="text-muted mt-5">Pretplatu možeš otkazati u bilo kom trenutku, bez dodatnih troškova ili obaveza.</p>
 
                 </div>
             </div>
@@ -165,7 +146,7 @@
             @endphp
 
            @if($subscriptions->count() > 0)
-                <div class="card mt-4" id="desktopTable">
+                <div class="card mt-4">
                     <div class="card-header btn-poslovi text-white text-center">
                         Tvoje pretplate
                     </div>
@@ -512,18 +493,6 @@ function translatePaginationText() {
 
     .mobile-subscription-details {
         font-size: 0.9rem;
-    }
-
-    .table thead th {
-        color: var(--text-color);
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-    }
-
-    .table tbody td {
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-        color: var(--text-color);
     }
 
     @media (max-width: 768px) {

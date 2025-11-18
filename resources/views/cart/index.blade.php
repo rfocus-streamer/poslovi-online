@@ -5,6 +5,60 @@
     h4 {
         font-size: 1rem !important;
     }
+
+    .table {
+        color: var(--text-color);
+    }
+
+    .table thead th {
+        color: var(--text-color);
+        border-color: var(--border-color);
+        background-color: var(--menu-bg);
+    }
+
+    .table tbody td {
+        border-color: var(--border-color);
+        background-color: var(--menu-bg);
+        color: var(--text-color);
+    }
+
+    .table tbody td a{
+        color: var(--primary-color) !important;
+    }
+
+    .table tbody td a:hover{
+        text-decoration: none !important;
+        color: var(--secondary-color) !important;
+    }
+
+    .table tbody td input{
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+    .form-select {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        padding: 0.5rem;
+        font-size: 1rem;
+    }
+
+    /* Stil za option elemente */
+    .form-select option {
+        background-color: var(--menu-bg) !important;
+    }
+
+    /* Za disabled opcije, možete dodati stil */
+    .form-select option:disabled {
+        color: var(--disabled-text-color); /* Definišite ovu varijablu za boju onemogućenih opcija */
+        background-color: var(--disabled-bg-color); /* Definišite ovu varijablu za pozadinu onemogućenih opcija */
+    }
+
 </style>
 <div class="container">
     <!-- Prikaz poruke sa anchor ID -->
@@ -21,7 +75,7 @@
     @endif
 
         <!-- Desktop naslov + info -->
-        <div class="d-none d-md-flex justify-content-between align-items-center mb-1">
+        <div class="d-none d-md-flex justify-content-between align-items-center mb-1" style="color: var(--primary-color); background-color: var(--bg-color);">
             <!-- Naslov korpe levo -->
             <h4><i class="fas fa-shopping-cart"></i> Tvoja korpa</h4>
 
@@ -36,7 +90,7 @@
         </div>
 
         <!-- Mobile naslov + info -->
-        <div class="d-flex d-md-none flex-column text-center w-100 mb-1">
+        <div class="d-flex d-md-none flex-column text-center w-100 mb-1" style="color: var(--primary-color); background-color: var(--bg-color);">
             <!-- Naslov korpe levo -->
             <h6><i class="fas fa-shopping-cart"></i> Tvoja korpa</h6>
 
@@ -53,12 +107,12 @@
 
     @if($cartItems->isEmpty())
         <!-- Desktop -->
-        <div class="d-none d-md-flex">
+        <div class="d-none d-md-flex" style="color: var(--primary-color); background-color: var(--bg-color);">
             <p>Tvoja korpa je prazna.</p>
         </div>
 
         <!-- Mobile  -->
-        <div class="d-md-none text-center">
+        <div class="d-md-none text-center" style="color: var(--primary-color); background-color: var(--bg-color);">
             <p>Tvoja korpa je prazna.</p>
         </div>
     @else
@@ -189,7 +243,7 @@
                     $userBalance = Auth::user()->deposits;
                 @endphp
 
-                <div class="card mb-3 cart-card" data-id="{{ $cartItem->id }}">
+                <div class="card mb-3 cart-card" data-id="{{ $cartItem->id }}" style="color: var(--primary-color); background-color: var(--bg-color) !important;">
                     <a class="text-dark" href="{{ route('services.show', ['id' => $cartItem->service->id, 'slug' => Str::slug($cartItem->service->title)]) }}">
                         <div class="card-header bg-light d-flex justify-content-between" style="background-color: #198754 !important; color: white !important">
                             <span class="mr-3">#{{ $key + 1 }}</span>
@@ -225,7 +279,7 @@
                         </div>
                     </form>
 
-                    <div class="card-footer bg-white">
+                    <div class="card-footer">
                         <div class="d-flex flex-column gap-2">
                             @if($userBalance >= $totalWithCommisionPrice)
                                 <form action="{{ route('projects.store', $cartItem) }}" method="POST">
@@ -256,7 +310,7 @@
         </div>
 
 
-        <div class="mt-4 p-3 border rounded bg-light">
+        <div class="mt-4 p-3 border rounded bg-light" style="color: var(--primary-color); background-color: var(--bg-color) !important;">
             <h5><i class="fas fa-info-circle"></i> Opis akcija</h5>
             <ul class="list-unstyled">
                 <li class="mb-2">

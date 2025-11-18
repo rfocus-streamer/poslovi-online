@@ -2,6 +2,150 @@
 <title>Poslovi Online | Tvoje omiljene ponude</title>
 <link href="{{ asset('css/favorites.css') }}" rel="stylesheet">
 @section('content')
+<style type="text/css">
+    .billing-period {
+        word-wrap: break-word; /* Prelomi reč na sledećoj liniji */
+        word-break: break-word; /* Prelomi reč ako je dugačka */
+        overflow-wrap: break-word; /* Još jedan način da omogućite prelamanje reči */
+    }
+
+    /* Ako koristite Flexbox, omogućite prelamanje redova u row-u */
+    .card-body .row {
+        flex-wrap: wrap; /* Omogućava prelamanje u redovima */
+    }
+
+     .table thead th {
+        color: var(--text-color);
+        border-color: var(--border-color);
+        background-color: var(--menu-bg);
+    }
+
+    .table tbody td {
+        border-color: var(--border-color);
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    .table tbody td a {
+        color: var(--primary-color) !important;
+        text-decoration: none;
+    }
+
+    .table tbody td a:hover {
+        color: var(--primary-color);
+    }
+
+    .mobile-div div {
+        color: var(--text-color);
+    }
+
+    .mobile-div a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .alert {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .alert-danger {
+        background-color: var(--danger-bg);
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .alert-success {
+        background-color: var(--success-bg);
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+        box-shadow: 0 0.125rem 0.25rem var(--shadow);
+    }
+
+    .card-header {
+        background-color: var(--menu-bg) !important;
+        border-bottom-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .bg-light {
+        background-color: var(--menu-bg) !important;
+        color: var(--text-color);
+    }
+
+    .border {
+        border-color: var(--border-color) !important;
+    }
+
+    .rounded {
+        border-color: var(--border-color);
+    }
+
+    .btn-outline-light {
+        border-color: var(--border-color);
+        color: var(--text-color);
+        background-color: transparent;
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--menu-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-link {
+        color: var(--primary);
+    }
+
+    .btn-link:hover {
+        color: var(--primary);
+    }
+
+    .modal-content {
+        background-color: var(--menu-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    #modalUserImage {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%; /* Okrugli oblik */
+        object-fit: cover; /* Obezbeđuje da slika popuni celu površinu bez distorzije */
+    }
+
+
+    .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+    .form-select {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.5rem;
+        font-size: 1rem;
+    }
+
+    /* Stil za option elemente */
+    .form-select option {
+        background-color: var(--menu-bg) !important;
+    }
+
+    /* Za disabled opcije, možete dodati stil */
+    .form-select option:disabled {
+        color: var(--disabled-text-color); /* Definišite ovu varijablu za boju onemogućenih opcija */
+        background-color: var(--disabled-bg-color); /* Definišite ovu varijablu za pozadinu onemogućenih opcija */
+    }
+</style>
 <div class="container">
     <!-- Prikaz poruke sa anchor ID -->
     @if(session('success'))

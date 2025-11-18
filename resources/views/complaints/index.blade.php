@@ -41,6 +41,19 @@
     background-color: #ffe5b5;  /* Žuta pozadina za desno */
 }
 
+    .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+    .form-select {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.5rem;
+        font-size: 1rem;
+    }
+
 </style>
 <div class="container py-5">
     <div class="row">
@@ -156,7 +169,7 @@
 
         @if($project->complaints->count() == 0 and Auth::user()->role !== 'support')
             <div class="col-md-8">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-header"><i class="fas fa-exclamation-circle text-warning"></i>
                         <a class="text-dark" href="{{ route('projects.view', $project->id) }}"> Podnesi prigovor za posao: {{ $project->service->title }}</a>
                         <!-- O kupcu -->
@@ -193,7 +206,7 @@
 
             <!-- O arbitraži -->
             <div class="col-md-4 mb-1 g-0">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-body">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o arbitraži</h6>
                     <small>Prilikom podnošenja prigovora, molimo da dostaviš što više relevantnih informacija kako bi što bolje objasnio situaciju. Detaljan opis problema i, ukoliko je moguće, priloženi dokumenti ili dokazi mogu pomoći podršci da donese što pravedniju i objektivniju odluku.</small>
@@ -202,7 +215,7 @@
             </div>
         @elseif($project->complaints->count() == 0 and Auth::user()->role === 'support')
             <div class="col-md-12">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-header text-center">
                         <h6><i class="fas fa-exclamation-circle text-danger"></i> Za ovaj posao nema dodatih prigovora</h6>
                     </div>
@@ -224,11 +237,11 @@
             @endif
 
         <div class="col-md-8 mb-1 g-0">
-            <div class="card">
+            <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                 <div class="card-body">
                         <h5><i class="fas fa-exclamation-circle text-warning"></i> Lista prigovora</h5>
                         @foreach($project->complaints as $complaint)
-                           <div class="card mb-3">
+                           <div class="card mb-3" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <img src="{{ Storage::url('user/' . $complaint->participant->avatar) }}"
@@ -265,7 +278,7 @@
             </div>
 
             <div class="col-md-4 mb-2 g-0">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-body mb-2">
                         <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Informacije o prigovoru</h6>
                         @if(Auth::user()->role !== 'support')
@@ -280,7 +293,7 @@
 
         @if($project->admin_decision_reply === 'enabled' and Auth::user()->role !== 'support' and $project->complaints->count() > 0)
             <div class="col-md-8">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-body">
                         <form action="{{ route('complaints.store', $project) }}" method="POST" enctype="multipart/form-data">
                             @csrf
@@ -302,7 +315,7 @@
 
             <!-- O dodatnoj informaciji -->
             <div class="col-md-4 mb-1 g-0">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-body">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Potrebne su dodatne informacije</h6>
                     <small>Podrška je pregledala prigovor i zaključila da su potrebne dodatne informacije pre donošenja konačne odluke. Molimo vas da pažljivo pregledate odgovor podrške i dostavite tražene podatke kako bi se prigovor rešio na najpravičniji način.</small>
@@ -311,7 +324,7 @@
             </div>
         @elseif($project->complaints->count() > 0 and Auth::user()->role === 'support' and $project->admin_decision === null)
             <div class="col-md-8">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-body">
                         <form action="{{ route('complaints.store', $project) }}" method="POST" enctype="multipart/form-data">
                             @csrf
@@ -337,7 +350,7 @@
 
             <!-- O dodatnoj informaciji -->
             <div class="col-md-4 mb-1 g-0">
-                <div class="card">
+                <div class="card" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="card-body">
                     <h6 class="card-title mb-4 text-success"><i class="fas fa-info-circle text-dark"></i> Potrebne su dodatne informacije</h6>
                     <small>Pregledali ste detalje prigovora i zaključili ste da su potrebne dodatne informacije pre donošenja konačne odluke. Molimo vas da pažljivo i jasno formulišete pitanje kako bi strana koja je podnela prigovor mogla da dostavi tražene podatke kako bi se prigovor rešio na najpravičniji način.</small>

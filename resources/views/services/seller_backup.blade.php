@@ -4,83 +4,12 @@
 <style type="text/css">
     .btn-service-details {
       background: linear-gradient(45deg, #9c1c2c, #c82333);
-      background-color: rgba(0, 0, 0, 0);
+        background-color: rgba(0, 0, 0, 0);
       color: white !important;
       border: none;
-      border-radius: 5px;
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
       transition: all 0.3s ease;
-    }
-
-    .text-theme {
-        color: var(--text-color);
-    }
-
-    .text-muted-theme {
-        color: var(--text-muted) !important;
-    }
-
-    .card {
-        background-color: var(--card-bg);
-        border-color: var(--border-color);
-    }
-
-    .card-header {
-        background-color: var(--primary) !important;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .bg-light {
-        background-color: var(--card-bg) !important;
-    }
-
-    .border {
-        border-color: var(--border-color) !important;
-    }
-
-    .table {
-        color: var(--text-color);
-    }
-
-    .table thead th {
-        color: var(--text-color);
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-    }
-
-    .table tbody td {
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-        color: var(--text-color);
-    }
-
-    .mobile-div div{
-        color: var(--text-color);
-    }
-
-    .mobile-div small{
-        color: var(--text-color);
-    }
-
-    .alert {
-        background-color: var(--card-bg);
-        border-color: var(--border-color);
-        color: var(--text-color);
-    }
-
-    .alert-danger {
-        background-color: var(--danger-bg);
-        border-color: var(--danger);
-        color: var(--danger);
-    }
-
-    .alert-success {
-        background-color: var(--success-bg);
-        border-color: var(--success);
-        color: var(--success);
-    }
-
-    .list-unstyled li {
-        color: var(--text-color);
     }
 </style>
 
@@ -196,7 +125,7 @@
                     @endphp
                     <tr>
                         <td>{{ $key + 1 }}</td>
-                        <td><a style="color: var(--primary-color); text-decoration: none;" href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}">{{ $service->title }}</a></td>
+                        <td><a class="text-dark" href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}">{{ $service->title }}</a></td>
                         <td>
                             {{ \Carbon\Carbon::parse($service->created_at)->format('d.m.Y H:i:s') }}
                         </td>
@@ -239,12 +168,12 @@
         </table>
 
         <!-- Mobile & Tablet cards -->
-        <div class="d-md-none mobile-div">
+        <div class="d-md-none">
             @foreach($services as $key => $service)
             <div class="card mb-3 subscription-card" data-id="{{ $service->id }}">
                 <div class="card-header btn-poslovi-green text-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" style="color: var(--primary-color); text-decoration: none;"><span>{{ $service->title }}</span></a>
+                        <a href="{{ route('services.show', ['id' => $service->id, 'slug' => Str::slug($service->title)]) }}" class="text-light"><span>{{ $service->title }}</span></a>
                         <span class="badge bg-light text-dark">
                             @if(is_null($service->visible))
                                 <i class="fa fa-question-circle text-secondary" title="Nikada nije javno prikazana"></i>
@@ -259,17 +188,17 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <small style="font-weight: bold;">Kreirana</small>
+                            <small class="text-muted">Kreirana</small>
                             <div>{{ \Carbon\Carbon::parse($service->created_at)->format('d.m.Y H:i:s') }}</div>
                         </div>
                         <div class="col-6">
-                            <small style="font-weight: bold;">Ažurirana</small>
+                            <small class="text-muted">Ažurirana</small>
                             <div>{{ \Carbon\Carbon::parse($service->updated_at)->format('d.m.Y H:i:s') }}</div>
                         </div>
                     </div>
 
                     <div class="mt-2">
-                        <small style="font-weight: bold;">Status</small>
+                        <small class="text-muted">Status</small>
                         <div class="text-truncate">
                             @if(is_null($service->visible))
                                 Nikada nije javno prikazana
@@ -282,7 +211,7 @@
                     </div>
                 </div>
 
-                <div class="card-footer">
+                <div class="card-footer bg-white">
                     <div class="d-flex gap-2 justify-content-center">
                         <form action="{{ route('services.view', $service) }}" method="GET">
                             @csrf

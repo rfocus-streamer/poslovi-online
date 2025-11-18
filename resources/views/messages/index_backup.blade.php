@@ -13,40 +13,23 @@
     .chat-container {
         display: flex;
         height: calc(100vh - 150px);
-        background-color: var(--bg-color);
     }
 
     .contacts {
-        background-color: var(--bg-color);
+        background-color: #f1f1f1;
         overflow-y: auto;
         padding: 10px;
-        border-right: 1px solid var(--border-color);
-    }
-
-    .contacts-header {
-        padding: 10px 15px;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 10px;
-        background-color: var(--bg-color);
-        color: var(--primary-color);
-    }
-
-    .contacts-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
     }
 
     .chat-box {
         flex: 1;
         display: flex;
         flex-direction: column;
-        background-color: var(--bg-color);
     }
 
     .chat-history {
         flex: 1;
-        background-color: var(--bg-color);
+        background-color: #ffffff;
         padding: 20px;
         overflow-y: auto;
         min-height: 300px;
@@ -54,8 +37,7 @@
 
     .chat-input {
         padding: 10px;
-        background-color: var(--bg-color);
-        border-top: 1px solid var(--border-color);
+        background-color: #f1f1f1;
     }
 
     .chat-message {
@@ -67,58 +49,31 @@
     }
 
     .leftChat {
-        background-color: var(--left-chat-bg, #2f9b4b);
+        background-color: #e1ffe1;
         flex-direction: row-reverse;
         border-radius: 5px;
         padding: 5px;
-        color: white;
     }
 
     .rightChat {
-        background-color: var(--right-chat-bg, #9c1c2c);
+        background-color: #add8e6;
         flex-direction: row-reverse;
         border-radius: 5px;
         padding: 5px;
-        color: white;
-    }
-
-    textarea.form-control{
-        background-color: var(--bg-color);
-        color: var(--text-color);
-    }
-
-    textarea.form-control:focus{
-        background-color: var(--bg-color);
-        color: var(--text-color);
-    }
-
-    .form-control[type="file"]{
-        background-color: var(--card-bg);
-        color: var(--text-color);
     }
 
     .contact-item {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        margin-bottom: 10px;
         cursor: pointer;
-        padding: 12px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        border: 1px solid var(--border-color);
-        background-color: var(--bg-color);
-        color: var(--primary-color);
-        margin-bottom: 0;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.2s;
     }
 
     .contact-item:hover {
-        background-color: var(--bg-color);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .contact-item.selected-contact {
-        border: 2px solid var(--primary-color) !important;
-        background-color: var(--menu-bg) !important;
+        background-color: #f8f9fa;
     }
 
     .contact-avatar {
@@ -130,13 +85,12 @@
 
     .status-online {
         color: green;
-        font-size: 12px;
-        font-weight: bold;
+        font-size: 14px;
     }
 
     .status-offline {
         color: gray;
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .message-time {
@@ -183,17 +137,18 @@
     }
 
     .conversation-list {
-        align-items: flex-start;
-        display: flex;
-        margin-bottom: 16px;
+        align-items: flex-end;
+        display: inline-flex;
+        margin-bottom: 24px;
         max-width: 80%;
+        position: relative;
     }
 
     .conversation-list-right {
         display: flex;
         flex-direction: row-reverse;
-        align-items: flex-start;
-        margin-bottom: 16px;
+        align-items: flex-end;
+        margin-bottom: 24px;
         max-width: 80%;
         margin-left: auto;
     }
@@ -204,47 +159,45 @@
         justify-content: center;
         position: relative;
         width: 100%;
-        margin: 10px 0;
     }
 
     .date-separator .date-text {
-        padding: 5px 15px;
-        background-color: var(--bg-color);
+        padding: 0 10px;
+        background-color: white;
         position: relative;
         z-index: 1;
-        color: var(--primary-color);
-        border: 1px solid var(--border-color);
-        border-radius: 15px;
-        font-size: 12px;
     }
 
     .date-separator::before,
     .date-separator::after {
         content: "";
         flex: 1;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid #dee2e6;
         margin: 0 10px;
     }
 
     .unread-badge {
-        font-size: 0.9rem;
+        font-size: 0.7rem;
         min-width: 1.25rem;
         height: 1.25rem;
         line-height: 1.25rem;
     }
 
-
     .contact-item.has-unread {
         font-weight: bold;
+    }
+
+    .selected-contact {
+        border: 1px solid rgba(255, 0, 0, 0.5) !important;
     }
 
     .switchBlock {
         position: relative;
         display: inline-block;
-        width: 173px;
-        height: 24px;
+        width: 175px;
+        height: 20px;
+        top: -8px !important;
         cursor: pointer;
-        margin-top: 8px;
     }
 
     .switchBlock input {
@@ -264,7 +217,6 @@
         transition: 0.4s;
         border-radius: 24px;
         background: linear-gradient(to right, #ccc 50%, #4CAF50 50%);
-        margin-top: 4px;
     }
 
     .sliderBlock:before {
@@ -273,7 +225,7 @@
         height: 18px;
         width: 18px;
         border-radius: 50%;
-        left: 1px;
+        left: 2px;
         bottom: 1px;
         background-color: white;
         transition: 0.4s;
@@ -283,19 +235,18 @@
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 11px;
+        font-size: 12px;
         font-weight: bold;
         color: #fff;
+        margin-left: 12px;
     }
 
     .label-textBlock.leftBlock {
-        left: 22px;
-        margin-top: 2px;
+        left: 12px;
     }
 
     .label-textBlock.rightBlock {
         right: 22px;
-        margin-top: 2px;
     }
 
     .switchBlock input:checked + .sliderBlock {
@@ -314,25 +265,26 @@
         transform: translateX(153px);
     }
 
-    /* Poboljšan vertikalni skrollbar */
+    /* Poboljšan vertikalni skrollbar SAMO za kontakt listu */
     .contacts::-webkit-scrollbar {
-        width: 8px;
+        width: 12px;
     }
 
     .contacts::-webkit-scrollbar-thumb {
-        background-color: var(--primary-color, #9c1c2c);
-        border-radius: 4px;
+        background-color: #9c1c2c;
+        border-radius: 6px;
+        border: 3px solid #f1f1f1;
     }
 
     .contacts::-webkit-scrollbar-track {
-        background: var(--bg-color);
-        border-radius: 4px;
+        background: #f1f1f1;
+        border-radius: 6px;
     }
 
     /* Firefox */
     .contacts {
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary-color, #9c1c2c) var(--bg-color);
+        scrollbar-width: auto;
+        scrollbar-color: #9c1c2c #f1f1f1;
     }
 
     /* Stilovi za resizable modal */
@@ -360,7 +312,7 @@
         top: 0;
         left: 0;
         margin: 0;
-        z-index: 1050;
+        z-index: 1050; /* Dodaj visok z-index da bude ispred drugih elemenata */
     }
 
     .modal-header .modal-controls {
@@ -382,18 +334,17 @@
         align-items: center;
         justify-content: center;
         height: 100%;
-        background: var(--bg-color);
-        color: var(--primary-color);
+        background: #f8f9fa;
+        color: #6c757d;
     }
 
     .permission-request {
         text-align: center;
         padding: 20px;
-        background: var(--alert-warning-bg, #fff3cd);
-        border: 1px solid var(--alert-warning-border, #ffeaa7);
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
         border-radius: 5px;
         margin: 10px;
-        color: var(--primary-color);
     }
 
     #mirotalk-iframe {
@@ -462,40 +413,24 @@
 
     /* Pomeranje emotikona desno */
     #emojiPalette {
-        position: absolute;
-        right: 2px;
-        top: -15px;
-        background-color: var(--bg-color);
-        border: 1px solid var(--border-color);
+        position: absolute;  /* Postavljanje emotikona izvan toka dokumenta */
+        right: 2px;            /* Poravnanje sa desnim ivicom */
+        top: -15px;           /* Podesiti razmak od vrha, po potrebi */
+        background-color: #fff; /* Pozadinska boja za bolju vidljivost */
+        border: 1px solid #ccc;
         box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
         padding: 10px;
-        display: none;
-        z-index: 1000;
+        display: none; /* Početno sakrivanje emotikona */
+        z-index: 1000; /* Da bude ispred drugih elemenata */
         cursor: pointer;
-        border-radius: 5px;
     }
 
     #messageForm {
-        position: relative;
+        position: relative;  /* Da bi se pozicionirali emotikoni unutar ove forme */
     }
 
-    .emoji-category {
-        display: flex;
-        gap: 5px;
-        margin-bottom: 5px;
-        flex-wrap: wrap;
-    }
-
-    .emoji {
-        cursor: pointer;
-        font-size: 18px;
-        padding: 2px;
-        border-radius: 3px;
-        transition: background-color 0.2s;
-    }
-
-    .emoji:hover {
-        background-color: var(--hover-color);
+    iframe {
+      /*pointer-events: none;*/
     }
 
     /* Mobile optimizacija */
@@ -510,12 +445,11 @@
         }
 
         #videoCallModalLabel {
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Manja veličina fonta za mobilne */
         }
 
-        #testPermissionsBtn {
-            font-size: 0.7rem;
-            padding: 0.2rem 0.4rem;
+        #testPermissionsBtn.permissions-granted {
+            font-size: 0.5rem; /* Manja veličina fonta za mobilne */
         }
     }
 
@@ -523,107 +457,29 @@
     @media (max-width: 767px) {
         .chat-container {
             flex-direction: column;
-            height: calc(100vh - 120px);
-            min-height: 500px;
+            height: auto;
+            min-height: calc(100vh - 200px);
         }
 
         .contacts {
-            margin-left: 10px;
             height: 200px;
-            min-height: 200px;
-            width: 395px;
-            border-bottom: 2px solid var(--border-color);
-            border-right: none;
-            padding: 8px;
-        }
-
-        .contacts-list {
-            gap: 6px;
-        }
-
-        .contact-item {
-            padding: 8px;
-        }
-
-        .contact-avatar {
-            width: 32px !important;
-            height: 32px !important;
-        }
-
-        .contact-item strong {
-            font-size: 14px;
-        }
-
-        .contact-item small {
-            font-size: 11px;
-        }
-
-        .switchBlock {
-            width: 170px !important;
-            height: 22px !important;
-            margin-top: 6px;
-        }
-
-        .sliderBlock:before {
-            height: 16px !important;
-            width: 16px !important;
-        }
-
-        .switchBlock input:checked + .sliderBlock:before {
-            transform: translateX(1px) !important;
-        }
-
-        .switchBlock input:not(:checked) + .sliderBlock:before {
-            transform: translateX(153px);
-        }
-
-        .label-textBlock {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 11px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .label-textBlock.leftBlock {
-            left: 22px;
-            margin-top: 2px;
-        }
-
-        .label-textBlock.rightBlock {
-            right: 22px;
-            margin-top: 2px;
-        }
-
-        .unread-badge {
-            font-size: 10px;
-            min-width: 16px;
-            height: 16px;
-            line-height: 16px;
-        }
-
-        .chat-box {
-            min-height: 300px;
-        }
-
-        .chat-history {
-            padding: 10px;
-        }
-
-        .conversation-list,
-        .conversation-list-right {
-            max-width: 90%;
-            margin-bottom: 12px;
-        }
-
-        .chat-avatar img {
-            width: 35px !important;
-            height: 35px !important;
+            border-bottom: 1px solid #dee2e6;
+            scrollbar-width: thick;
         }
 
         .contacts::-webkit-scrollbar {
-            width: 6px;
+            width: 14px;
+        }
+
+        .contacts::-webkit-scrollbar-thumb {
+            background: #9c1c2c;
+            border-radius: 8px;
+            border: 3px solid #f1f1f1;
+        }
+
+        .contacts::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 8px;
         }
     }
 
@@ -637,17 +493,9 @@
         .chat-box {
             height: calc(100vh - 200px);
         }
-    }
 
-    /* Poboljšanja za tablete */
-    @media (min-width: 768px) and (max-width: 1024px) {
-        .contacts {
-            min-width: 280px;
-            max-width: 310px;
-        }
-
-        .contact-item {
-            padding: 10px;
+        .contacts::-webkit-scrollbar {
+            width: 8px;
         }
     }
 </style>
@@ -657,20 +505,17 @@
         <div class="col-12 p-0">
             <div class="chat-container">
                 <!-- Contacts List -->
-                <div class="contacts">
-                    <div class="contacts-header">
-                        <h6 class="mb-0"><i class="fa fa-address-book"></i> Tvoji kontakti</h6>
-                    </div>
-                    <div class="contacts-list" id="contactsList">
+                <div class="contacts text-secondary">
+                    <h6><i class="fa fa-address-book"></i> Tvoji kontakti</h6>
+                    <ul class="list-group">
                         @foreach ($contacts as $contact)
-                            <div class="contact-item" data-user-id="{{ $contact->id }}" onclick="showServices('{{ $contact->id }}', {{$contact->service_titles}})">
-                                <!-- Header sa statusom i ratingom -->
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <div class="{{ $contact->is_online ? 'status-online' : 'status-offline' }} me-2">
-                                            <i class="fas fa-circle me-1"></i>{{ $contact->is_online ? 'Online' : 'Offline' }}
+                            <li class="list-group-item contact-item" data-user-id="{{ $contact->id }}" onclick="showServices('{{ $contact->id }}', {{$contact->service_titles}})">
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="{{ $contact->is_online ? 'status-online' : 'status-offline' }}">
+                                            {{ $contact->is_online ? 'Online' : 'Offline' }}
                                         </div>
-                                        <div class="text-warning  me-auto ms-5">
+                                        <div class="text-warning">
                                             @for ($j = 1; $j <= 5; $j++)
                                                 @if ($j <= $contact->stars)
                                                     <i class="fas fa-star"></i>
@@ -681,38 +526,29 @@
                                         </div>
                                     </div>
 
-                                    @php
-                                        $unreadCount = $contact->service_titles[0]['unreadCount'] ?? 0;
-                                    @endphp
-
-                                    <span data-user-unread-messages-id="{{ $contact->id }}"
-                                          class="unread-badge badge bg-danger rounded-pill"
-                                          style="display: {{ $unreadCount > 0 ? 'inline-block' : 'none' }};">
-                                        {{ $unreadCount }}
-                                    </span>
-                                </div>
-
-                                <!-- Glavni sadržaj kontakta -->
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ Storage::url('user/'.$contact->avatar) }}"
-                                         alt="{{ $contact->firstname }} {{ $contact->lastname }}"
-                                         class="contact-avatar me-3">
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <strong class="mb-1">{{ $contact->firstname }} {{ $contact->lastname }}</strong>
+                                    <div class="d-flex align-items-center position-relative">
+                                        <img src="{{ Storage::url('user/'.$contact->avatar) }}" alt="{{ $contact->firstname }} {{ $contact->lastname }}" class="contact-avatar me-2">
+                                        <div>
+                                            <strong>{{ $contact->firstname }} {{ $contact->lastname }}</strong><br>
+                                            <small class="text-muted">
+                                                @if($contact->last_seen_at)
+                                                    Poslednja aktivnost: {{ \Carbon\Carbon::parse($contact->last_seen_at)->format('d.m.Y H:i:s') }}
+                                                @endif
+                                            </small>
                                         </div>
-                                        <small class="text-muted">
-                                            @if($contact->last_seen_at)
-                                                Aktivan: {{ \Carbon\Carbon::parse($contact->last_seen_at)->format('d.m.Y H:i') }}
-                                            @else
-                                                Nikad aktivan
-                                            @endif
-                                        </small>
+
+                                        @php
+                                            $unreadCount = $contact->service_titles[0]['unreadCount'] ?? 0;
+                                        @endphp
+
+                                        <span data-user-unread-messages-id="{{ $contact->id }}"
+                                              class="unread-badge badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle"
+                                              style="display: {{ $unreadCount > 0 ? 'inline-block' : 'none' }}">
+                                            {{ $unreadCount }}
+                                        </span>
                                     </div>
                                 </div>
-
-                                <!-- Block/Unblock switch -->
-                                <div class="d-flex justify-content-center mt-2">
+                                <div class="mt-3 d-flex justify-content-center">
                                     <label class="switchBlock" onclick="event.stopPropagation()">
                                         <input type="checkbox" id="blockSwitch_{{ $contact->id }}"
                                                {{ $contact->blocked ? 'checked' : '' }}
@@ -723,23 +559,23 @@
                                         <span class="label-textBlock rightBlock">Odblokiran</span>
                                     </label>
                                 </div>
-                            </div>
+                            </li>
                         @endforeach
-                    </div>
+                    </ul>
                 </div>
 
                 <!-- Chat Box -->
                 <div class="chat-box">
+
                     <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-comment-dots mt-1 text-info"></i> &nbsp;
-                            <h6 id="topic" style="margin-top:8px" class="text-decoration-none">
-                                <span class="d-none d-md-inline">Izaberi kontakt za razgovor</span>
-                                <span class="d-inline d-md-none">Izaberi kontakt</span>
+                            <h6 id="topic" style="margin-top:8px" class="text-decoration-none text-secondary">
+                                <span class="text-secondary d-block d-md-none">Izaberi kontakt sa kojim želiš da započneš razgovor.</span>
                             </h6>
                         </div>
 
-                        <button class="btn start-call" data-contactid="" data-serviceid="" style="display: none;" id="buttonCall" title="Pokreni poziv kroz MiroTalk integraciju">
+                        <button class="btn start-call" data-contactid="" data-serviceid="" style="display: none;" id="buttonCall"  title="Pokreni poziv kroz MiroTalk integraciju">
                             <span class="btn btn-file record-chat-audio chat_optns" data-record="0" data-chat-tab="1">
                                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="24" height="24" viewBox="0 0 24 24" class="select-color" style="color: rgb(198, 77, 83);">
                                     <path fill="#c64d53" d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" style="fill: rgb(198, 77, 83);"></path>
@@ -750,24 +586,20 @@
                     </div>
 
                     <div id="chatHistory" class="chat-history" data-contact-id="0">
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-comments fa-3x mb-3"></i>
-                            <h6>Izaberi kontakt sa kojim želiš da započneš razgovor.</h6>
-                            <small>Klikni na ime kontakta iz liste sa leve strane</small>
-                        </div>
+                        <h6 class="text-secondary d-none d-md-block">Izaberi kontakt sa kojim želiš da započneš razgovor.</h6>
                     </div>
 
                     <form id="messageForm" enctype="multipart/form-data" class="border-top">
                         @csrf
                         <input type="hidden" name="service_id" id="service_id" value="">
                         <input type="hidden" name="user_id"  id="user_id" value="">
-                        <div class="p-3" id="chatArea" style="display: none;">
+                        <div class="p-3 bg-light" id="chatArea" style="display: none;">
                             <div class="mb-2">
                                 <textarea name="content" id="content" class="form-control" rows="3" placeholder="Unesi poruku..." required></textarea>
                             </div>
 
-                            <!-- Paleta emotikona -->
-                            <div id="emojiPalette" class="emoji-palette">
+                            <!-- Paleta emotikona (skrivena inicijalno) -->
+                            <div id="emojiPalette" class="emoji-palette" style="display: none;">
                                 <div class="emoji-category">
                                     <span class="emoji" data-emoji="😀">😀</span>
                                     <span class="emoji" data-emoji="😃">😃</span>
@@ -832,6 +664,7 @@
                                     </button>
                                 </div>
                             </div>
+
                         </div>
                     </form>
                 </div>
@@ -841,7 +674,7 @@
         <!-- Services Modal -->
         <div class="modal fade" id="servicesModal" tabindex="-1" aria-labelledby="servicesModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content" style="color: var(--primary-color); background-color: var(--bg-color) !important;">
+                <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="servicesModalLabel">Izaberi ponudu</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori">
@@ -865,6 +698,7 @@
                     <i class="fas fa-video me-2"></i>Video Poziv
                 </h5>
                 <div class="modal-controls">
+                  <!-- Dodajemo dugme za testiranje permisija -->
                   <button type="button" class="btn btn-sm btn-outline-warning me-2" id="testPermissionsBtn" title="Proveri dozvole za kameru i mikrofon">
                     <i class="fas fa-camera"></i> Testiraj Dozvole
                   </button>
@@ -930,6 +764,7 @@
             </div>
           </div>
         </div>
+
     </div>
 </div>
 
@@ -946,12 +781,8 @@
     window.isCallActive = false;
     let callButtonOriginalHTML = null;
     window.videoCallModal = document.getElementById('videoCallModal');
-    let displayedDates = [];
 
     document.addEventListener('DOMContentLoaded', function () {
-        // Sortiraj kontakte pri učitavanju
-        sortContacts();
-
         // Sačuvaj originalno stanje dugmeta
         callButtonOriginalHTML = document.getElementById('buttonCall').innerHTML;
 
@@ -974,9 +805,6 @@
 
             // Promeni tekst koji se nalazi u tom elementu
             titleElement.innerHTML = '<i class="fas fa-video me-2"></i> '+directChatService.title;
-
-            // Označi selektovani kontakt
-            setSelectedContact(directChatService.user_id);
         }
 
         // Proveri da li je Firefox i prikaži upozorenje ako jeste
@@ -985,52 +813,6 @@
             document.getElementById('firefoxWarning').style.display = 'block';
         }
     });
-
-    // Funkcija za sortiranje kontakata
-    function sortContacts() {
-        const contactsList = document.getElementById('contactsList');
-        const contactItems = Array.from(contactsList.querySelectorAll('.contact-item'));
-
-        // Sortiraj kontakte: online prvi, onda po imenu
-        contactItems.sort((a, b) => {
-            const aOnline = a.querySelector('.status-online') !== null;
-            const bOnline = b.querySelector('.status-online') !== null;
-
-            // Online korisnici prvi
-            if (aOnline && !bOnline) return -1;
-            if (!aOnline && bOnline) return 1;
-
-            // Ako su oba online ili offline, sortiraj po imenu
-            const aName = a.querySelector('strong').textContent.toLowerCase();
-            const bName = b.querySelector('strong').textContent.toLowerCase();
-            return aName.localeCompare(bName);
-        });
-
-        // Ukloni postojeće kontakte
-        contactItems.forEach(item => item.remove());
-
-        // Dodaj sortirane kontakte
-        contactItems.forEach(item => contactsList.appendChild(item));
-    }
-
-    // Funkcija za označavanje selektovanog kontakta
-    function setSelectedContact(contactId) {
-        // Ukloni selekciju sa svih kontakata
-        document.querySelectorAll('.contact-item').forEach(item => {
-            item.classList.remove('selected-contact');
-        });
-
-        // Dodaj selekciju na trenutni kontakt
-        const contactElement = document.querySelector(`.contact-item[data-user-id="${contactId}"]`);
-        if (contactElement) {
-            contactElement.classList.add('selected-contact');
-
-            // Scroll to selected contact on mobile
-            if (window.innerWidth < 768) {
-                contactElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        }
-    }
 
     // Funkcija za resetovanje dugmeta na originalno stanje
     window.resetCallButton = function() {
@@ -1089,14 +871,11 @@
 
     // Funkcija koja prikazuje usluge za kontakt
     async function showServices(contactId, services) {
-        // Označi selektovani kontakt
-        setSelectedContact(contactId);
-
         const servicesList = document.getElementById('servicesList');
         servicesList.innerHTML = '';
 
         if (services.length === 0) {
-            servicesList.innerHTML = '<p class="text-center text-muted">Nema dostupnih usluga za ovog korisnika</p>';
+            servicesList.innerHTML = '<p>Nema dostupnih usluga za ovog korisnika</p>';
         } else {
             for (let service of services) {
                 try {
@@ -1109,30 +888,28 @@
                     if (contactLastMessage.unread_count > 0) {
                         unreadBadge = `
                             <span data-user-unread-messages-id="${service.service_id}"
-                                  class="unread-badge badge bg-danger rounded-pill position-absolute"
-                                  style="right: 15px; top: 50%; transform: translateY(-50%);">
+                                  class="unread-badge badge bg-danger rounded-pill position-absolute top-50"
+                                  style="right: 0.8cm; transform: translateX(50%) translateY(-1.2cm);">
                                 ${contactLastMessage.unread_count}
                             </span>
                         `;
                     }
 
                     serviceItem.innerHTML = `
-                        <div class="position-relative">
-                            ${unreadBadge}
-                            <div class="d-flex justify-content-between align-items-center" data-service-unread-messages-id="${service.service_id}">
-                                <strong>${service.service_title}</strong>
-                            </div>
-                            <small class="text-muted">
-                                Poslednja poruka: ${contactLastMessage.last_message_time != null ? formatDate(contactLastMessage.last_message_time) : 'Nema poruka'}
-                            </small>
+                        ${unreadBadge}
+                        <div class="d-flex justify-content-between align-items-center" data-service-unread-messages-id="${service.service_id}">
+                            <strong>${service.service_title}</strong>
                         </div>
+                        <small class="text-muted">
+                            Poslednja poruka: ${contactLastMessage.last_message_time != null ? formatDate(contactLastMessage.last_message_time) : 'Nema poruka'}
+                        </small>
                     `;
 
                     serviceItem.addEventListener('click', () => {
-                        let loadingMsg = '<div class="text-center p-3"><i class="fa fa-spinner fa-spin"></i> Učitavanje poruka...</div>';
+                        let loadingMsg = '<i class="fa fa-spinner fa-spin"></i> Učitavanje poruka...';
                         document.getElementById('service_id').value = service.service_id;
                         document.getElementById('user_id').value = contactId;
-                        document.getElementById('chatHistory').innerHTML = loadingMsg;
+                        document.getElementById('chatHistory').innerHTML = '<div class="text-center p-3">'+loadingMsg+'</div>';
                         openChat(contactId, service.service_id);
 
                         // Selektujte dugme
@@ -1184,6 +961,7 @@
 <script type="text/javascript">
 // Function to open the chat and display history for the selected contact
 async function openChat(contactId, serviceId) {
+    //event.preventDefault();
     const apiToken = "{{ $token }}";
 
     try {
@@ -1239,7 +1017,7 @@ async function openChat(contactId, serviceId) {
             });
             chatHistoryContainer.setAttribute('data-contact-id', contactId);
         } else {
-            document.getElementById('chatHistory').innerHTML = '<p class="text-center text-muted">Nema poruka za ovu uslugu.</p>';
+            document.getElementById('chatHistory').innerHTML = '<p class="text-center">Nema poruka za ovu uslugu.</p>';
         }
 
         if (data.blockedByHim) {
@@ -1296,7 +1074,7 @@ function getMessageHtml(msg) {
         let messageHtml = `
             <div class="conversation-list-right" data-message-id="${msg.id}" data-date="${date}">
                 <div class="chat-avatar">
-                    <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-left:15px;">
+                    <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
                 </div>
 
                 <div class="user-chat-content">
@@ -1335,7 +1113,7 @@ function getMessageHtml(msg) {
         let messageHtml = `
                         <div class="conversation-list" data-message-id="${msg.id}" data-date="${date}">
                             <div class="chat-avatar">
-                                <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle me-2" style="width: 50px; height: 50px; margin-right:15px;">
+                                <img src="{{ asset('storage/user/') }}/${msg.sender.avatar}" alt="You" class="rounded-circle ms-2" style="width: 50px; height: 50px; margin-right:15px;">
                             </div>
 
                             <div class="user-chat-content">
@@ -1363,6 +1141,7 @@ function getMessageHtml(msg) {
                     `;
         if (!msg.read_at) {
             messageHtml = messageHtml.replace('<small class="read-status"></small>', `<small class="read-status unreadMessagesDiv"></small>`);
+            messageHtml = messageHtml.replace('<div class="conversation-list-right"', '<div class="conversation-list-left"');
         }
 
         return messageHtml;
@@ -1509,7 +1288,7 @@ function adjustDateSeparators() {
     const existingSeparators = chatHistoryContainer.querySelectorAll('.date-separator-container');
     existingSeparators.forEach(separator => separator.remove());
 
-    displayedDates = [];
+    const displayedDates = [];
     const messages = Array.from(chatHistoryContainer.querySelectorAll('[data-date]'));
 
     messages.forEach(message => {
@@ -1519,7 +1298,7 @@ function adjustDateSeparators() {
             const separatorHtml = `
                 <div class="date-separator-container mb-1 justify-content-center">
                     <div class="date-separator w-100 text-center">
-                        <span class="date-text">${date}</span>
+                        <span class="date-text text-secondary">${date}</span>
                     </div>
                 </div>
             `;
@@ -1544,6 +1323,7 @@ function setupFirefoxErrorHandling() {
         // Globalni error handler za MiroTalk greške
         window.addEventListener('error', function(e) {
             if (e.filename && (e.filename.includes('speechRecognition.js') || e.filename.includes('videoGrid.js'))) {
+                //console.warn('MiroTalk error suppressed for Firefox:', e.message);
                 e.preventDefault();
                 return true;
             }
@@ -1552,6 +1332,7 @@ function setupFirefoxErrorHandling() {
         // Error handler za promise greške
         window.addEventListener('unhandledrejection', function(e) {
             if (e.reason && e.reason.toString().includes('getId')) {
+                //console.warn('MiroTalk getId promise error suppressed');
                 e.preventDefault();
                 return true;
             }
@@ -1569,9 +1350,9 @@ function getOptimizedMiroTalkUrl(roomUrl) {
         'speechRecognition=false',
         'startWithVideoMuted=true',
         'startWithAudioMuted=true',
-        'disableSimulcast=true',
-        'enableNoAudioDetection=false',
-        'enableNoisyMicDetection=false',
+        'disableSimulcast=true',        // Dodajte i za sve browsere
+        'enableNoAudioDetection=false', // Onemogući automatsku detekciju audio problema
+        'enableNoisyMicDetection=false', // Onemogući detekciju bučnog mikrofona
         'avatar=0&audio=1&video=0&screen=0&chat=0&hide=0&notify=0'
     ];
 
@@ -1604,17 +1385,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const title = urlParams.get('title').trim();
         const room_url = urlParams.get('room_url');
 
-        // Ukloni parametre iz URL-a da se ne bi ponovilo pri osvežavanju
+        // // Ukloni parametre iz URL-a da se ne bi ponovilo pri osvežavanju
         window.history.replaceState({}, document.title, window.location.pathname);
 
-        // Sačekaj da se stranica potpuno učita
+        // // Sačekaj da se stranica potpuno učita
         setTimeout(() => {
             if (contactId && serviceId) {
                 // Postavi vrednosti za kontakt i servis
-                let loadingMsg = '<div class="text-center p-3"><i class="fa fa-spinner fa-spin"></i> Učitavanje poruka...</div>';
+                let loadingMsg = '<i class="fa fa-spinner fa-spin"></i> Učitavanje poruka...';
                 document.getElementById('service_id').value = serviceId;
                 document.getElementById('user_id').value = contactId;
-                document.getElementById('chatHistory').innerHTML = loadingMsg;
+                document.getElementById('chatHistory').innerHTML = '<div class="text-center p-3">'+loadingMsg+'</div>';
                 // Otvori chat pre pokretanja poziva
                 openChat(contactId, serviceId);
 
@@ -1623,8 +1404,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 button.setAttribute('data-contactid', contactId);
                 button.setAttribute('data-serviceid', serviceId);
                 document.getElementById('buttonCall').style.display = 'block';
-                document.getElementById('topic').innerHTML = title;
+                document.getElementById('topic').innerHTML = '<a href="#">'+title+'</a>';
                 document.getElementById('videoCallModalLabel').innerText = title;
+
 
                 // Proveri dozvole pre pokretanja poziva
                 checkAndUpdatePermissions().then((hasPermissions) => {
@@ -1943,11 +1725,13 @@ document.addEventListener('DOMContentLoaded', function () {
         iframe.style.border = 'none';
         iframe.style.borderRadius = '8px';
         iframe.allow = 'microphone; fullscreen; display-capture; autoplay;camera;';
+       // iframe.deny = 'camera;';
         iframe.allowFullscreen = true;
         iframe.title = 'Video Poziv - MiroTalk';
         iframe.id = 'mirotalk-iframe';
 
         iframe.onload = function() {
+            //console.log('MiroTalk iframe loaded - veza se uspostavlja');
             mirotalkIframe = iframe;
             isCallActive = true;
 
@@ -2078,6 +1862,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Dodaj event listener na dugme za poziv
     document.getElementById('buttonCall').addEventListener('click', handleCallButtonClick);
+
+    //console.log('MiroTalk P2P sistem je inicijalizovan');
 
     // Dodajemo event listener za zatvaranje modala ( izvan okvira )
     $('#videoCallModal').on('hidden.bs.modal', function (e) {

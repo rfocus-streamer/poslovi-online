@@ -29,6 +29,28 @@
         cursor: pointer;
     }
 
+    .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+    .form-select {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        padding: 0.5rem;
+        font-size: 1rem;
+    }
+
+    /* Stil za option elemente */
+    .form-select option {
+        background-color: var(--menu-bg) !important;
+    }
+
+    /* Za disabled opcije, možete dodati stil */
+    .form-select option:disabled {
+        color: var(--disabled-text-color); /* Definišite ovu varijablu za boju onemogućenih opcija */
+        background-color: var(--disabled-bg-color); /* Definišite ovu varijablu za pozadinu onemogućenih opcija */
+    }
 </style>
 
 <div class="container py-5">
@@ -48,7 +70,7 @@
                 </div>
             @endif
 
-            <div class="card">
+            <div class="card" style="color: var(--primary-color); background-color: var(--bg-color);">
                 <div class="card-header text-center card-header text-white" style="background-color: #198754">
                     <i class="fas fa-credit-card"></i> Depozit novca na tvom balansu !
                 </div>
@@ -124,7 +146,7 @@
 
         <div class="col-md-4">
             <div class="card mb-3">
-                <div class="card-body">
+                <div class="card-body" style="color: var(--primary-color); background-color: var(--bg-color);">
                     <div class="row">
                         <div class="text-center mb-4">
                             @if(Auth::user()->role === 'seller')

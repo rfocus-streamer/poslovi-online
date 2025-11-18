@@ -1,72 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    .text-theme {
-        color: var(--text-color);
-    }
-
-    .text-muted-theme {
-        color: var(--text-muted) !important;
-    }
-
-    .card {
-        background-color: var(--card-bg);
-        border-color: var(--border-color);
-    }
-
-    .card-body {
-        color: var(--text-color);
-    }
-
-    .form-control {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border-color: var(--border-color);
-    }
-
-    .form-control:focus {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
-    }
-
-    .form-control::placeholder {
-        color: var(--text-muted);
-        opacity: 0.7;
-    }
-
-    .form-select {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border-color: var(--border-color);
-    }
-
-    .form-select:focus {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
-    }
-
-    .form-label {
-        color: var(--text-color);
-    }
-
-    .btn-link {
-        color: var(--primary);
-    }
-
-    .btn-link:hover {
-        color: var(--primary-dark);
-    }
-
-    .list-unstyled li small {
-        color: var(--text-muted);
-    }
-</style>
-
 <div class="container">
     <div class="row">
         <!-- Prikaz poruka -->
@@ -85,7 +19,7 @@
         <!-- Desktop naslov + info -->
         <div class="d-none d-md-block ml-1 mt-1 mb-1">
             <h4 class="mb-0"><i class="fas fa-ticket"></i> {{ $ticket->title }}</h4>
-                <small>
+                <small class="text-muted">
                     Kreiran {{ $ticket->user->name }} |
                     {{ $ticket->created_at->format('d.m.Y H:i') }}
                 </small>
@@ -94,7 +28,7 @@
         <!-- Mobile naslov + info -->
         <div class="d-flex d-md-none flex-column text-center w-100">
             <h6 class="mb-0"><i class="fas fa-ticket"></i> {{ $ticket->title }}</h6>
-                <small>
+                <small class="text-muted">
                     Kreiran {{ $ticket->user->name }} |
                     {{ $ticket->created_at->format('d.m.Y H:i') }}
                 </small>
@@ -102,7 +36,7 @@
 
         <!-- Desktop -->
         <!-- Leva kolona sa detaljima ticketa -->
-        <div class="d-none d-md-block col-md-7 mb-3 g-0">
+        <div class="d-none d-md-block col-md-8 mb-3 g-0">
             <div class="card">
                 <div class="card-body">
 
@@ -118,7 +52,7 @@
                                 @endif
                                 <div>
                                     <strong>{{ $ticket->user->firstname.' '. $ticket->user->lasttname}}</strong><br>
-                                    <small>{{ $ticket->created_at->format('d.m.Y H:i') }}</small>
+                                    <small class="text-muted">{{ $ticket->created_at->format('d.m.Y H:i') }}</small>
                                 </div>
                             </div>
 
@@ -153,7 +87,7 @@
                                      height="40">
                                 @endif
                                 <div>
-                                    <small>
+                                    <small class="text-muted">
                                         @if($response->user->role === 'support')
                                             {{ $response->created_at->format('d.m.Y H:i') }}
                                             <span class="badge bg-info ms-2">Podrška</span>
@@ -232,7 +166,7 @@
                         @endif
                         <div>
                             <strong>{{ $ticket->user->firstname.' '. $ticket->user->lastname }}</strong><br>
-                            <small>{{ $ticket->created_at->format('d.m.Y H:i') }}</small>
+                            <small class="text-muted">{{ $ticket->created_at->format('d.m.Y H:i') }}</small>
                         </div>
                     </div>
 
@@ -267,7 +201,7 @@
                              height="40">
                         @endif
                         <div>
-                            <small>
+                            <small class="text-muted">
                                 @if($response->user->role === 'support')
                                 {{ $response->created_at->format('d.m.Y H:i') }}
                                 <span class="badge bg-info ms-2">Podrška</span>
@@ -332,7 +266,7 @@
 
 
         <!-- Desna kolona sa informacijama i akcijama -->
-        <div class="col-md-4 mb-3 g-0" style="margin-left: 5px !important">
+        <div class="col-md-4 mb-3 g-0">
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title mb-4">

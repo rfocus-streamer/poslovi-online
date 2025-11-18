@@ -46,6 +46,10 @@ Route::get('email/resend-verify/{email}', [RegisteredUserController::class, 'res
 Route::get('/verify/{id}/{hash}', [RegisteredUserController::class, 'verify'])
     ->name('verification.email');
 
+Route::get('/o-nama', function () {
+    return view('about_us/index');
+});
+
 // Rute za logovane korisnike
 Route::middleware('auth')->group(function () {
     Route::get('/services', [ServiceController::class, 'sellerServices'])->name('services.index');

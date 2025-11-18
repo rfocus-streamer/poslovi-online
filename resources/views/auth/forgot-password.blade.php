@@ -2,6 +2,13 @@
 <title>Poslovi Online | Zaboravljena lozinka</title>
 <link href="{{ asset('css/index.css') }}" rel="stylesheet">
 @section('content')
+<style type="text/css">
+    .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+</style>
 
 <!-- Hero sekcija sa pozadinom -->
 <div class="hero-section">
@@ -12,9 +19,9 @@
 </div>
 
 <!-- Login Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true" >
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content col-md-6 mx-auto">
+        <div class="modal-content col-md-6 mx-auto" style="color: var(--primary-color); background-color: var(--bg-color);">
             <div class="modal-header border-0 pb-0">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Zatvori">
                     <span aria-hidden="true">&times;</span>
@@ -27,7 +34,7 @@
                                      width="50"
                                      height="50">
             </div>
-            <span class="hero-subtitle text-center text-dark fw-bold">Zaboravljena lozinka</span>
+            <span class="hero-subtitle text-center text-dark fw-bold" style="color: var(--primary-color) !important;">Zaboravljena lozinka</span>
 
             <div class="mb-1 ml-4 text-sm text-gray-600 text-secondary">
                 {{ __('Unesi svoju e-mail adresu i poslaćemo link za resetovanje lozinke.') }}

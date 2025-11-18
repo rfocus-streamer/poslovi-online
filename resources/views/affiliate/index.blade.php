@@ -19,6 +19,68 @@
     .form-check-input:checked {
         background-color: #198754; /* Bootstrap "success" zelena */
     }
+
+    .table {
+        color: var(--text-color);
+    }
+
+    .table thead th {
+        color: var(--text-color);
+        border-color: var(--border-color);
+        background-color: var(--menu-bg);
+    }
+
+    .table tbody td {
+        border-color: var(--border-color);
+        background-color: var(--menu-bg);
+        color: var(--text-color);
+    }
+
+    #payoutForm .form-select{
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+   .modal .form-select {
+        position: relative;
+        z-index: 9999;
+    }
+
+    .modal .form-select option {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        z-index: 99999;
+    }
+
+    #payoutForm input{
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+
+    #payoutForm .form-control{
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+    #payoutForm .form-select {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        padding: 0.5rem;
+        font-size: 1rem;
+    }
+
+    /* Stil za option elemente */
+    #payoutForm .form-select option {
+        background-color: var(--menu-bg) !important;
+    }
+
+    /* Za disabled opcije, možete dodati stil */
+    #payoutForm .form-select option:disabled {
+        color: var(--disabled-text-color); /* Definišite ovu varijablu za boju onemogućenih opcija */
+        background-color: var(--disabled-bg-color); /* Definišite ovu varijablu za pozadinu onemogućenih opcija */
+    }
+
+
 </style>
 
 <div class="container py-5">
@@ -42,7 +104,7 @@
                 <div class="card-header text-center card-header btn-poslovi text-white"><i class="fas fa-euro-sign"></i> Preporuči – Zaradi! </div>
 
                 <!-- Desktop -->
-                <div class="d-none d-md-block card-body">
+                <div class="d-none d-md-block card-body" style="color: var(--primary-color); background-color: var(--bg-color);">
                     <h5 class="text-center">Preporuči prodavca i na poklon dobijaš 70% od njegove prve članarine!</h5>
                     <span>Uključi se u naš affiliate program i ostvari 70% provizije od prve mesečne članarine svakog prodavca koga preporučiš. Podeli svoj jedinstveni link i gledaj kako tvoja zarada raste!</span><br>
 
@@ -73,7 +135,7 @@
                 </div>
 
                 <!-- Mobile -->
-                <div class="d-md-none card-body">
+                <div class="d-md-none card-body" style="color: var(--primary-color); background-color: var(--bg-color);">
                     <h6 class="text-center">Preporuči prodavca i na poklon dobijaš 70% od njegove prve članarine!</h6>
                     <span>Uključi se u naš affiliate program i ostvari 70% provizije od prve mesečne članarine svakog prodavca koga preporučiš. Podeli svoj jedinstveni link i gledaj kako tvoja zarada raste!</span><br>
 
@@ -105,8 +167,8 @@
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card mb-3">
+        <div class="col-md-4 mt-1">
+            <div class="card mb-3" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                 <div class="card-body">
                     <div class="row">
 
@@ -165,21 +227,21 @@
         <!-- Affiliate Stats Modal -->
         <div class="modal fade" id="affiliateStatsModal" tabindex="-1" aria-labelledby="affiliateStatsModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
+                <div class="modal-content" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="modal-header">
                         <div class="w-100 text-center">
                             <h5 class="modal-title" id="affiliateStatsModalLabel">
                                 <i class="fas fa-users"></i> Tvoji affiliate korisnici
                             </h5>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Zatvori"><span aria-hidden="true">&times;</span></button>
                     </div>
 
                     <div class="modal-body">
                         <div class="row mb-4">
                             <div class="col-md-4">
                                 <div class="card bg-light">
-                                    <div class="card-body text-center">
+                                    <div class="card-body text-center" style="color: var(--primary-color); background-color: var(--bg-color);">
                                         <h6 class="card-subtitle mb-2 text-muted">Ukupno referala</h6>
                                         <h3 class="card-title">{{ Auth::user()->referrals->count() }}</h3>
                                     </div>
@@ -187,7 +249,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="card bg-light">
-                                    <div class="card-body text-center">
+                                    <div class="card-body text-center" style="color: var(--primary-color); background-color: var(--bg-color);">
                                         <h6 class="card-subtitle mb-2 text-muted">Ukupna zarada</h6>
                                         <h3 class="card-title">{{ number_format(Auth::user()->commissionsEarned->sum('amount'), 2) }}€</h3>
                                     </div>
@@ -195,7 +257,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="card bg-light">
-                                    <div class="card-body text-center">
+                                    <div class="card-body text-center" style="color: var(--primary-color); background-color: var(--bg-color);">
                                         <h6 class="card-subtitle mb-2 text-muted">Aktivnih paketa</h6>
                                         <h3 class="card-title">{{ Auth::user()->referrals->filter(function($user) { return $user->package; })->count() }}</h3>
                                     </div>
@@ -205,7 +267,7 @@
 
                         <!-- Desktop -->
                         <div class="d-none d-md-table table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-hover" style="color: var(--primary-color); background-color: var(--bg-color);">
                                 <thead class="table-light">
                                     <tr>
                                         <th>#</th>
@@ -264,7 +326,7 @@
                         <!-- Mobile & Tablet Cards -->
                         <div class="d-md-none">
                             @forelse(Auth::user()->referrals as $key => $referral)
-                            <div class="card mb-3 subscription-card" data-id="{{ $referral->id }}">
+                            <div class="card mb-3 subscription-card" data-id="{{ $referral->id }}" style="color: var(--primary-color); background-color: var(--bg-color);">
                                 <div class="card-header btn-poslovi-green text-white">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Referal #{{ $key+1 }}</span>
@@ -317,7 +379,7 @@
                                 </div>
                             </div>
                             @empty
-                            <div class="card mb-3 subscription-card">
+                            <div class="card mb-3 subscription-card" style="color: var(--primary-color); background-color: var(--bg-color);">
                                 <div class="card-body text-center">
                                     <p class="text-muted">Nema registrovanih korisnika</p>
                                 </div>
@@ -334,14 +396,14 @@
         <!-- Affiliate Payout Requests Stats Modal -->
         <div class="modal fade" id="affiliateRequestsStatsModal" tabindex="-1" aria-labelledby="affiliateRequestsStatsModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
+                <div class="modal-content" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                     <div class="modal-header">
                         <div class="w-100 text-center">
                             <h5 class="modal-title" id="affiliateStatsModalLabel">
                                 <i class="fas fa-money-bill-wave"></i> Tvoje affiliate isplate
                             </h5>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
 
                     <div class="d-none d-md-table modal-body">
@@ -399,7 +461,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="5" class="text-center">Nema još zahteva za isplatu</td>
+                                            <td colspan="7" class="text-center">Nema još zahteva za isplatu</td>
                                         </tr>
                                         @endforelse
                                 </tbody>
@@ -415,7 +477,7 @@
                     <!-- Mobile & Tablet Cards -->
                     <div class="d-md-none">
                         @forelse($payouts as $key => $payout)
-                        <div class="card mb-3 subscription-card" data-id="{{ $payout->id }}">
+                        <div class="card mb-3 subscription-card" data-id="{{ $payout->id }}" style="color: var(--primary-color); background-color: var(--bg-color);">
                             <div class="card-header btn-poslovi-green text-white">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>Isplata #{{ $key+1 }}</span>
@@ -478,7 +540,7 @@
                             </div>
                         </div>
                         @empty
-                        <div class="card mb-3 subscription-card">
+                        <div class="card mb-3 subscription-card" style="color: var(--primary-color); background-color: var(--bg-color);">
                             <div class="card-body text-center">
                                 <p class="text-muted">Nema još zahteva za isplatu</p>
                             </div>
@@ -493,12 +555,12 @@
         <!-- Payout Affiliate Modal -->
         <div class="modal fade" id="affiliatePayoutModal" tabindex="-1" aria-labelledby="affiliatePayoutModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
+                <div class="modal-content" style="color: var(--primary-color); background-color: var(--bg-color);">
                     <div class="modal-header text-center">
                         <h5 class="modal-title" id="affiliatePayoutModalLabel">
                             <i class="fas fa-money-bill-wave"></i> Zahtev za affiliate isplatu
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
                         <form id="payoutForm" method="POST" action="{{ route('affiliate.payout') }}">
@@ -560,7 +622,7 @@
                     <div class="toast-body">
                          ✅ Link je uspešno kopiran!
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <button type="button" class="close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
             </div>
          </div>
@@ -571,7 +633,7 @@
                 <div class="toast-body">
                     <i class="fas fa-check-circle me-2"></i> Uspešno ste poslali zahtev za isplatu!
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
         </div>
 

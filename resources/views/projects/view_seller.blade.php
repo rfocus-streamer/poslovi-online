@@ -2,6 +2,161 @@
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
 <title>Poslovi Online | {{ $title }}</title>
 @section('content')
+<style type="text/css">
+    .alert {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .alert-danger {
+        background-color: var(--danger-bg);
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .alert-success {
+        background-color: var(--success-bg);
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+        box-shadow: 0 0.125rem 0.25rem var(--shadow);
+    }
+
+    .card-header {
+        background-color: var(--menu-bg) !important;
+        border-bottom-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .bg-light {
+        background-color: var(--menu-bg) !important;
+        color: var(--text-color);
+    }
+
+    .border {
+        border-color: var(--border-color) !important;
+    }
+
+    .rounded {
+        border-color: var(--border-color);
+    }
+
+    .btn-outline-light {
+        border-color: var(--border-color);
+        color: var(--text-color);
+        background-color: transparent;
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--menu-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-link {
+        color: var(--primary);
+    }
+
+    .btn-link:hover {
+        color: var(--primary);
+    }
+
+    .modal-content {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .modal-header {
+        border-bottom-color: var(--border-color);
+        background-color: var(--menu-bg);
+    }
+
+    .modal-footer {
+        border-top-color: var(--border-color);
+    }
+
+    .btn-close {
+        filter: var(--btn-close-filter, invert(0));
+    }
+
+    [data-theme="dark"] .btn-close {
+        filter: invert(1);
+    }
+
+    .list-unstyled li {
+        color: var(--text-color);
+    }
+
+    /* Hover efekti za tabelu */
+    .table tbody tr:hover td {
+        background-color: var(--menu-bg);
+    }
+
+    /* Form controls */
+    .form-control {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .form-control:focus {
+        background-color: var(--card-bg);
+        border-color: var(--primary);
+        color: var(--text-color);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control:disabled {
+        background-color: var(--menu-bg);
+        color: var(--text-secondary);
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .card {
+            margin-bottom: 1rem;
+        }
+
+        .table {
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Rating stars */
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+
+    .rating-input input {
+        display: none;
+    }
+
+    .rating-input label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        transition: color 0.2s;
+    }
+
+    .rating-input label:hover,
+    .rating-input label:hover ~ label,
+    .rating-input input:checked ~ label {
+        color: var(--warning);
+    }
+
+    .rating-input label i {
+        transition: color 0.2s;
+    }
+</style>
 <div class="container py-5">
     <div class="row">
         <!-- Prikaz poruke sa anchor ID -->

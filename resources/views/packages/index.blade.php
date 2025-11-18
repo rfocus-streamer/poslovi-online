@@ -45,7 +45,7 @@
             </div>
 
            <!--  Dekstop -->
-            <div class="card d-none d-md-flex mb-1">
+            <div class="card d-none d-md-flex mb-1" style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
                 <div class="card-body">
                     <div class="row">
 
@@ -56,7 +56,7 @@
                     @foreach($packages as $key => $package)
                         @if($package->id != 8)
                         <div class="col-md-4 mb-4">  <!-- Dodajemo mb-4 za razmak između redova -->
-                            <div class="card h-100 position-relative">
+                            <div class="card h-100 position-relative" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                                 <!-- Ukoso u gornjem levom uglu - Godisnji popust -->
                                 @if($package->duration == 'yearly')
                                     <div class="position-absolute top-0 start-0 p-1 bg-danger text-white" style="transform: rotate(-45deg); transform-origin: top left; font-size: 0.75rem; margin-top: 35px; margin-left: -10px;">
@@ -149,7 +149,7 @@
                         </div>
                         @endif
                     @endforeach
-                    <small><i class="fas fa-info-circle"></i> Promena godišnje ili mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
+                    <small style="background-color: var(--bg-color); color: var(--primary-color);"><i class="fas fa-info-circle"></i> Promena godišnje ili mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
                     </div>
                 </div>
             </div>
@@ -157,13 +157,13 @@
 
         <!-- Mobile -->
         <div class="d-md-none mb-1">
-             <div class="card mb-3">
+             <div class="card mb-3" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--primary-color);">
                 <small class="ml-2"><i class="fas fa-info-circle"></i> Promena godišnje ili mesečne pretplate je moguća samo ka višem paketu. Smanjenje nivoa pretplate nije dozvoljeno.</small>
             </div>
             @foreach($packages as $key => $package)
                 @if($package->id != 8)
                 <div class="mb-4">  <!-- Dodajemo mb-4 za razmak između redova -->
-                    <div class="card position-relative">
+                    <div class="card position-relative" style="color: var(--primary-color); background-color: var(--bg-color); border: 1px solid var(--border-color);">
                         <!-- Ukoso u gornjem levom uglu - Godisnji popust -->
                         @if($package->duration == 'yearly')
                             <div class="position-absolute top-0 start-0 p-1 bg-danger text-white" style="transform: rotate(-45deg); transform-origin: top left; font-size: 0.75rem; margin-top: 35px; margin-left: -10px;">
@@ -260,7 +260,7 @@
 
 
         <div class="col-md-4">
-            <div class="card mb-3">
+            <div class="card mb-3" style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
                 <div class="card-body">
                     <div class="row">
                         @php

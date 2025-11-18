@@ -1,50 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    .text-theme {
-        color: var(--text-color);
-    }
-
-    .text-muted-theme {
-        color: var(--text-muted) !important;
-    }
-
-    .card {
-        background-color: var(--card-bg);
-        border-color: var(--border-color);
-    }
-
-    .card-body {
-        color: var(--text-color);
-    }
-
-    .form-label {
-        color: var(--text-color);
-    }
-
-    .form-control {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border-color: var(--border-color);
-    }
-
-    .form-control:focus {
-        background-color: var(--input-bg);
-        color: var(--text-color);
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
-    }
-
-    .form-control::placeholder {
-        color: var(--text-muted);
-        opacity: 0.7;
-    }
-</style>
 <div class="container">
     <h4><i class="fas fa-ticket"></i> Kreiraj novi tiket</h4>
     <div class="row d-flex">
-        <div class="col-12 col-md-8"> <!-- Dodato col-12 za mobilne uređaje -->
+        <div class="col-8">
             <form method="POST" action="{{ route('tickets.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-3">
@@ -63,7 +23,7 @@
             </form>
         </div>
 
-        <div class="col-12 col-md-4 mt-4"> <!-- Dodato col-12 za mobilne uređaje -->
+        <div class="col-4 mt-4">
             <div class="card">
                 <div class="card-body">
                     <div class="row">

@@ -9,15 +9,14 @@
     .package-item {
         margin-bottom: 20px;
         padding: 15px;
-        background-color: var(--card-bg);
+        background-color: #f9f9f9;
         border-radius: 5px;
-        border: 1px solid var(--border-color);
+        border: 1px solid #eee;
     }
 
     .package-category {
         font-size: 1.1rem;
         margin-bottom: 15px;
-        color: var(--text-color);
     }
 
     #add-package {
@@ -30,12 +29,11 @@
     }
 
     .form-check-input {
-        border-color: var(--success);
+        border-color: #198754;
     }
 
     .form-check-input:checked {
-        background-color: var(--success);
-        border-color: var(--success);
+        background-color: #198754; /* Bootstrap "success" zelena */
     }
 
     .form-check-input {
@@ -48,67 +46,7 @@
         font-weight: 400;
         font-size: 1rem;
         cursor: pointer;
-        color: var(--text-color);
     }
-
-    .form-label {
-        color: var(--text-color);
-    }
-
-    .text-muted {
-        color: var(--text-muted) !important;
-    }
-
-    .upload-progress {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
-    }
-
-    .progress-bar {
-        background-color: var(--success);
-    }
-
-    /* Osiguravamo da sve label unutar forme koriste boju teme */
-    #serviceForm label {
-        color: var(--text-color);
-    }
-
-    /* Placeholder boja */
-    .form-control::placeholder {
-        color: var(--text-muted);
-        opacity: 1;
-    }
-
-    /* Boja za help text (small) unutar forme */
-    .form-text {
-        color: var(--text-muted);
-    }
-
-    .form-group select{
-        background-color: var(--card-bg);
-        color: var(--text-color);
-    }
-
-    .form-group input{
-        background-color: var(--card-bg);
-        color: var(--text-color);
-    }
-
-    textarea.form-control{
-        background-color: var(--card-bg);
-        color: var(--text-color);
-    }
-
-    #packages-container input{
-        background-color: var(--card-bg);
-        color: var(--text-color);
-    }
-
-    .form-control[type="file"]{
-        background-color: var(--card-bg);
-        color: var(--text-color);
-    }
-</style>
 
 </style>
 <div class="container">

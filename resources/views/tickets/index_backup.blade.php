@@ -1,53 +1,6 @@
 @extends('layouts.app')
 <link href="{{ asset('css/default.css') }}" rel="stylesheet">
 @section('content')
-<style type="text/css">
-    .table {
-        color: var(--text-color);
-    }
-
-    .table thead th {
-        color: var(--text-color);
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-    }
-
-    .table tbody td {
-        border-color: var(--border-color);
-        background-color: var(--menu-bg);
-        color: var(--text-color);
-    }
-
-    /* Dodaj stil za tr */
-    .table tbody tr {
-        background-color: var(--menu-bg);
-        color: var(--text-color);
-    }
-
-    /* Opcionalno: ako želiš da drugačije stilizuješ tr elemente u thead */
-    .table thead tr {
-        background-color: var(--menu-bg);
-    }
-
-    .mobile-div div{
-        color: var(--text-color);
-        background-color: var(--menu-bg);
-    }
-
-    .mobile-div small{
-        color: var(--text-color);
-    }
-
-    .mobile-div span{
-        color: var(--text-color);
-    }
-
-    .mobile-div a{
-        text-decoration: none !important;
-    }
-
-</style>
-
 
 <div class="container">
     <!-- Prikaz poruka -->
@@ -66,7 +19,7 @@
         <!-- Desktop naslov + info -->
         <div class="d-none d-md-flex justify-content-between align-items-center">
              @if(!in_array(Auth::user()->role, ['support', 'admin']))
-                <h4><i class="fas fa-ticket"></i> Tvoji tiketi</h4>
+                <h4><i class="fas fa-ticket"></i> Tvoje tiketi</h4>
                 <div class="text-warning mb-2">
                     <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
                         </a>
@@ -79,7 +32,7 @@
         <!-- Mobile naslov + info -->
         <div class="d-flex d-md-none flex-column text-center w-100">
             @if(!in_array(Auth::user()->role, ['support', 'admin']))
-                <h6><i class="fas fa-ticket"></i> Tvoji tiketi</h6>
+                <h6><i class="fas fa-ticket"></i> Tvoje tiketi</h6>
                 <div class="text-warning mb-2">
                     <a href="{{ route('tickets.create') }}" class="btn btn-outline-success ms-auto w-100" data-bs-toggle="tooltip" title="Dodaj ticket"> Novi tiket <i class="fas fa-ticket"></i>
                         </a>
@@ -104,8 +57,7 @@
                     <th class="text-center">Status</th>
                     <th class="text-center">Akcija</th>
                 </tr>
-            </thead>
-            <tbody>
+
                 @foreach($tickets as $key => $ticket)
                     <tr>
                         <td>{{ $key + 1 }}</td>
@@ -151,6 +103,8 @@
                         </td>
                     </tr>
                 @endforeach
+            </thead>
+            <tbody>
 
             </tbody>
         </table>
@@ -161,15 +115,15 @@
     </div>
 
     <!-- Mobile & Tablet cards -->
-    <div class="d-md-none mobile-div">
+    <div class="d-md-none">
         @foreach($tickets as $key => $ticket)
         <div class="card mb-3 subscription-card" data-id="{{ $ticket->id }}">
-            <div class="card-header btn-poslovi-green">
+            <div class="card-header btn-poslovi-green text-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <a href="{{ route('tickets.show', $ticket) }}" class="text-light">
                         <span>{{ $ticket->title }}</span>
                     </a>
-                    <span class="badge">
+                    <span class="badge bg-light text-dark">
                         <span class="badge bg-{{ $ticket->status === 'open' ? 'success' : 'danger' }}">
                             @if($ticket->status === 'open')
                                Otvoren
@@ -183,11 +137,11 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-6">
-                        <small>Kreiran</small>
+                        <small class="text-muted">Kreiran</small>
                         <div>{{ ucfirst($ticket->created_at->locale('sr')->diffForHumans()) }}</div>
                     </div>
                     <div class="col-6">
-                        <small>Poslednji odgovor</small>
+                        <small class="text-muted">Poslednji odgovor</small>
                         <div>
                             @if ($ticket->responses->isNotEmpty())
                                 {{ ucfirst($ticket->responses->last()->created_at->locale('sr')->diffForHumans()) }}
@@ -199,7 +153,7 @@
                 </div>
             </div>
 
-            <div class="card-footer">
+            <div class="card-footer bg-white">
                 <div class="d-flex gap-2 justify-content-center">
                     <a href="{{ route('tickets.show', $ticket) }}">
                         <button type="button" class="btn btn-sm btn-warning position-relative">
