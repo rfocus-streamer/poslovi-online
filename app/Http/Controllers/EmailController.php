@@ -591,9 +591,9 @@ class EmailController extends Controller
             return ['success' => false, 'sent' => 0, 'errors' => 0];
         }
 
-        // Pronađi korisnike koji nisu imali paket i registrovani su pre više od 4 dana
+        // Pronađi korisnike koji nisu imali paket i registrovani su pre više od 1 dana
         $users = User::whereNull('package_id') // Nisu imali paket
-            ->where('created_at', '<', now()->subDays(4)) // Registrovani su pre više od 4 dana
+            ->where('created_at', '<', now()->subDays(1)) // Registrovani su pre više od 1 dana
             ->get();
 
         foreach ($users as $user) {
