@@ -251,7 +251,7 @@
                                 <div class="card bg-light">
                                     <div class="card-body text-center" style="color: var(--primary-color); background-color: var(--bg-color);">
                                         <h6 class="card-subtitle mb-2 text-muted">Ukupna zarada</h6>
-                                        <h3 class="card-title">{{ number_format(Auth::user()->commissionsEarned->sum('amount'), 2) }}€</h3>
+                                        <h3 class="card-title">{{ number_format(Auth::user()->affiliate_balance->sum('amount'), 2) }}€</h3>
                                     </div>
                                 </div>
                             </div>
